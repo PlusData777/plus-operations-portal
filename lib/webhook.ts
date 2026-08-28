@@ -1,4 +1,33 @@
-import { OperationRequest, RosterMember } from "@/lib/types";
+import type { RosterMember } from "@/lib/types";
+
+export type OperationRequest = {
+  rowNumber?: number;
+  id?: string | number;
+  timestamp?: string | Date;
+  staffName?: string;
+  staffEmail?: string;
+  department?: string;
+  requestType?: string;
+  category?: string;
+  justification?: string;
+  status?: string;
+  remarks?: string;
+  assignedTo?: string;
+  decisionLog?: string;
+  taskStatus?: string;
+  taskRemarks?: string;
+  workflowStage?: string;
+  pendingReviewer?: string;
+  projectCode?: string;
+  amount?: number;
+  durationDays?: number;
+  requiresExecutive?: boolean;
+  tier1Reviewer?: string;
+  tier2Reviewer?: string;
+  deliverableLink?: string;
+  cancellationReason?: string;
+  [key: string]: any;
+};
 
 function getScriptUrl(): string {
   const url = process.env.APPS_SCRIPT_URL || "";
@@ -9,7 +38,7 @@ function getScriptUrl(): string {
 }
 
 /**
- * Robust fetcher that handles Google Apps Script 302 redirects and parses JSON safely
+ * Robust fetcher that safely handles Google Apps Script redirects and parses JSON
  */
 async function fetchFromAppsScript(url: string) {
   const res = await fetch(url, {
@@ -17,7 +46,7 @@ async function fetchFromAppsScript(url: string) {
     redirect: "follow",
     cache: "no-store",
     headers: {
-      "Accept": "application/json",
+      Accept: "application/json",
     },
   });
 
@@ -33,8 +62,8 @@ async function fetchFromAppsScript(url: string) {
 export async function listRequests(): Promise<OperationRequest[]> {
   try {
     const baseUrl = getScriptUrl();
-    const url = baseUrl.includes("?") 
-      ? `${baseUrl}&action=getRequests` 
+    const url = baseUrl.includes("?")
+      ? `${baseUrl}&action=getRequests`
       : `${baseUrl}?action=getRequests`;
 
     const json = await fetchFromAppsScript(url);
@@ -49,8 +78,8 @@ export async function listRequests(): Promise<OperationRequest[]> {
 export async function listRoster(): Promise<RosterMember[]> {
   try {
     const baseUrl = getScriptUrl();
-    const url = baseUrl.includes("?") 
-      ? `${baseUrl}&action=getRoster` 
+    const url = baseUrl.includes("?")
+      ? `${baseUrl}&action=getRoster`
       : `${baseUrl}?action=getRoster`;
 
     const json = await fetchFromAppsScript(url);
