@@ -8,18 +8,23 @@ import {
   BarChart3,
   Calendar,
   CheckCircle2,
+  ChevronRight,
   Clock,
   DollarSign,
   FileSpreadsheet,
   FileText,
   Filter,
+  Gavel,
+  GraduationCap,
   HeartHandshake,
+  Layers,
   LayoutDashboard,
   Lock,
   LogIn,
   LogOut,
   Mail,
   MapPin,
+  Megaphone,
   Phone,
   Plus,
   RefreshCw,
@@ -51,8 +56,18 @@ interface RequestItem {
   description: string;
   status: string;
   currentApproverEmail?: string;
-  tier1Approved?: boolean;
-  tier2Approved?: boolean;
+}
+
+interface AssignedTask {
+  id: string;
+  title: string;
+  category: "Legal Casework" | "Prison Unit (NAVTTC)" | "Community Camp" | "Police Training" | "Operational Task";
+  dueDateOrHearing: string;
+  venue: string;
+  hub: "Karachi" | "Hyderabad" | "Sukkur";
+  status: "Pending Action" | "In Progress" | "Completed";
+  urgency: "Urgent" | "Standard";
+  assigneeEmail: string;
 }
 
 interface StaffProfile {
@@ -64,183 +79,69 @@ interface StaffProfile {
   accessPin: string;
 }
 
-/* Verified Roster with Dedicated Unique Security PINs */
 const OFFICIAL_ROSTER: StaffProfile[] = [
+  { email: "dataplus.org@gmail.com", name: "Atif Ali", designation: "Administrator", role: "ADMIN", department: "IT / Systems", accessPin: "9901" },
+  { email: "altafkhoso.adv@gmail.com", name: "Altaf Khoso", designation: "CEO", role: "EXECUTIVE", department: "Executive Board", accessPin: "8821" },
+  { email: "rizwanapatel.plus@gmail.com", name: "Rizwana Patel", designation: "Chairperson", role: "EXECUTIVE", department: "Executive Board", accessPin: "7732" },
+  { email: "ishfaque.mojai@gmail.com", name: "Ashfaq Ali", designation: "HR & Admin Lead", role: "HR_ADMIN", department: "HR & Operations", accessPin: "4412" },
+  { email: "japheth.wilson123@gmail.com", name: "Japheth Wilson", designation: "Finance Manager", role: "FINANCE_MGR", department: "Finance", accessPin: "5523" },
+  { email: "salmahabibbhutto88@gmail.com", name: "Salma Habib Bhutto", designation: "Program Manager", role: "PROGRAM_MGR", department: "Programs", accessPin: "6634" },
+  { email: "kamanger110@gmail.com", name: "Kamanger", designation: "Field & Operations Officer", role: "GENERAL_STAFF", department: "Operations", accessPin: "3184" },
+  { email: "advazizullahazizullah@gmail.com", name: "Adv Azizullah", designation: "Legal Associate", role: "LEGAL_STAFF", department: "Legal Aid", accessPin: "2945" },
+  { email: "faizthecoach@gmail.com", name: "Faiz", designation: "Field Coordinator", role: "GENERAL_STAFF", department: "Field Ops", accessPin: "5820" },
+  { email: "saifrehman.kaloi@gmail.com", name: "Saif Rehman", designation: "Field Coordinator", role: "GENERAL_STAFF", department: "Field Ops", accessPin: "4719" },
+  { email: "salaudinlarik1@gmail.com", name: "Salaudin Larik", designation: "Team Member", role: "GENERAL_STAFF", department: "Operations", accessPin: "6291" },
+  { email: "imrankhanchang555@gmail.com", name: "Imran Khan Chang", designation: "IT / Program Support", role: "GENERAL_STAFF", department: "Programs", accessPin: "7382" },
+  { email: "waseelaqasim60@gmail.com", name: "Waseela Qasim", designation: "Program Associate", role: "GENERAL_STAFF", department: "Programs", accessPin: "3837" },
+  { email: "muskandinochanna@gmail.com", name: "Muskan Channa", designation: "Program Associate", role: "GENERAL_STAFF", department: "Programs", accessPin: "4928" },
+  { email: "kashee742@gmail.com", name: "Kashif", designation: "Operations Associate", role: "GENERAL_STAFF", department: "Operations", accessPin: "7231" },
+  { email: "arkkaloi1@gmail.com", name: "A.R. Kaloi", designation: "Operations Associate", role: "GENERAL_STAFF", department: "Operations", accessPin: "8342" },
+];
+
+const INITIAL_PORTFOLIO_TASKS: AssignedTask[] = [
   {
-    email: "dataplus.org@gmail.com",
-    name: "Atif Ali",
-    designation: "Administrator",
-    role: "ADMIN",
-    department: "IT / Systems",
-    accessPin: "9901",
+    id: "TSK-801",
+    title: "Setup Community Legal Clinic & Distribute Rights Booklets",
+    category: "Community Camp",
+    dueDateOrHearing: "2026-09-03",
+    venue: "UC Sunny Bungalows, Qasimabad",
+    hub: "Hyderabad",
+    status: "In Progress",
+    urgency: "Urgent",
+    assigneeEmail: "kamanger110@gmail.com",
   },
   {
-    email: "altafkhoso.adv@gmail.com",
-    name: "Altaf Khoso",
-    designation: "CEO",
-    role: "EXECUTIVE",
-    department: "Executive Board",
-    accessPin: "8821",
+    id: "TSK-802",
+    title: "Inspect NAVTTC Solar PV & CIT Inmate Training Labs",
+    category: "Prison Unit (NAVTTC)",
+    dueDateOrHearing: "2026-09-05",
+    venue: "Central Prison & Correctional Facility, Sukkur",
+    hub: "Sukkur",
+    status: "Pending Action",
+    urgency: "Standard",
+    assigneeEmail: "kamanger110@gmail.com",
   },
   {
-    email: "rizwanapatel.plus@gmail.com",
-    name: "Rizwana Patel",
-    designation: "Chairperson",
-    role: "EXECUTIVE",
-    department: "Executive Board",
-    accessPin: "7732",
+    id: "TSK-803",
+    title: "Bail Petition Arguments & Case Diary Submission",
+    category: "Legal Casework",
+    dueDateOrHearing: "2026-09-02",
+    venue: "Sessions Court, Sukkur",
+    hub: "Sukkur",
+    status: "In Progress",
+    urgency: "Urgent",
+    assigneeEmail: "advazizullahazizullah@gmail.com",
   },
   {
-    email: "ishfaque.mojai@gmail.com",
-    name: "Ashfaq Ali",
-    designation: "HR & Admin Lead",
-    role: "HR_ADMIN",
-    department: "HR & Operations",
-    accessPin: "4412",
-  },
-  {
-    email: "japheth.wilson123@gmail.com",
-    name: "Japheth Wilson",
-    designation: "Finance Manager",
-    role: "FINANCE_MGR",
-    department: "Finance",
-    accessPin: "5523",
-  },
-  {
-    email: "salmahabibbhutto88@gmail.com",
-    name: "Salma Habib Bhutto",
-    designation: "Program Manager",
-    role: "PROGRAM_MGR",
-    department: "Programs",
-    accessPin: "6634",
-  },
-  {
-    email: "kamanger110@gmail.com",
-    name: "Kamanger",
-    designation: "Team Member",
-    role: "GENERAL_STAFF",
-    department: "Operations",
-    accessPin: "3184",
-  },
-  {
-    email: "advazizullahazizullah@gmail.com",
-    name: "Adv Azizullah",
-    designation: "Legal Associate",
-    role: "LEGAL_STAFF",
-    department: "Legal Aid",
-    accessPin: "2945",
-  },
-  {
-    email: "faizthecoach@gmail.com",
-    name: "Faiz",
-    designation: "Field Coordinator",
-    role: "GENERAL_STAFF",
-    department: "Field Ops",
-    accessPin: "5820",
-  },
-  {
-    email: "saifrehman.kaloi@gmail.com",
-    name: "Saif Rehman",
-    designation: "Field Coordinator",
-    role: "GENERAL_STAFF",
-    department: "Field Ops",
-    accessPin: "4719",
-  },
-  {
-    email: "salaudinlarik1@gmail.com",
-    name: "Salaudin Larik",
-    designation: "Team Member",
-    role: "GENERAL_STAFF",
-    department: "Operations",
-    accessPin: "6291",
-  },
-  {
-    email: "imrankhanchang555@gmail.com",
-    name: "Imran Khan Chang",
-    designation: "IT / Program Support",
-    role: "GENERAL_STAFF",
-    department: "Programs",
-    accessPin: "7382",
-  },
-  {
-    email: "imranalimallah128@gmail.com",
-    name: "Imran Ali",
-    designation: "Team Member",
-    role: "GENERAL_STAFF",
-    department: "Operations",
-    accessPin: "8473",
-  },
-  {
-    email: "sadiqimransoomro@gmail.com",
-    name: "Imran Sadiq",
-    designation: "Team Member",
-    role: "GENERAL_STAFF",
-    department: "Operations",
-    accessPin: "9564",
-  },
-  {
-    email: "sajjadkhoso0011@gmail.com",
-    name: "Sajjad Khoso",
-    designation: "Team Member",
-    role: "GENERAL_STAFF",
-    department: "Operations",
-    accessPin: "1655",
-  },
-  {
-    email: "safiart998@gmail.com",
-    name: "Safiullah (TukTuk Art)",
-    designation: "Media Support",
-    role: "GENERAL_STAFF",
-    department: "Communications",
-    accessPin: "2746",
-  },
-  {
-    email: "waseelaqasim60@gmail.com",
-    name: "Waseela Qasim",
-    designation: "Associate",
-    role: "GENERAL_STAFF",
-    department: "Programs",
-    accessPin: "3837",
-  },
-  {
-    email: "muskandinochanna@gmail.com",
-    name: "Muskan Channa",
-    designation: "Associate",
-    role: "GENERAL_STAFF",
-    department: "Programs",
-    accessPin: "4928",
-  },
-  {
-    email: "aneesabro98@gmail.com",
-    name: "Anees Ahmed",
-    designation: "Team Member",
-    role: "GENERAL_STAFF",
-    department: "Operations",
-    accessPin: "5019",
-  },
-  {
-    email: "aakashali414@gmail.com",
-    name: "Aakash Bhurgri",
-    designation: "Team Member",
-    role: "GENERAL_STAFF",
-    department: "Operations",
-    accessPin: "6120",
-  },
-  {
-    email: "kashee742@gmail.com",
-    name: "Kashif",
-    designation: "Team Member",
-    role: "GENERAL_STAFF",
-    department: "Operations",
-    accessPin: "7231",
-  },
-  {
-    email: "arkkaloi1@gmail.com",
-    name: "A.R. Kaloi",
-    designation: "Team Member",
-    role: "GENERAL_STAFF",
-    department: "Operations",
-    accessPin: "8342",
+    id: "TSK-804",
+    title: "Juvenile Justice Act Investigation Module Delivery",
+    category: "Police Training",
+    dueDateOrHearing: "2026-09-08",
+    venue: "Malir Police Training Center, Karachi",
+    hub: "Karachi",
+    status: "Pending Action",
+    urgency: "Standard",
+    assigneeEmail: "salmahabibbhutto88@gmail.com",
   },
 ];
 
@@ -251,20 +152,21 @@ export default function WorkspacePage() {
   const [currentUser, setCurrentUser] = useState<StaffProfile | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
-  // Auth States
+  // Authentication State
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPin, setLoginPin] = useState("");
   const [authError, setAuthError] = useState("");
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
-  // App States
+  // App State
   const [requests, setRequests] = useState<RequestItem[]>([]);
+  const [tasks, setTasks] = useState<AssignedTask[]>(INITIAL_PORTFOLIO_TASKS);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"ALL" | "LEAVE" | "EXPENSE">("ALL");
-  const [processingId, setProcessingId] = useState<string | null>(null);
+  const [mainViewTab, setMainViewTab] = useState<"MY_TASKS" | "REQUESTS">("MY_TASKS");
+  const [activeRequestFilter, setActiveRequestFilter] = useState<"ALL" | "LEAVE" | "EXPENSE">("ALL");
 
-  // New Request Form Modal State
+  // Request Modal State
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
   const [formType, setFormType] = useState<"Leave" | "Expense">("Leave");
   const [formLeaveCategory, setFormLeaveCategory] = useState("Casual");
@@ -283,10 +185,7 @@ export default function WorkspacePage() {
       if (stored) {
         const u = JSON.parse(stored);
         const email = (u.email || "").toLowerCase().trim();
-        const matched = OFFICIAL_ROSTER.find(
-          (s) => s.email.toLowerCase().trim() === email
-        );
-
+        const matched = OFFICIAL_ROSTER.find((s) => s.email.toLowerCase().trim() === email);
         if (matched) {
           setCurrentUser(matched);
         } else {
@@ -294,7 +193,6 @@ export default function WorkspacePage() {
         }
       }
     } catch (e) {
-      console.warn("Session check error:", e);
       localStorage.removeItem("plus_user");
     } finally {
       setIsAuthChecking(false);
@@ -309,12 +207,10 @@ export default function WorkspacePage() {
     const emailClean = loginEmail.toLowerCase().trim();
     const pinClean = loginPin.trim();
 
-    const matchedStaff = OFFICIAL_ROSTER.find(
-      (s) => s.email.toLowerCase().trim() === emailClean
-    );
+    const matchedStaff = OFFICIAL_ROSTER.find((s) => s.email.toLowerCase().trim() === emailClean);
 
     if (!matchedStaff) {
-      setAuthError("Email address is not registered in the PLUS Roster.");
+      setAuthError("Email not found in registered PLUS Roster.");
       setIsAuthenticating(false);
       return;
     }
@@ -368,7 +264,7 @@ export default function WorkspacePage() {
         }
       }
     } catch (e) {
-      console.warn("Error loading requests:", e);
+      console.warn("Requests load fallback:", e);
     } finally {
       setLoading(false);
     }
@@ -379,37 +275,6 @@ export default function WorkspacePage() {
       fetchLiveRequests();
     }
   }, [currentUser]);
-
-  const handleAction = async (requestId: string, action: "APPROVE" | "REJECT") => {
-    if (!currentUser) return;
-    setProcessingId(requestId);
-    try {
-      const res = await fetch("/api/requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "UPDATE_STATUS",
-          requestId,
-          status: action === "APPROVE" ? "Approved" : "Rejected",
-          reviewerEmail: currentUser.email,
-        }),
-      });
-
-      if (res.ok) {
-        setRequests((prev) =>
-          prev.map((r) =>
-            r.id === requestId
-              ? { ...r, status: action === "APPROVE" ? "Approved" : "Rejected" }
-              : r
-          )
-        );
-      }
-    } catch (err) {
-      console.error("Action error:", err);
-    } finally {
-      setProcessingId(null);
-    }
-  };
 
   const handleCreateRequest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -451,96 +316,55 @@ export default function WorkspacePage() {
         setFormAmount(0);
       }, 1500);
     } catch (err) {
-      console.error("Submit error:", err);
+      console.error(err);
     } finally {
       setSubmittingForm(false);
     }
   };
 
-  const userVisibleRequests = useMemo(() => {
+  // User's Direct Deliverable Tasks & Program Portfolios
+  const userTasks = useMemo(() => {
+    if (!currentUser) return [];
+    if (isAdminOrExec) return tasks;
+    return tasks.filter(
+      (t) => t.assigneeEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim()
+    );
+  }, [tasks, currentUser, isAdminOrExec]);
+
+  // User's Leave & Expense Requests
+  const userRequests = useMemo(() => {
     if (!currentUser) return [];
     if (isAdminOrExec) return requests;
     return requests.filter(
-      (r) =>
-        (r.requesterEmail || "").toLowerCase().trim() ===
-        currentUser.email.toLowerCase().trim()
+      (r) => r.requesterEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim()
     );
   }, [requests, currentUser, isAdminOrExec]);
 
-  const stats = useMemo(() => {
-    if (!currentUser) {
-      return { totalCount: 0, pendingCount: 0, approvedPkrVolume: 0, actionList: [] };
-    }
-
-    const totalCount = userVisibleRequests.length;
-    const pendingCount = userVisibleRequests.filter(
-      (r) =>
-        r.status &&
-        (r.status.toLowerCase().includes("pending") ||
-          r.status.toLowerCase().includes("review") ||
-          r.status.toLowerCase().includes("submitted"))
-    ).length;
-
-    const approvedPkrVolume = userVisibleRequests
-      .filter((r) => {
-        const st = (r.status || "").toLowerCase();
-        return st.includes("approved") && Number(r.amount) > 0;
-      })
-      .reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
-
-    const actionList = requests.filter((r) => {
-      const pendingTo = (r.currentApproverEmail || "").toLowerCase().trim();
-      const myEmail = currentUser.email.toLowerCase().trim();
-      const st = (r.status || "").toLowerCase();
-      const isPending = !st.includes("approved") && !st.includes("rejected");
-      return (isAdminOrExec || pendingTo === myEmail) && isPending;
-    });
-
-    return {
-      totalCount,
-      pendingCount,
-      approvedPkrVolume,
-      actionList,
-    };
-  }, [userVisibleRequests, requests, currentUser, isAdminOrExec]);
-
   const filteredRequests = useMemo(() => {
-    return userVisibleRequests.filter((req) => {
+    return userRequests.filter((req) => {
       const q = searchQuery.toLowerCase().trim();
       const matchesSearch =
         !q ||
         req.requesterName?.toLowerCase().includes(q) ||
-        req.requesterEmail?.toLowerCase().includes(q) ||
         req.description?.toLowerCase().includes(q) ||
         req.id?.toLowerCase().includes(q);
 
       const type = (req.requestType || "").toLowerCase();
-      const desc = (req.description || "").toLowerCase();
-      const isLeave = type.includes("leave") || desc.includes("leave");
-      const isExpense = type.includes("expense") || Number(req.amount) > 0;
-
-      if (activeTab === "LEAVE") {
-        return matchesSearch && isLeave;
-      }
-      if (activeTab === "EXPENSE") {
-        return matchesSearch && isExpense;
-      }
+      if (activeRequestFilter === "LEAVE") return matchesSearch && type.includes("leave");
+      if (activeRequestFilter === "EXPENSE") return matchesSearch && (type.includes("expense") || Number(req.amount) > 0);
       return matchesSearch;
     });
-  }, [userVisibleRequests, searchQuery, activeTab]);
+  }, [userRequests, searchQuery, activeRequestFilter]);
 
   if (isAuthChecking) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f8fafc]">
-        <div className="flex flex-col items-center gap-3">
-          <img src={OFFICIAL_LOGO_URL} alt="PLUS Logo" className="h-16 w-auto animate-pulse" />
-          <p className="text-xs font-bold text-[#1b365d]">Verifying Security Access...</p>
-        </div>
+        <img src={OFFICIAL_LOGO_URL} alt="PLUS Logo" className="h-16 w-auto animate-pulse" />
       </div>
     );
   }
 
-  // Security Login Screen
+  // Login Gate
   if (!currentUser) {
     return (
       <div className="flex min-h-screen flex-col justify-between bg-[#f8fafc] text-slate-900">
@@ -554,9 +378,7 @@ export default function WorkspacePage() {
                 Pakistan Legal United Society
               </h2>
               <p className="text-xs font-bold text-[#c65a28] font-serif">انصاف سب کا حق ہے</p>
-              <p className="mt-1 text-xs text-slate-500">
-                Authorized Personnel Authentication Gate
-              </p>
+              <p className="mt-1 text-xs text-slate-500">Authorized Personnel Authentication Gate</p>
             </div>
 
             <form onSubmit={handleAuthenticate} className="mt-6 space-y-4">
@@ -579,7 +401,7 @@ export default function WorkspacePage() {
 
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
-                  Personal Security Access PIN
+                  Personal Security PIN
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
@@ -612,9 +434,8 @@ export default function WorkspacePage() {
             </form>
           </div>
         </div>
-
         <footer className="border-t border-slate-200 bg-[#1b365d] py-4 text-center text-[11px] text-slate-300">
-          Pakistan Legal United Society · Operational & Approval System
+          Pakistan Legal United Society · Operations & Legal Aid Hub
         </footer>
       </div>
     );
@@ -622,16 +443,12 @@ export default function WorkspacePage() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col justify-between">
-      {/* Top Navbar */}
+      {/* Top Header */}
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-2xs">
         <div className="container mx-auto flex max-w-7xl items-center justify-between px-4 py-2 sm:px-6">
           <div className="flex items-center gap-3.5">
             <div className="flex items-center rounded-xl bg-[#1b365d] p-1.5 shadow-xs">
-              <img
-                src={OFFICIAL_LOGO_URL}
-                alt="Pakistan Legal United Society Logo"
-                className="h-10 w-auto object-contain"
-              />
+              <img src={OFFICIAL_LOGO_URL} alt="PLUS Logo" className="h-10 w-auto object-contain" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -643,7 +460,7 @@ export default function WorkspacePage() {
                 </span>
               </div>
               <p className="text-[11px] font-medium text-slate-500">
-                Operations, Governance & Multi-Tier Approval Workspace
+                Operations, Programs & Governance Hub
               </p>
             </div>
           </div>
@@ -664,7 +481,7 @@ export default function WorkspacePage() {
         </div>
       </header>
 
-      {/* Main Layout */}
+      {/* Main Workspace */}
       <main className="container mx-auto max-w-7xl flex-1 px-4 py-8 sm:px-6">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           {/* Left Navigation Sidebar */}
@@ -679,35 +496,25 @@ export default function WorkspacePage() {
 
             <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-xs">
               <span className="block px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                Secure Workspace
+                Operational Modules
               </span>
               <nav className="space-y-1">
                 <button
-                  onClick={() => setActiveTab("ALL")}
+                  onClick={() => setMainViewTab("MY_TASKS")}
                   className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-bold transition text-left cursor-pointer ${
-                    activeTab === "ALL"
-                      ? "bg-[#1b365d] text-white shadow-xs"
-                      : "text-slate-700 hover:bg-slate-100"
+                    mainViewTab === "MY_TASKS" ? "bg-[#1b365d] text-white shadow-xs" : "text-slate-700 hover:bg-slate-100"
                   }`}
                 >
                   <LayoutDashboard className="h-4 w-4 text-[#fad207]" />
-                  <span>My Operations Requests</span>
+                  <span>My Active Work & Tasks</span>
                 </button>
 
                 <Link
-                  href="/directory"
+                  href="/programs"
                   className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
                 >
-                  <Users className="h-4 w-4 text-[#c65a28]" />
-                  <span>Staff Directory</span>
-                </Link>
-
-                <Link
-                  href="/timesheets"
-                  className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
-                >
-                  <Clock className="h-4 w-4 text-[#e59a24]" />
-                  <span>Staff Timesheets</span>
+                  <HeartHandshake className="h-4 w-4 text-[#c65a28]" />
+                  <span>Program Operations</span>
                 </Link>
 
                 <Link
@@ -719,14 +526,21 @@ export default function WorkspacePage() {
                 </Link>
 
                 <Link
-                  href="/programs"
+                  href="/timesheets"
                   className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
                 >
-                  <HeartHandshake className="h-4 w-4 text-[#c65a28]" />
-                  <span>Program Operations</span>
+                  <Clock className="h-4 w-4 text-[#e59a24]" />
+                  <span>Staff Timesheets</span>
                 </Link>
 
-                {/* Executive Analytics - Exclusively Visible for Admin & Executive Roles */}
+                <Link
+                  href="/directory"
+                  className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
+                >
+                  <Users className="h-4 w-4 text-slate-500" />
+                  <span>Staff Directory</span>
+                </Link>
+
                 {isAdminOrExec && (
                   <Link
                     href="/analytics"
@@ -739,35 +553,22 @@ export default function WorkspacePage() {
 
                 <div className="border-t border-slate-100 my-2 pt-2">
                   <span className="block px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Quick Filters
+                    Operations Claims
                   </span>
                   <button
-                    onClick={() => setActiveTab("LEAVE")}
+                    onClick={() => setMainViewTab("REQUESTS")}
                     className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2 text-xs font-semibold transition text-left cursor-pointer ${
-                      activeTab === "LEAVE"
-                        ? "bg-[#1b365d] text-white font-bold"
-                        : "text-slate-600 hover:bg-slate-100"
+                      mainViewTab === "REQUESTS" ? "bg-[#1b365d] text-white font-bold" : "text-slate-600 hover:bg-slate-100"
                     }`}
                   >
-                    <Calendar className="h-3.5 w-3.5 text-[#fad207]" />
-                    <span>Leave Applications</span>
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("EXPENSE")}
-                    className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2 text-xs font-semibold transition text-left cursor-pointer ${
-                      activeTab === "EXPENSE"
-                        ? "bg-[#1b365d] text-white font-bold"
-                        : "text-slate-600 hover:bg-slate-100"
-                    }`}
-                  >
-                    <TrendingUp className="h-3.5 w-3.5 text-[#c65a28]" />
-                    <span>Expense Claims</span>
+                    <FileText className="h-3.5 w-3.5 text-[#fad207]" />
+                    <span>My Leave & Expense Claims</span>
                   </button>
                 </div>
               </nav>
             </div>
 
-            {/* Leave Balance Overview */}
+            {/* Leave Balance Overview Widget */}
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
@@ -782,254 +583,243 @@ export default function WorkspacePage() {
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="rounded-xl border border-slate-100 bg-[#f8fafc] p-2.5">
                   <span className="text-[10px] font-bold uppercase text-slate-400">Casual</span>
-                  <p className="text-base font-bold text-[#1b365d]">
-                    5<span className="text-[10px] text-slate-400 font-normal">/5</span>
-                  </p>
+                  <p className="text-base font-bold text-[#1b365d]">5<span className="text-[10px] text-slate-400 font-normal">/5</span></p>
                 </div>
-
                 <div className="rounded-xl border border-slate-100 bg-[#f8fafc] p-2.5">
                   <span className="text-[10px] font-bold uppercase text-slate-400">Annual</span>
-                  <p className="text-base font-bold text-[#1b365d]">
-                    5<span className="text-[10px] text-slate-400 font-normal">/5</span>
-                  </p>
+                  <p className="text-base font-bold text-[#1b365d]">5<span className="text-[10px] text-slate-400 font-normal">/5</span></p>
                 </div>
-
                 <div className="rounded-xl border border-slate-100 bg-[#f8fafc] p-2.5">
                   <span className="text-[10px] font-bold uppercase text-slate-400">Sick</span>
-                  <p className="text-base font-bold text-[#1b365d]">
-                    2<span className="text-[10px] text-slate-400 font-normal">/2</span>
-                  </p>
+                  <p className="text-base font-bold text-[#1b365d]">2<span className="text-[10px] text-slate-400 font-normal">/2</span></p>
                 </div>
               </div>
             </div>
           </aside>
 
-          {/* Right Main Stream */}
+          {/* Right Workspace Main Panel */}
           <div className="lg:col-span-9 space-y-6">
-            {/* Executive & Admin Action Required Desk */}
-            {isAdminOrExec && stats.actionList.length > 0 && (
-              <div className="rounded-2xl border border-[#fad207]/60 bg-[#fad207]/15 p-5 shadow-2xs">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-xl bg-[#fad207] p-2 text-[#1b365d] shrink-0 mt-0.5 shadow-xs">
-                      <AlertTriangle className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-[#1b365d]">
-                        Action Required by You ({stats.actionList.length})
-                      </h3>
-                      <p className="text-xs text-slate-600 mt-0.5">
-                        You have pending authorization authority over {stats.actionList.length} request(s).
-                      </p>
-                    </div>
-                  </div>
-
-                  <span className="rounded-full bg-[#1b365d] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#fad207]">
-                    Executive Privileges
-                  </span>
-                </div>
-
-                <div className="mt-4 space-y-2.5 pt-3 border-t border-[#fad207]/40">
-                  {stats.actionList.slice(0, 3).map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl bg-white p-3.5 shadow-2xs border border-slate-200"
-                    >
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-[#1b365d]">
-                            {item.id}
-                          </span>
-                          <span className="text-xs font-bold text-slate-800">
-                            {item.requesterName}
-                          </span>
-                          <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">
-                            {item.requestType}
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-600 line-clamp-1 mt-0.5">
-                          {item.description}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-2 shrink-0">
-                        <button
-                          onClick={() => handleAction(item.id, "REJECT")}
-                          disabled={processingId === item.id}
-                          className="inline-flex items-center gap-1 rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-[#b82626] hover:bg-red-100 cursor-pointer disabled:opacity-50"
-                        >
-                          <XCircle className="h-3.5 w-3.5" />
-                          Reject
-                        </button>
-                        <button
-                          onClick={() => handleAction(item.id, "APPROVE")}
-                          disabled={processingId === item.id}
-                          className="inline-flex items-center gap-1 rounded-xl bg-[#1b365d] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[#122440] shadow-xs cursor-pointer disabled:opacity-50"
-                        >
-                          <CheckCircle2 className="h-3.5 w-3.5 text-[#fad207]" />
-                          Approve
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Header */}
+            {/* Header with Direct Quick Actions */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#c65a28]">
                   {currentUser.role} WORKSPACE · {currentUser.department}
                 </span>
                 <h2 className="text-2xl font-bold tracking-tight text-[#1b365d]">
-                  {activeTab === "LEAVE"
-                    ? "Leave Applications."
-                    : activeTab === "EXPENSE"
-                    ? "Expense Claims."
-                    : "Operations Requests."}
+                  Welcome back, {currentUser.name}.
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Showing operational activities and verified sheet records.
+                  Active deliverable portfolio and institutional casework tracking.
                 </p>
               </div>
 
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsApplyModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#1b365d] px-3.5 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-[#122440] cursor-pointer"
+                <Link
+                  href="/timesheets"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50"
+                >
+                  <Clock className="h-3.5 w-3.5 text-[#e59a24]" />
+                  <span>Log Work Hours</span>
+                </Link>
+                <Link
+                  href="/programs"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#1b365d] px-3.5 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-[#122440]"
                 >
                   <Plus className="h-3.5 w-3.5 text-[#fad207]" />
-                  <span>+ New Request</span>
-                </button>
-                <button
-                  onClick={fetchLiveRequests}
-                  disabled={loading}
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 cursor-pointer"
-                >
-                  <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-                  <span>Sync</span>
-                </button>
+                  <span>Log Program Activity</span>
+                </Link>
               </div>
             </div>
 
-            {/* Metric KPI Cards */}
+            {/* KPI Cards: Dynamic Portfolio Metrics */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
                 <div className="flex items-center justify-between text-slate-400">
-                  <span className="text-[11px] font-bold uppercase tracking-wider">Queue Total</span>
-                  <FileText className="h-4 w-4 text-[#1b365d]" />
+                  <span className="text-[11px] font-bold uppercase tracking-wider">Active Tasks</span>
+                  <Activity className="h-4 w-4 text-[#1b365d]" />
                 </div>
-                <p className="mt-2 text-2xl font-bold text-[#1b365d]">{stats.totalCount}</p>
+                <p className="mt-2 text-2xl font-bold text-[#1b365d]">{userTasks.length}</p>
+                <span className="text-[10px] text-slate-500">Assigned deliverables</span>
               </div>
 
               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
                 <div className="flex items-center justify-between text-slate-400">
-                  <span className="text-[11px] font-bold uppercase tracking-wider">Pending</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider">Due This Week</span>
+                  <Calendar className="h-4 w-4 text-[#c65a28]" />
+                </div>
+                <p className="mt-2 text-2xl font-bold text-[#c65a28]">
+                  {userTasks.filter((t) => t.urgency === "Urgent").length} Urgent
+                </p>
+                <span className="text-[10px] text-slate-500">Camps & hearings</span>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                <div className="flex items-center justify-between text-slate-400">
+                  <span className="text-[11px] font-bold uppercase tracking-wider">Logged Hours</span>
                   <Clock className="h-4 w-4 text-[#e59a24]" />
                 </div>
-                <p className="mt-2 text-2xl font-bold text-[#e59a24]">{stats.pendingCount}</p>
+                <p className="mt-2 text-2xl font-bold text-[#e59a24]">37.5 hrs</p>
+                <span className="text-[10px] text-slate-500">Current cycle</span>
               </div>
 
               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
                 <div className="flex items-center justify-between text-slate-400">
-                  <span className="text-[11px] font-bold uppercase tracking-wider">Approved PKR</span>
-                  <CheckCircle2 className="h-4 w-4 text-[#1b365d]" />
+                  <span className="text-[11px] font-bold uppercase tracking-wider">Open Claims</span>
+                  <FileText className="h-4 w-4 text-emerald-600" />
                 </div>
-                <p className="mt-2 text-xl font-bold text-[#1b365d]">
-                  Rs {stats.approvedPkrVolume.toLocaleString("en-PK")}
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                <div className="flex items-center justify-between text-slate-400">
-                  <span className="text-[11px] font-bold uppercase tracking-wider">&gt;48h Warnings</span>
-                  <ShieldAlert className="h-4 w-4 text-[#b82626]" />
-                </div>
-                <p className="mt-2 text-2xl font-bold text-[#b82626]">0</p>
+                <p className="mt-2 text-2xl font-bold text-emerald-600">{userRequests.length}</p>
+                <span className="text-[10px] text-slate-500">Leave/Expense queue</span>
               </div>
             </div>
 
-            {/* Search and Request Feed */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search requests by ID, purpose, or details..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-4 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
-                />
-              </div>
+            {/* Main Interactive Work View */}
+            {mainViewTab === "MY_TASKS" ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">
+                    My Program & Casework Deliverables ({userTasks.length})
+                  </h3>
+                  <span className="text-xs text-slate-500">Updated from verified project milestones</span>
+                </div>
 
-              {loading ? (
-                <div className="py-12 text-center text-xs text-slate-500">
-                  Loading verified records from sheet...
-                </div>
-              ) : filteredRequests.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-slate-200 py-12 text-center text-xs text-slate-500">
-                  No active operations requests found. Click <strong>"+ New Request"</strong> to apply for Leave or Expenses.
-                </div>
-              ) : (
                 <div className="space-y-3">
-                  {filteredRequests.map((req) => (
+                  {userTasks.map((task) => (
                     <div
-                      key={req.id}
-                      className="rounded-xl border border-slate-100 bg-[#f8fafc] p-4 transition hover:border-[#1b365d]/40 hover:bg-white hover:shadow-2xs"
+                      key={task.id}
+                      className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-[#1b365d] space-y-3"
                     >
-                      <div className="flex items-start justify-between gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-[11px] font-bold text-[#1b365d]">
-                              {req.id}
+                            <span className="font-mono text-xs font-bold text-[#1b365d]">{task.id}</span>
+                            <span className="rounded-md bg-[#1b365d]/10 px-2 py-0.5 text-[10px] font-bold text-[#1b365d]">
+                              {task.category}
                             </span>
-                            <span
-                              className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                                req.requestType === "Expense"
-                                  ? "bg-[#e59a24]/15 text-[#c65a28]"
-                                  : "bg-[#1b365d]/10 text-[#1b365d]"
-                              }`}
-                            >
-                              {req.requestType}
+                            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                              {task.hub} Regional
                             </span>
                           </div>
-                          <h4 className="mt-1 text-xs font-bold text-slate-900">
-                            {req.requesterName} ({req.requesterEmail})
-                          </h4>
-                          <p className="mt-1 text-xs text-slate-600">{req.description}</p>
+                          <h4 className="mt-1 text-sm font-bold text-slate-900">{task.title}</h4>
                         </div>
 
-                        <div className="text-right shrink-0">
-                          {req.amount && Number(req.amount) > 0 ? (
-                            <span className="text-sm font-bold text-[#1b365d]">
-                              PKR {Number(req.amount).toLocaleString("en-PK")}
-                            </span>
-                          ) : (
-                            <span className="text-xs font-bold text-[#1b365d]">
-                              {req.days || 1} Day(s) Leave
+                        <div className="flex items-center gap-2 shrink-0">
+                          {task.urgency === "Urgent" && (
+                            <span className="rounded-full bg-red-50 border border-red-200 px-2.5 py-0.5 text-[10px] font-bold text-[#b82626]">
+                              Urgent Due Date
                             </span>
                           )}
-                          <div className="mt-1">
-                            <span
-                              className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${
-                                (req.status || "").toLowerCase().includes("approved")
-                                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                  : (req.status || "").toLowerCase().includes("rejected")
-                                  ? "bg-red-50 text-red-700 border border-red-200"
-                                  : "bg-amber-50 text-amber-700 border border-amber-200"
-                              }`}
-                            >
-                              {req.status || "Submitted"}
-                            </span>
+                          <span className="rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[10px] font-bold text-amber-700">
+                            {task.status}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="border-t border-slate-100 pt-3 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-600 gap-2">
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-1.5">
+                            <MapPin className="h-3.5 w-3.5 text-[#c65a28]" />
+                            <span>{task.venue}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                            <span>Target Date: <strong className="text-slate-800">{task.dueDateOrHearing}</strong></span>
                           </div>
                         </div>
+
+                        <Link
+                          href={task.category.includes("Legal") ? "/cases" : "/programs"}
+                          className="inline-flex items-center gap-1 text-xs font-bold text-[#1b365d] hover:text-[#c65a28]"
+                        >
+                          <span>Open Module & Log Output</span>
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </Link>
                       </div>
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              /* Operations Requests Tab */
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Search requests by purpose, amount, or ID..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-4 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setActiveRequestFilter("ALL")}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
+                        activeRequestFilter === "ALL" ? "bg-[#1b365d] text-white" : "text-slate-600 hover:bg-slate-100"
+                      }`}
+                    >
+                      All
+                    </button>
+                    <button
+                      onClick={() => setActiveRequestFilter("LEAVE")}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
+                        activeRequestFilter === "LEAVE" ? "bg-[#1b365d] text-white" : "text-slate-600 hover:bg-slate-100"
+                      }`}
+                    >
+                      Leave
+                    </button>
+                    <button
+                      onClick={() => setActiveRequestFilter("EXPENSE")}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
+                        activeRequestFilter === "EXPENSE" ? "bg-[#1b365d] text-white" : "text-slate-600 hover:bg-slate-100"
+                      }`}
+                    >
+                      Expenses
+                    </button>
+                  </div>
+                </div>
+
+                {filteredRequests.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-slate-200 py-12 text-center text-xs text-slate-500">
+                    No active operations requests. Click <strong>"+ Apply for Leave / Expense"</strong> on the left.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredRequests.map((req) => (
+                      <div
+                        key={req.id}
+                        className="rounded-xl border border-slate-100 bg-[#f8fafc] p-4 transition hover:border-[#1b365d]/40 hover:bg-white hover:shadow-2xs"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-[11px] font-bold text-[#1b365d]">{req.id}</span>
+                              <span className="rounded-md bg-slate-200 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-700">
+                                {req.requestType}
+                              </span>
+                            </div>
+                            <h4 className="mt-1 text-xs font-bold text-slate-900">{req.description}</h4>
+                          </div>
+                          <div className="text-right shrink-0">
+                            {req.amount ? (
+                              <span className="text-sm font-bold text-[#1b365d]">PKR {Number(req.amount).toLocaleString("en-PK")}</span>
+                            ) : (
+                              <span className="text-xs font-bold text-[#1b365d]">{req.days || 1} Day(s) Leave</span>
+                            )}
+                            <div className="mt-1">
+                              <span className="rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[10px] font-semibold text-amber-700">
+                                {req.status}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </main>
@@ -1042,27 +832,21 @@ export default function WorkspacePage() {
               <div>
                 <h3 className="text-base font-bold text-[#1b365d]">New Operations Request</h3>
                 <p className="text-[11px] text-slate-500">
-                  Submitting as: <span className="font-semibold text-slate-800">{currentUser.name}</span> ({currentUser.email})
+                  Submitting as: <strong className="text-slate-800">{currentUser.name}</strong> ({currentUser.email})
                 </p>
               </div>
-              <button
-                onClick={() => setIsApplyModalOpen(false)}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 cursor-pointer"
-              >
+              <button onClick={() => setIsApplyModalOpen(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <form onSubmit={handleCreateRequest} className="space-y-4">
-              {/* Type Toggle */}
               <div className="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
                 <button
                   type="button"
                   onClick={() => setFormType("Leave")}
                   className={`rounded-lg py-2 text-xs font-bold transition cursor-pointer ${
-                    formType === "Leave"
-                      ? "bg-white text-[#1b365d] shadow-2xs"
-                      : "text-slate-600 hover:text-slate-900"
+                    formType === "Leave" ? "bg-white text-[#1b365d] shadow-2xs" : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   Apply for Leave
@@ -1071,9 +855,7 @@ export default function WorkspacePage() {
                   type="button"
                   onClick={() => setFormType("Expense")}
                   className={`rounded-lg py-2 text-xs font-bold transition cursor-pointer ${
-                    formType === "Expense"
-                      ? "bg-white text-[#1b365d] shadow-2xs"
-                      : "text-slate-600 hover:text-slate-900"
+                    formType === "Expense" ? "bg-white text-[#1b365d] shadow-2xs" : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   Expense / Reimbursement
@@ -1099,9 +881,7 @@ export default function WorkspacePage() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
-                        Start Date
-                      </label>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Start Date</label>
                       <input
                         type="date"
                         value={formStartDate}
@@ -1111,9 +891,7 @@ export default function WorkspacePage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
-                        End Date
-                      </label>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">End Date</label>
                       <input
                         type="date"
                         value={formEndDate}
@@ -1125,9 +903,7 @@ export default function WorkspacePage() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
-                      Total Days
-                    </label>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Total Days</label>
                     <input
                       type="number"
                       min="1"
@@ -1142,9 +918,7 @@ export default function WorkspacePage() {
               ) : (
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
-                      Expense Category
-                    </label>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Expense Category</label>
                     <select
                       value={formExpenseCategory}
                       onChange={(e) => setFormExpenseCategory(e.target.value)}
@@ -1158,9 +932,7 @@ export default function WorkspacePage() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
-                      Amount Requested (PKR)
-                    </label>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Amount Requested (PKR)</label>
                     <input
                       type="number"
                       min="100"
@@ -1176,13 +948,11 @@ export default function WorkspacePage() {
               )}
 
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
-                  Reason & Operational Justification
-                </label>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Reason & Justification</label>
                 <textarea
                   rows={3}
                   required
-                  placeholder="Detail the case matter, field trip, or leave purpose..."
+                  placeholder="Detail the deliverable, field trip, or leave purpose..."
                   value={formDescription}
                   onChange={(e) => setFormDescription(e.target.value)}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden resize-none"
@@ -1209,7 +979,7 @@ export default function WorkspacePage() {
                     className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#1b365d] py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#122440] disabled:opacity-50 cursor-pointer"
                   >
                     <Send className="h-3.5 w-3.5 text-[#fad207]" />
-                    <span>{submittingForm ? "Routing..." : "Submit to Approvers"}</span>
+                    <span>{submittingForm ? "Routing..." : "Submit Claim"}</span>
                   </button>
                 </div>
               )}
@@ -1241,19 +1011,11 @@ export default function WorkspacePage() {
             <div className="space-y-4 md:col-span-4">
               <div className="flex items-center gap-3">
                 <div className="rounded-xl bg-[#1b365d] p-1.5 border border-white/10 shadow-md inline-block">
-                  <img
-                    src={OFFICIAL_LOGO_URL}
-                    alt="Pakistan Legal United Society Logo"
-                    className="h-12 w-auto object-contain"
-                  />
+                  <img src={OFFICIAL_LOGO_URL} alt="PLUS Logo" className="h-12 w-auto object-contain" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold tracking-tight text-white">
-                    Pakistan Legal United Society
-                  </h3>
-                  <p className="text-[12px] font-bold text-[#fad207]">
-                    انصاف سب کا حق ہے
-                  </p>
+                  <h3 className="text-sm font-bold tracking-tight text-white">Pakistan Legal United Society</h3>
+                  <p className="text-[12px] font-bold text-[#fad207]">انصاف سب کا حق ہے</p>
                 </div>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed max-w-sm">
