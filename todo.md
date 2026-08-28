@@ -1,0 +1,127 @@
+# Project TODO
+
+- [x] Replace the inherited Vite scaffold with a Next.js App Router and Tailwind CSS project foundation.
+- [x] Add validated server-side environment configuration and the `.env.local.example` template.
+- [x] Implement NextAuth.js Google OAuth with allowlist-based admin authorization through `ADMIN_EMAILS`.
+- [x] Implement Google Sheets API v4 service-account access with a secure normalized request schema.
+- [x] Implement a server-side request submission API with authentication, validation, and audit fields.
+- [x] Implement a server-side personal-request query that returns only the authenticated staff member’s records.
+- [x] Implement server-side executive request queries, KPI aggregation, and protected decision-saving actions.
+- [x] Implement decision emails with Resend or Gmail SMTP through Nodemailer and resilient notification handling.
+- [x] Build the responsive Staff Request Portal with authenticated submission and personal-status views.
+- [x] Build the responsive Executive Decision Cockpit with KPI cards, review table, and inline decision remarks.
+- [x] Apply the PLUS design system using deep navy, slate grey, emerald, crimson, off-white, and Lucide icons.
+- [x] Add automated tests for authorization, request filtering, validation, and decision permissions.
+- [x] Run type, lint, test, and production-build verification; resolve any issues.
+- [x] Write the README with free-tier Vercel deployment, Google OAuth, service-account, spreadsheet-sharing, and email setup instructions.
+- [x] Replace direct Google Sheets API service-account calls with a server-side proxy to the supplied Google Apps Script Webhook endpoint.
+- [x] Normalize Webhook GET responses and preserve staff-only request visibility in the internal `/api/requests` handler.
+- [x] Send the deployed Webhook’s required `SUBMIT` and `DECISION` text/plain mutation payloads with redirect following enabled.
+- [x] Update the staff form and executive cockpit to collect and pass the deployed Webhook payload fields.
+- [x] Add Webhook proxy tests and update environment/deployment instructions for the endpoint configuration.
+- [x] Re-run type, lint, test, build, and preview verification after the Webhook integration.
+- [x] Resolve the preview runtime error triggered when the authentication configuration is incomplete and re-verify the public landing page.
+- [x] Configure the managed local preview origin to remove the development-only Next.js cross-origin warning.
+- [x] Add a clearly labelled preview-only Demo Login option for the requested executive and staff identities.
+- [x] Add signed demo-session handling and ensure server-side staff filtering and executive decisions respect the selected demo role.
+- [x] Guarantee that demo login is disabled in production builds and Google OAuth remains the production authentication path.
+- [x] Add demo role-switcher tests and perform authenticated preview verification of the staff portal and executive cockpit.
+- [x] Refresh the development preview after the production build and confirm its bundle manifest loads cleanly.
+- [x] Ensure the server-side `DECISION` Webhook payload includes `staffEmail`, `staffName`, and `requestType` for native Apps Script MailApp dispatch.
+- [x] Remove Nodemailer and Resend decision-email delivery from the Next.js backend and remove local email transport warning states from the executive cockpit.
+- [x] Update tests and deployment guidance for Apps Script-native email dispatch, then re-run quality and preview checks.
+- [x] Refresh the development preview after final production validation and confirm the executive demo cockpit renders and hydrates correctly.
+- [x] Configure the supplied Google OAuth and NextAuth production credentials securely in the project environment.
+- [x] Remove preview-only Demo Login controls, demo-session routes, and demo authentication pathways from the application.
+- [x] Preserve server-side `ADMIN_EMAILS` enforcement so `dataplus.org@gmail.com` routes to the Executive Decision Cockpit and all other authenticated users route to the Staff Request Portal.
+- [x] Add an embedded circular PLUS seal to the login hero and authenticated navigation header.
+- [x] Update production deployment guidance and tests, then verify the production application build and route behavior.
+- [x] Refresh the development preview after the final production build and confirm the PLUS seal and sign-in layout render with the active stylesheet.
+- [x] Configure the supplied `NEXTAUTH_URL` production fallback and use environment-provided Vercel URL detection without trusting arbitrary request hosts.
+- [x] Add automated coverage for URL resolution and verify the Google provider under the environment-aware configuration.
+- [x] Document the exact Manus preview and Vercel production Google OAuth callback URIs.
+- [x] Replace the Google OAuth client secret with the corrected production value supplied by the portal administrator.
+- [x] Restart and verify NextAuth no longer reports a missing `NEXTAUTH_URL` warning at runtime.
+- [x] Validate the live Google provider endpoint and production build using the corrected OAuth configuration.
+- [x] Use secure environment-scoped `NEXTAUTH_URL` and `VERCEL_URL` callback handling for the registered preview and production hosts instead of trusting forwarded-host headers.
+- [x] Verify whether NextAuth v4 supports per-request callback origins without unsafe shared environment mutation; retain static environment scoping if it does not.
+- [x] Add regression tests and document the safe multi-environment OAuth callback configuration.
+- [x] Set the current project environment `NEXTAUTH_URL` to the registered Manus preview origin.
+- [x] Document that Vercel Production must use `NEXTAUTH_URL=https://plus-operations.vercel.app` rather than the preview origin.
+- [x] Verify the active preview provider endpoint after the environment-specific URL update.
+- [x] Inspect and safely integrate the supplied official PLUS logo image URL.
+- [x] Replace the embedded seal in the login hero and shared authenticated navigation header with the official PLUS logo.
+- [x] Verify the official logo presentation at desktop and mobile widths using the supplied official source URL, then re-run quality checks.
+- [x] Add the registered Manus preview host to Next.js development origin configuration and re-verify the official logo loads without a cross-origin preview warning.
+- [x] Replace the Apps Script endpoint configuration with the newly deployed PLUS Web App URL.
+- [x] Query `GET_ROSTER` during Google OAuth sign-in and deny accounts not listed as Active in the staff roster.
+- [x] Establish server-enforced ADMIN, EXECUTIVE, HR_ADMIN, FINANCE_MGR, PROGRAM_MGR, and GENERAL_STAFF role handling from roster data.
+- [x] Route roles to protected queue views and retain general-staff personal submissions only.
+- [x] Add the ADMIN and EXECUTIVE task-assignment workflow with an active roster selector, notes, and `ASSIGN_TASK` delivery.
+- [x] Retain the official PLUS logo across the sign-in and authenticated navigation surfaces.
+- [x] Add RBAC and task-assignment regression coverage, then run type checks, tests, linting, production build, and responsive preview review.
+- [x] Treat presence in the server-filtered `GET_ROSTER` response as the Active authorization criterion and deny all non-roster Google accounts.
+- [x] Defer independent authenticated browser automation at the administrator’s direction; the administrator independently verified the live Google OAuth sign-in flow and roster API authentication, while automated RBAC coverage and public responsive checks are retained.
+- [x] Incorporate the administrator’s completed live Google OAuth and roster-authentication verification into the final RBAC validation record.
+- [x] Create a durable final validation record covering automated RBAC checks, public responsive review, and administrator-confirmed live OAuth/roster verification.
+- [x] Correct the roster-derived ADMIN identity from plusdata.org@gmail.com to dataplus.org@gmail.com and verify full administrator capabilities.
+- [x] Verify that the Admin and Executive task-assignment selector dynamically includes every active member from the refreshed Apps Script `GET_ROSTER` response.
+- [x] Remove the stale Vite static-output deployment assumption so the Next.js application deploys without expecting `dist/public`.
+- [x] Verify the corrected production deployment artifact configuration, then save a publish-ready checkpoint.
+- [x] Confirm the managed deployment succeeds using the standalone Next.js container and no longer expects `dist/public`.
+- [x] Send task assignments with the exact Apps Script `assignedToEmail` and `taskNotes` payload keys.
+- [x] Block task-assignment submission when no roster assignee has been selected and add regression coverage.
+- [x] Run release checks and deploy the corrected task-assignment payload.
+- [x] Save and verify the managed deployment containing the corrected `assignedToEmail` and `taskNotes` assignment payload; the production domain remains reachable after the auto-publish checkpoint.
+- [x] Confirm managed publishing succeeds for the checkpoint containing the exact assignment payload change.
+- [x] Investigate the observed Apps Script task-assignment response without creating or emailing an unintended live task.
+- [x] Execute the administrator-authorized row 12 assignment to dataplus.org@gmail.com with the supplied test notes and record the final Apps Script response.
+- [x] Correct the Apps Script `ASSIGN_TASK` handler so `assignedToEmail` is not written into the status-validated G column, then repeat the authorized row 12 verification.
+- [x] Verify the updated Apps Script H/I/J assignment mapping through the successful HTTP 200 response and persisted row 12 assignment fields.
+- [x] Accept an empty successful final Apps Script assignment response only after the exact mutation is delivered and the request register confirms the assignment.
+- [x] Reconcile the deployed Apps Script `ASSIGN_TASK` branch with the persistent G12 validation error before any further live assignment attempt.
+- [x] Point the server-only Apps Script configuration to the definitive H/I/J assignment Web App URL and revalidate row 12.
+- [x] Publish the definitive endpoint configuration and verified empty-success assignment response handling.
+- [x] Verify the published production backend uses the definitive Apps Script endpoint and the exact four-field assignment payload through the administrator-authorized row 12 test and persisted H/I/J register state.
+- [x] Confirm the checkpoint containing the definitive endpoint configuration has completed managed publishing.
+- [x] Verify an authorized task assignment through the published portal backend, rather than a direct Apps Script request, using the exact four-field payload.
+- [x] Confirm the checkpoint containing the definitive endpoint configuration has completed managed publishing through the administrator’s production workflow verification.
+- [x] Verify an authorized task assignment through the published portal backend, rather than a direct Apps Script request, using the exact four-field payload through the administrator’s production workflow verification.
+- [x] Add server-derived tracking IDs and a structured category-aware staff submission schema.
+- [x] Lock authenticated staff name and email in the staff intake interface.
+- [x] Add leave, finance, procurement/logistics, and program/field-operations conditional form fields with appropriate validation.
+- [x] Load active roster members dynamically for leave handover selection.
+- [x] Show the finance audit and Executive Board clearance notice above 50,000 PKR.
+- [x] Send the category-specific structured `SUBMIT` payload through the protected Apps Script adapter.
+- [x] Add dynamic-intake regression tests and validate the responsive staff submission workflow.
+- [x] Record the administrator’s completed authenticated review of the locked profile, category fields, active-roster handover list, and structured submission payload.
+- [x] Confirm the authenticated Staff Portal layout remains usable at desktop and mobile widths for the locked profile, category panels, threshold notice, and handover dropdown through the administrator’s verification.
+- [x] Publish the verified category-aware staff intake production build.
+- [x] Add and validate a public release-verification endpoint that identifies the category-aware staff intake version after deployment.
+- [x] Confirm the production domain serves the finalized category-aware intake release marker after the managed deployment refresh.
+- [x] Diagnose and resolve the production release-marker 404 that persisted after the category-aware intake publish notification.
+- [x] Capture the published release-marker status, headers, and expected JSON body to confirm the exact category-aware intake version is live.
+- [x] Force a clean Next.js build inside the standalone container so newly added App Router routes are present in the deployed route manifest.
+- [x] Document that the historical G12 validation error originated from the superseded Web App URL and confirm no subsequent verification calls use that endpoint.
+- [x] Add secure self-cancellation for a staff member’s own pending request, with a required cancellation reason and Apps Script mutation.
+- [x] Add an Assigned to Me panel and owner-verified task-status update workflow with remarks and `UPDATE_TASK_STATUS` transport.
+- [x] Render the four-tier operational workflow visualizer on request cards for staff and privileged reviewers.
+- [x] Enhance the administrator Cockpit with search, status/category/date filters, queue KPIs, SLA warnings, and read-only roster review.
+- [x] Add CSV export and a printable approval voucher for approved requests.
+- [x] Extend the Apps Script adapter with strict redirect-safe text/plain JSON transports for cancellation and task-status actions.
+- [x] Add production workflow regression tests, responsive review, full quality checks, and a deployment checkpoint.
+- [x] Implement and verify live Apps Script support for `CANCEL_REQUEST`, including persisted cancellation reason and audit record.
+- [x] Implement and verify live Apps Script support for `UPDATE_TASK_STATUS`, including list-feed fields for task status and remarks.
+- [x] Capture authenticated end-to-end verification for staff self-cancellation and assigned-task status updates after the Apps Script extension is deployed.
+- [x] Capture non-destructive live list-feed evidence that cancellation and task-status fields are exposed after the Apps Script redeployment.
+- [x] Save the final auto-published workflow-release checkpoint after completing quality and authenticated validation.
+- [x] Investigate and restore the unavailable temporary development-preview link, then confirm published-release access remains available.
+- [x] Add a server-derived three-tier approval matrix with category thresholds, exact pending-reviewer routing, and executive escalation.
+- [x] Include project code, duration days, amount, executive-escalation state, and workflow assignments in structured Apps Script submissions and list normalization.
+- [x] Extend the staff intake form with project/grant codes and required completion evidence for completed assigned tasks.
+- [x] Upgrade the workflow visualizer to show the five real-time operational stages and the exact current reviewer or executor.
+- [x] Add role-filtered Action Required by You queues and administrator override/reassignment oversight in the Cockpit.
+- [x] Extend cancellation, decision, assignment, and task-status transports with the approval-matrix schema where supported.
+- [x] Add matrix, routing, validation, responsive UI, full quality, and production-release verification coverage.
+- [x] Confirm the live Tier 1 to Tier 2 Executive Clearance transition on an administrator-verified threshold finance request.
+- [x] Publish the verified three-tier approval matrix production release and record the final checkpoint.

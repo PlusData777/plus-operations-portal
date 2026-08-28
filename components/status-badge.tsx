@@ -1,0 +1,3 @@
+import { Ban, CheckCircle2, Clock3, XCircle } from "lucide-react";
+import type { RequestStatus } from "@/lib/types";
+export function StatusBadge({ status }: { status: RequestStatus }) { if (status === "Approved") return <span className="status-badge bg-emerald/10 text-emerald"><CheckCircle2 size={14} /> Approved</span>; if (status === "Rejected") return <span className="status-badge bg-crimson/10 text-crimson"><XCircle size={14} /> Rejected</span>; if (status === "Cancelled") return <span className="status-badge bg-slate-200 text-slate-600"><Ban size={14} /> Cancelled</span>; return <span className="status-badge bg-amber-100 text-amber-700"><Clock3 size={14} /> Pending</span>; }
