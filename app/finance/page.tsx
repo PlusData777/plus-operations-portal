@@ -6,9 +6,7 @@ import Link from "next/link";
 import {
   Activity,
   AlertCircle,
-  ArrowDownRight,
   ArrowLeft,
-  ArrowUpRight,
   Banknote,
   CheckCircle2,
   Clock,
@@ -260,7 +258,7 @@ export default function FinanceMasterPage() {
         body: JSON.stringify({ action: "SUBMIT_FINANCE_CLAIM", claim: newClaim }),
       });
     } catch (e) {
-      console.warn("Sync error:", e);
+      console.warn("Sync notice:", e);
     }
 
     setClaims([newClaim, ...claims]);
@@ -279,7 +277,6 @@ export default function FinanceMasterPage() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col justify-between">
-      {/* Header */}
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-2xs">
         <div className="container mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
@@ -310,9 +307,7 @@ export default function FinanceMasterPage() {
         </div>
       </header>
 
-      {/* Main Container */}
       <main className="container mx-auto max-w-7xl flex-1 px-4 py-8 sm:px-6 space-y-8">
-        {/* Top Metric Cards */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
             <div className="flex items-center justify-between text-slate-400">
@@ -414,7 +409,6 @@ export default function FinanceMasterPage() {
               <p className="text-xs text-slate-500">Tiered authorization ledger with automated email triggers</p>
             </div>
 
-            {/* Filter Bar */}
             <div className="flex items-center gap-2 flex-wrap">
               <div className="relative">
                 <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
@@ -451,7 +445,6 @@ export default function FinanceMasterPage() {
             </div>
           </div>
 
-          {/* Claims Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-700">
               <thead className="bg-[#f8fafc] text-[10px] font-bold uppercase tracking-wider text-slate-400 border-y border-slate-100">
@@ -525,7 +518,7 @@ export default function FinanceMasterPage() {
         </div>
       </main>
 
-      {/* MODAL: SUBMIT NEW EXPENSE / ADVANCE */}
+      {/* MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
