@@ -29,6 +29,7 @@ import {
   Megaphone,
   Phone,
   Plus,
+  PlusCircle,
   RefreshCw,
   Scale,
   Search,
@@ -39,6 +40,7 @@ import {
   TrendingUp,
   User,
   UserCheck,
+  UserPlus,
   Users,
   X,
   XCircle,
@@ -71,12 +73,15 @@ interface AssignedTask {
   status: "Pending Action" | "In Progress" | "Completed";
   urgency: "Urgent" | "Standard";
   assigneeEmail: string;
+  assigneeName: string;
+  assignedByEmail: string;
+  assignedByName: string;
 }
 
 interface StaffProfile {
   name: string;
   email: string;
-  role: string;
+  role: "ADMIN" | "EXECUTIVE" | "HR_ADMIN" | "FINANCE_MGR" | "PROGRAM_MGR" | "LEGAL_STAFF" | "GENERAL_STAFF";
   designation: string;
   department: string;
   accessPin: string;
@@ -112,6 +117,9 @@ const INITIAL_PORTFOLIO_TASKS: AssignedTask[] = [
     status: "In Progress",
     urgency: "Urgent",
     assigneeEmail: "kamanger110@gmail.com",
+    assigneeName: "Kamanger",
+    assignedByEmail: "altafkhoso.adv@gmail.com",
+    assignedByName: "Altaf Khoso",
   },
   {
     id: "TSK-802",
@@ -123,6 +131,9 @@ const INITIAL_PORTFOLIO_TASKS: AssignedTask[] = [
     status: "Pending Action",
     urgency: "Standard",
     assigneeEmail: "kamanger110@gmail.com",
+    assigneeName: "Kamanger",
+    assignedByEmail: "altafkhoso.adv@gmail.com",
+    assignedByName: "Altaf Khoso",
   },
   {
     id: "TSK-803",
@@ -134,6 +145,9 @@ const INITIAL_PORTFOLIO_TASKS: AssignedTask[] = [
     status: "In Progress",
     urgency: "Urgent",
     assigneeEmail: "advazizullahazizullah@gmail.com",
+    assigneeName: "Adv Azizullah",
+    assignedByEmail: "altafkhoso.adv@gmail.com",
+    assignedByName: "Altaf Khoso",
   },
   {
     id: "TSK-804",
@@ -145,6 +159,23 @@ const INITIAL_PORTFOLIO_TASKS: AssignedTask[] = [
     status: "Pending Action",
     urgency: "Standard",
     assigneeEmail: "salmahabibbhutto88@gmail.com",
+    assigneeName: "Salma Habib Bhutto",
+    assignedByEmail: "altafkhoso.adv@gmail.com",
+    assignedByName: "Altaf Khoso",
+  },
+  {
+    id: "TSK-805",
+    title: "Institutional Quarterly Partner Review & MoU Compliance",
+    category: "Operational Task",
+    dueDateOrHearing: "2026-09-10",
+    venue: "Head Office Karachi / All Hubs",
+    hub: "Karachi",
+    status: "In Progress",
+    urgency: "Standard",
+    assigneeEmail: "ALL",
+    assigneeName: "All Staff / Combined Team",
+    assignedByEmail: "dataplus.org@gmail.com",
+    assignedByName: "Aatif",
   },
 ];
 
@@ -155,7 +186,7 @@ export default function WorkspacePage() {
   const [currentUser, setCurrentUser] = useState<StaffProfile | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
-  // Authentication State
+  // Auth State
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPin, setLoginPin] = useState("");
   const [authError, setAuthError] = useState("");
@@ -164,12 +195,11 @@ export default function WorkspacePage() {
   // App State
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [tasks, setTasks] = useState<AssignedTask[]>(INITIAL_PORTFOLIO_TASKS);
-  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [mainViewTab, setMainViewTab] = useState<"MY_TASKS" | "REQUESTS">("MY_TASKS");
   const [activeRequestFilter, setActiveRequestFilter] = useState<"ALL" | "LEAVE" | "EXPENSE">("ALL");
 
-  // Request Modal State
+  // Request Modal State (Leave / Expense)
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
   const [formType, setFormType] = useState<"Leave" | "Expense">("Leave");
   const [formLeaveCategory, setFormLeaveCategory] = useState("Casual");
@@ -181,6 +211,17 @@ export default function WorkspacePage() {
   const [formDescription, setFormDescription] = useState("");
   const [submittingForm, setSubmittingForm] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  // Task Creation Modal State
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskCategory, setTaskCategory] = useState<AssignedTask["category"]>("Community Camp");
+  const [taskDate, setTaskDate] = useState(new Date().toISOString().split("T")[0]);
+  const [taskVenue, setTaskVenue] = useState("");
+  const [taskHub, setTaskHub] = useState<"Karachi" | "Hyderabad" | "Sukkur">("Sukkur");
+  const [taskUrgency, setTaskUrgency] = useState<"Standard" | "Urgent">("Standard");
+  const [taskAssigneeEmail, setTaskAssigneeEmail] = useState("");
+  const [submittingTask, setSubmittingTask] = useState(false);
 
   useEffect(() => {
     try {
@@ -240,6 +281,17 @@ export default function WorkspacePage() {
     setAuthError("");
   };
 
+  // Role Checks
+  const isManagerOrAdmin = useMemo(() => {
+    if (!currentUser) return false;
+    return (
+      currentUser.role === "ADMIN" ||
+      currentUser.role === "EXECUTIVE" ||
+      currentUser.role === "PROGRAM_MGR" ||
+      currentUser.role === "HR_ADMIN"
+    );
+  }, [currentUser]);
+
   const isAdminOrExec = useMemo(() => {
     if (!currentUser) return false;
     const adminEmails = [
@@ -256,28 +308,88 @@ export default function WorkspacePage() {
     );
   }, [currentUser]);
 
-  async function fetchLiveRequests() {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/requests");
-      if (res.ok) {
-        const data = await res.json();
-        if (data.requests && Array.isArray(data.requests)) {
-          setRequests(data.requests);
+  // Scoped Task Filtering: Strict isolation
+  const scopedTasks = useMemo(() => {
+    if (!currentUser) return [];
+
+    // Admins and Executives see all tasks
+    if (isAdminOrExec) return tasks;
+
+    // Program Managers see tasks assigned to them, combined/ALL tasks, or tasks they assigned to subordinates
+    if (currentUser.role === "PROGRAM_MGR") {
+      return tasks.filter(
+        (t) =>
+          t.assigneeEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim() ||
+          t.assigneeEmail === "ALL" ||
+          t.assignedByEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim()
+      );
+    }
+
+    // General Staff and Legal Staff only see tasks assigned directly to them OR combined organizational tasks
+    return tasks.filter(
+      (t) =>
+        t.assigneeEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim() ||
+        t.assigneeEmail === "ALL"
+    );
+  }, [tasks, currentUser, isAdminOrExec]);
+
+  // Scoped Leave/Expense Filtering: Strict isolation
+  const scopedRequests = useMemo(() => {
+    if (!currentUser) return [];
+    if (isAdminOrExec) return requests;
+    return requests.filter(
+      (r) => r.requesterEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim()
+    );
+  }, [requests, currentUser, isAdminOrExec]);
+
+  const handleCreateTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser || !taskTitle.trim()) return;
+
+    setSubmittingTask(true);
+    const newId = "TSK-" + (tasks.length + 801);
+
+    // If manager chose a subordinate, use that. If general staff, force self-assignment.
+    let targetEmail = currentUser.email;
+    let targetName = currentUser.name;
+
+    if (isManagerOrAdmin && taskAssigneeEmail) {
+      if (taskAssigneeEmail === "ALL") {
+        targetEmail = "ALL";
+        targetName = "All Staff / Combined Team";
+      } else {
+        const found = OFFICIAL_ROSTER.find((r) => r.email === taskAssigneeEmail);
+        if (found) {
+          targetEmail = found.email;
+          targetName = found.name;
         }
       }
-    } catch (e) {
-      console.warn("Requests load fallback:", e);
-    } finally {
-      setLoading(false);
     }
-  }
 
-  useEffect(() => {
-    if (currentUser) {
-      fetchLiveRequests();
-    }
-  }, [currentUser]);
+    const newTask: AssignedTask = {
+      id: newId,
+      title: taskTitle,
+      category: taskCategory,
+      dueDateOrHearing: taskDate,
+      venue: taskVenue || "Assigned Field Hub",
+      hub: taskHub,
+      status: "Pending Action",
+      urgency: taskUrgency,
+      assigneeEmail: targetEmail,
+      assigneeName: targetName,
+      assignedByEmail: currentUser.email,
+      assignedByName: currentUser.name,
+    };
+
+    setTimeout(() => {
+      setTasks([newTask, ...tasks]);
+      setSubmittingTask(false);
+      setIsTaskModalOpen(false);
+      setTaskTitle("");
+      setTaskVenue("");
+      setTaskAssigneeEmail("");
+    }, 400);
+  };
 
   const handleCreateRequest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -286,7 +398,6 @@ export default function WorkspacePage() {
     setSubmittingForm(true);
     const newReqId = "PLUS-" + (requests.length + 101);
 
-    // Dynamic Routing: Kamanger routes straight to CEO (Altaf Khoso), general staff to HR (Ashfaq Ali)
     const isKamanger = currentUser.email.toLowerCase().trim() === "kamanger110@gmail.com";
     const assignedApprover = isKamanger ? "altafkhoso.adv@gmail.com" : "ishfaque.mojai@gmail.com";
     const initialStatus = isKamanger ? "Submitted · Routed to CEO" : "Submitted · Pending Tier 1";
@@ -308,59 +419,16 @@ export default function WorkspacePage() {
       currentApproverEmail: assignedApprover,
     };
 
-    try {
-      await fetch("/api/requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "CREATE_REQUEST", request: newRequest }),
-      });
-
-      setRequests([newRequest, ...requests]);
-      setSubmitSuccess(true);
-      setTimeout(() => {
-        setSubmitSuccess(false);
-        setIsApplyModalOpen(false);
-        setFormDescription("");
-        setFormAmount(0);
-      }, 1500);
-    } catch (err) {
-      console.error(err);
-    } finally {
+    setRequests([newRequest, ...requests]);
+    setSubmitSuccess(true);
+    setTimeout(() => {
+      setSubmitSuccess(false);
+      setIsApplyModalOpen(false);
+      setFormDescription("");
+      setFormAmount(0);
       setSubmittingForm(false);
-    }
+    }, 1200);
   };
-
-  const userTasks = useMemo(() => {
-    if (!currentUser) return [];
-    if (isAdminOrExec) return tasks;
-    return tasks.filter(
-      (t) => t.assigneeEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim()
-    );
-  }, [tasks, currentUser, isAdminOrExec]);
-
-  const userRequests = useMemo(() => {
-    if (!currentUser) return [];
-    if (isAdminOrExec) return requests;
-    return requests.filter(
-      (r) => r.requesterEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim()
-    );
-  }, [requests, currentUser, isAdminOrExec]);
-
-  const filteredRequests = useMemo(() => {
-    return userRequests.filter((req) => {
-      const q = searchQuery.toLowerCase().trim();
-      const matchesSearch =
-        !q ||
-        req.requesterName?.toLowerCase().includes(q) ||
-        req.description?.toLowerCase().includes(q) ||
-        req.id?.toLowerCase().includes(q);
-
-      const type = (req.requestType || "").toLowerCase();
-      if (activeRequestFilter === "LEAVE") return matchesSearch && type.includes("leave");
-      if (activeRequestFilter === "EXPENSE") return matchesSearch && (type.includes("expense") || Number(req.amount) > 0);
-      return matchesSearch;
-    });
-  }, [userRequests, searchQuery, activeRequestFilter]);
 
   if (isAuthChecking) {
     return (
@@ -589,7 +657,7 @@ export default function WorkspacePage() {
               </nav>
             </div>
 
-            {/* Leave Balance Widget */}
+            {/* Leave Balance Overview Widget */}
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
@@ -620,7 +688,7 @@ export default function WorkspacePage() {
 
           {/* Right Workspace Main Panel */}
           <div className="lg:col-span-9 space-y-6">
-            {/* Header with Quick Actions */}
+            {/* Header with Direct Quick Actions */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#c65a28]">
@@ -630,11 +698,18 @@ export default function WorkspacePage() {
                   Welcome back, {currentUser.name}.
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Active deliverable portfolio and institutional casework tracking.
+                  Role-protected deliverable cockpit and institutional casework tracking.
                 </p>
               </div>
 
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsTaskModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#1b365d] px-3.5 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-[#122440] cursor-pointer"
+                >
+                  <PlusCircle className="h-3.5 w-3.5 text-[#fad207]" />
+                  <span>{isManagerOrAdmin ? "+ Assign New Task" : "+ Plan Future Task"}</span>
+                </button>
                 <Link
                   href="/timesheets"
                   className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50"
@@ -642,25 +717,18 @@ export default function WorkspacePage() {
                   <Clock className="h-3.5 w-3.5 text-[#e59a24]" />
                   <span>Log Work Hours</span>
                 </Link>
-                <Link
-                  href="/programs"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#1b365d] px-3.5 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-[#122440]"
-                >
-                  <Plus className="h-3.5 w-3.5 text-[#fad207]" />
-                  <span>Log Program Activity</span>
-                </Link>
               </div>
             </div>
 
-            {/* Metrics Grid */}
+            {/* KPI Cards: Dynamic Portfolio Metrics */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
                 <div className="flex items-center justify-between text-slate-400">
                   <span className="text-[11px] font-bold uppercase tracking-wider">Active Tasks</span>
                   <Activity className="h-4 w-4 text-[#1b365d]" />
                 </div>
-                <p className="mt-2 text-2xl font-bold text-[#1b365d]">{userTasks.length}</p>
-                <span className="text-[10px] text-slate-500">Assigned deliverables</span>
+                <p className="mt-2 text-2xl font-bold text-[#1b365d]">{scopedTasks.length}</p>
+                <span className="text-[10px] text-slate-500">Your visible scope</span>
               </div>
 
               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
@@ -669,7 +737,7 @@ export default function WorkspacePage() {
                   <Calendar className="h-4 w-4 text-[#c65a28]" />
                 </div>
                 <p className="mt-2 text-2xl font-bold text-[#c65a28]">
-                  {userTasks.filter((t) => t.urgency === "Urgent").length} Urgent
+                  {scopedTasks.filter((t) => t.urgency === "Urgent").length} Urgent
                 </p>
                 <span className="text-[10px] text-slate-500">Camps & hearings</span>
               </div>
@@ -688,75 +756,96 @@ export default function WorkspacePage() {
                   <span className="text-[11px] font-bold uppercase tracking-wider">Open Claims</span>
                   <FileText className="h-4 w-4 text-emerald-600" />
                 </div>
-                <p className="mt-2 text-2xl font-bold text-emerald-600">{userRequests.length}</p>
-                <span className="text-[10px] text-slate-500">Leave/Expense queue</span>
+                <p className="mt-2 text-2xl font-bold text-emerald-600">{scopedRequests.length}</p>
+                <span className="text-[10px] text-slate-500">Your claims queue</span>
               </div>
             </div>
 
-            {/* Task View */}
+            {/* Main Interactive Work View */}
             {mainViewTab === "MY_TASKS" ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">
-                    My Program & Casework Deliverables ({userTasks.length})
+                    My Deliverables & Assigned Operations ({scopedTasks.length})
                   </h3>
-                  <span className="text-xs text-slate-500">Updated from verified project milestones</span>
+                  <span className="text-xs text-slate-500">Strictly protected to authorized scope</span>
                 </div>
 
                 <div className="space-y-3">
-                  {userTasks.map((task) => (
-                    <div
-                      key={task.id}
-                      className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-[#1b365d] space-y-3"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs font-bold text-[#1b365d]">{task.id}</span>
-                            <span className="rounded-md bg-[#1b365d]/10 px-2 py-0.5 text-[10px] font-bold text-[#1b365d]">
-                              {task.category}
-                            </span>
-                            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
-                              {task.hub} Regional
+                  {scopedTasks.map((task) => {
+                    const isCombined = task.assigneeEmail === "ALL";
+                    const isDelegatedByMe =
+                      task.assignedByEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim() &&
+                      task.assigneeEmail.toLowerCase().trim() !== currentUser.email.toLowerCase().trim();
+
+                    return (
+                      <div
+                        key={task.id}
+                        className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-[#1b365d] space-y-3"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-mono text-xs font-bold text-[#1b365d]">{task.id}</span>
+                              <span className="rounded-md bg-[#1b365d]/10 px-2 py-0.5 text-[10px] font-bold text-[#1b365d]">
+                                {task.category}
+                              </span>
+                              <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                                {task.hub} Regional
+                              </span>
+                              {isCombined && (
+                                <span className="rounded-md bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 text-[10px] font-bold">
+                                  Combined Team Task
+                                </span>
+                              )}
+                              {isDelegatedByMe && (
+                                <span className="rounded-md bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-[10px] font-bold">
+                                  Assigned to: {task.assigneeName}
+                                </span>
+                              )}
+                            </div>
+                            <h4 className="mt-1 text-sm font-bold text-slate-900">{task.title}</h4>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            {task.urgency === "Urgent" && (
+                              <span className="rounded-full bg-red-50 border border-red-200 px-2.5 py-0.5 text-[10px] font-bold text-[#b82626]">
+                                Urgent
+                              </span>
+                            )}
+                            <span className="rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[10px] font-bold text-amber-700">
+                              {task.status}
                             </span>
                           </div>
-                          <h4 className="mt-1 text-sm font-bold text-slate-900">{task.title}</h4>
                         </div>
 
-                        <div className="flex items-center gap-2 shrink-0">
-                          {task.urgency === "Urgent" && (
-                            <span className="rounded-full bg-red-50 border border-red-200 px-2.5 py-0.5 text-[10px] font-bold text-[#b82626]">
-                              Urgent Due Date
-                            </span>
-                          )}
-                          <span className="rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[10px] font-bold text-amber-700">
-                            {task.status}
-                          </span>
+                        <div className="border-t border-slate-100 pt-3 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-600 gap-2">
+                          <div className="flex items-center gap-4 flex-wrap">
+                            <div className="flex items-center gap-1.5">
+                              <MapPin className="h-3.5 w-3.5 text-[#c65a28]" />
+                              <span>{task.venue}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                              <span>Target Date: <strong className="text-slate-800">{task.dueDateOrHearing}</strong></span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <User className="h-3.5 w-3.5 text-slate-400" />
+                              <span>Assigned By: <strong className="text-slate-800">{task.assignedByName}</strong></span>
+                            </div>
+                          </div>
+
+                          <Link
+                            href={task.category.includes("Legal") ? "/cases" : "/programs"}
+                            className="inline-flex items-center gap-1 text-xs font-bold text-[#1b365d] hover:text-[#c65a28]"
+                          >
+                            <span>Open Module & Log Output</span>
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          </Link>
                         </div>
                       </div>
-
-                      <div className="border-t border-slate-100 pt-3 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-600 gap-2">
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-1.5">
-                            <MapPin className="h-3.5 w-3.5 text-[#c65a28]" />
-                            <span>{task.venue}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                            <span>Target Date: <strong className="text-slate-800">{task.dueDateOrHearing}</strong></span>
-                          </div>
-                        </div>
-
-                        <Link
-                          href={task.category.includes("Legal") ? "/cases" : "/programs"}
-                          className="inline-flex items-center gap-1 text-xs font-bold text-[#1b365d] hover:text-[#c65a28]"
-                        >
-                          <span>Open Module & Log Output</span>
-                          <ChevronRight className="h-3.5 w-3.5" />
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ) : (
@@ -767,7 +856,7 @@ export default function WorkspacePage() {
                     <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
                     <input
                       type="text"
-                      placeholder="Search requests by purpose, amount, or ID..."
+                      placeholder="Search your requests by purpose, amount, or ID..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-4 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
@@ -801,13 +890,13 @@ export default function WorkspacePage() {
                   </div>
                 </div>
 
-                {filteredRequests.length === 0 ? (
+                {scopedRequests.length === 0 ? (
                   <div className="rounded-xl border border-dashed border-slate-200 py-12 text-center text-xs text-slate-500">
-                    No active operations requests. Click <strong>"+ Apply for Leave / Expense"</strong> on the left.
+                    No operations requests filed by your account. Click <strong>"+ Apply for Leave / Expense"</strong> on the left.
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {filteredRequests.map((req) => (
+                    {scopedRequests.map((req) => (
                       <div
                         key={req.id}
                         className="rounded-xl border border-slate-100 bg-[#f8fafc] p-4 transition hover:border-[#1b365d]/40 hover:bg-white hover:shadow-2xs"
@@ -845,7 +934,166 @@ export default function WorkspacePage() {
         </div>
       </main>
 
-      {/* OPERATIONS APPLICATION MODAL */}
+      {/* MODAL 1: TASK CREATION & DELEGATION (Managers & Self-Assign) */}
+      {isTaskModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs animate-in fade-in">
+          <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-base font-bold text-[#1b365d]">
+                  {isManagerOrAdmin ? "Initiate & Assign Deliverable" : "Schedule Future Deliverable / Task"}
+                </h3>
+                <p className="text-[11px] text-slate-500">
+                  Created by: <strong className="text-slate-800">{currentUser.name}</strong> ({currentUser.designation})
+                </p>
+              </div>
+              <button onClick={() => setIsTaskModalOpen(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateTask} className="space-y-3">
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                  Task Title / Deliverable
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Conduct Legal Camp at UC Qasimabad / File Bail Petition"
+                  value={taskTitle}
+                  onChange={(e) => setTaskTitle(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                />
+              </div>
+
+              {/* Manager Assignee Selector */}
+              {isManagerOrAdmin ? (
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[#1b365d] mb-1">
+                    Assign Task To (Team Member)
+                  </label>
+                  <select
+                    value={taskAssigneeEmail}
+                    onChange={(e) => setTaskAssigneeEmail(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-semibold focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                  >
+                    <option value="">Myself ({currentUser.name})</option>
+                    <option value="ALL">★ All Staff / Combined Team Task</option>
+                    <optgroup label="Operational Team">
+                      {OFFICIAL_ROSTER.filter((s) => s.email !== currentUser.email).map((staff) => (
+                        <option key={staff.email} value={staff.email}>
+                          {staff.name} — {staff.designation} ({staff.department})
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
+                </div>
+              ) : (
+                <div className="rounded-xl bg-slate-50 border border-slate-200 p-2.5 text-xs text-slate-600">
+                  <span>Assignee: <strong>{currentUser.name} (Self-Assigned Task)</strong></span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                    Category
+                  </label>
+                  <select
+                    value={taskCategory}
+                    onChange={(e) => setTaskCategory(e.target.value as any)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-semibold focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                  >
+                    <option value="Community Camp">Community Legal Camp</option>
+                    <option value="Prison Unit (NAVTTC)">Prison Unit (NAVTTC)</option>
+                    <option value="Legal Casework">Legal Casework / Court</option>
+                    <option value="Police Training">Police Training</option>
+                    <option value="Operational Task">Operational / Admin Task</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                    Regional Hub
+                  </label>
+                  <select
+                    value={taskHub}
+                    onChange={(e) => setTaskHub(e.target.value as any)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-semibold focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                  >
+                    <option value="Sukkur">Sukkur Regional</option>
+                    <option value="Hyderabad">Hyderabad Regional</option>
+                    <option value="Karachi">Karachi HO</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                    Target Due Date
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={taskDate}
+                    onChange={(e) => setTaskDate(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                    Priority / Urgency
+                  </label>
+                  <select
+                    value={taskUrgency}
+                    onChange={(e) => setTaskUrgency(e.target.value as any)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-semibold focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                  >
+                    <option value="Standard">Standard Priority</option>
+                    <option value="Urgent">Urgent Due Date</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                  Location / Venue
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Sessions Court Sukkur / Central Jail Hyderabad"
+                  value={taskVenue}
+                  onChange={(e) => setTaskVenue(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                />
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsTaskModalOpen(false)}
+                  className="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingTask}
+                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#1b365d] py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#122440] cursor-pointer"
+                >
+                  <Send className="h-3.5 w-3.5 text-[#fad207]" />
+                  <span>{submittingTask ? "Saving..." : isManagerOrAdmin ? "Assign Task" : "Schedule Task"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: OPERATIONS APPLICATION MODAL (Leave / Expense) */}
       {isApplyModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
@@ -997,7 +1245,7 @@ export default function WorkspacePage() {
                   <button
                     type="submit"
                     disabled={submittingForm}
-                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#1b365d] py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#122440] disabled:opacity-50 cursor-pointer"
+                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#c65a28] py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#a8491d] disabled:opacity-50 cursor-pointer"
                   >
                     <Send className="h-3.5 w-3.5 text-[#fad207]" />
                     <span>{submittingForm ? "Routing..." : "Submit Claim"}</span>
