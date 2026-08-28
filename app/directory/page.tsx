@@ -550,6 +550,31 @@ export default function StaffDirectoryPage() {
   const [selectedDept, setSelectedDept] = useState("ALL");
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [canEditGovernance, setCanEditGovernance] = useState(false);
+
+  // Check user permissions safely on client mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("plus_user");
+      if (stored) {
+        const sessionUser = JSON.parse(stored);
+        const email = (sessionUser.email || "").toLowerCase().trim();
+        const role = (sessionUser.role || "").toUpperCase();
+
+        const allowedEmails = [
+          "dataplus.org@gmail.com",
+          "altafkhoso.adv@gmail.com",
+          "rizwanapatel.plus@gmail.com",
+        ];
+
+        if (role === "ADMIN" || role === "EXECUTIVE" || allowedEmails.includes(email)) {
+          setCanEditGovernance(true);
+        }
+      }
+    } catch (e) {
+      console.warn("Could not check user permissions:", e);
+    }
+  }, []);
 
   async function loadDirectory() {
     setLoading(true);
@@ -715,11 +740,12 @@ export default function StaffDirectoryPage() {
         </div>
       )}
 
+      {/* Slide-out Governance Drawer with Strict Role Restriction */}
       <StaffDrawer
         staff={selectedStaff}
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        isAdmin={true}
+        isAdmin={canEditGovernance}
         allStaff={staff}
         onSave={handleSaveStaff}
       />
