@@ -454,7 +454,7 @@ export function StaffPortal({ user }: { user: StaffProfile }) {
                   <div className="flex items-start justify-between">
                     <div>
                       <h4 className="font-semibold text-sm text-slate-900">
-                        {req.summary || `${REQUEST_CATEGORY_LABELS[req.category] || "Request"}`}
+                        {REQUEST_CATEGORY_LABELS[req.category] || "Request"}
                       </h4>
                       <p className="text-xs text-slate-500 mt-0.5">
                         {req.trackingId ? `ID: ${req.trackingId} · ` : ""}
@@ -472,7 +472,7 @@ export function StaffPortal({ user }: { user: StaffProfile }) {
 
                   <WorkflowStepper
                     status={req.status}
-                    currentAssignee={req.currentAssignee || req.assignedTo || "Reviewer"}
+                    currentAssignee={req.currentAssignee || (req as any).assignedTo || "Reviewer"}
                     approvalTierRequired={req.approvalTierRequired}
                   />
                 </div>
