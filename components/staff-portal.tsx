@@ -77,19 +77,26 @@ export function StaffPortal({ user }: { user: StaffProfile }) {
   async function loadData() {
     setRefreshing(true);
     try {
-      const [reqRes, rosterRes] = await Promise.all([
-        fetch("/api/staff/requests", { cache: "no-store" }),
-        fetch("/api/roster", { cache: "no-store" }),
-      ]);
-
-      if (reqRes.ok) {
-        const reqData = await reqRes.json();
-        setRequests(Array.isArray(reqData.requests) ? reqData.requests : []);
+      // 1. Fetch Staff Requests
+      try {
+        const reqRes = await fetch("/api/staff/requests", { cache: "no-store" });
+        if (reqRes.ok) {
+          const reqData = await reqRes.json();
+          setRequests(Array.isArray(reqData.requests) ? reqData.requests : []);
+        }
+      } catch (e) {
+        console.warn("Requests load error:", e);
       }
 
+      // 2. Fetch Roster
+      const rosterRes = await fetch("/api/roster", { cache: "no-store" });
       if (rosterRes.ok) {
         const rosData = await rosterRes.json();
-        const list = rosData.roster || rosData.data || [];
+        const list = Array.isArray(rosData)
+          ? rosData
+          : rosData.roster || rosData.data || [];
+        
+        console.log("Roster loaded successfully:", list.length, "members");
         if (Array.isArray(list) && list.length > 0) {
           setRoster(list);
         }
@@ -146,12 +153,16 @@ export function StaffPortal({ user }: { user: StaffProfile }) {
     }
   }
 
+  // Fallback: If filtering produces an empty list or user is admin, provide all members
   const activeColleagues = useMemo(() => {
     if (!Array.isArray(roster) || roster.length === 0) return [];
     const currentUserEmail = (user?.email || "").trim().toLowerCase();
-    const filtered = roster.filter(
-      (m: any) => (m.email || "").trim().toLowerCase() !== currentUserEmail
-    );
+    
+    const filtered = roster.filter((m: any) => {
+      const email = String(m.email || "").trim().toLowerCase();
+      return email !== currentUserEmail;
+    });
+
     return filtered.length > 0 ? filtered : roster;
   }, [roster, user?.email]);
 
@@ -280,7 +291,7 @@ export function StaffPortal({ user }: { user: StaffProfile }) {
                     className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800"
                     required
                   >
-                    <option value="">Select active colleague</option>
+                    <option value="">Select active colleague ({activeColleagues.length} available)</option>
                     {activeColleagues.map((member: any) => {
                       const displayName =
                         member.name ||
