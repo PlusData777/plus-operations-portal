@@ -17,13 +17,55 @@ function text(value: unknown): string {
 export function isPrivilegedRole(role: PortalRole | string | null | undefined): boolean {
   if (!role) return false;
   const upper = String(role).toUpperCase();
-  return upper === "ADMIN" || upper === "EXECUTIVE" || upper === "HR_ADMIN" || upper === "FINANCE_MGR" || upper === "PROGRAM_MGR";
+  return (
+    upper === "ADMIN" ||
+    upper === "EXECUTIVE" ||
+    upper === "HR_ADMIN" ||
+    upper === "FINANCE_MGR" ||
+    upper === "PROGRAM_MGR"
+  );
 }
 
 export function canAssignTasks(role: PortalRole | string | null | undefined): boolean {
   if (!role) return false;
   const upper = String(role).toUpperCase();
   return upper === "ADMIN" || upper === "EXECUTIVE" || upper === "PROGRAM_MGR";
+}
+
+export function roleLabel(role: PortalRole | string | null | undefined): string {
+  switch (String(role).toUpperCase()) {
+    case "ADMIN":
+      return "Administrator";
+    case "EXECUTIVE":
+      return "Executive Leadership";
+    case "HR_ADMIN":
+      return "HR / Operations Admin";
+    case "FINANCE_MGR":
+      return "Finance Manager";
+    case "PROGRAM_MGR":
+      return "Program Manager";
+    case "GENERAL_STAFF":
+      return "General Staff";
+    default:
+      return role ? String(role) : "Staff";
+  }
+}
+
+export function queueLabel(role: PortalRole | string | null | undefined): string {
+  switch (String(role).toUpperCase()) {
+    case "ADMIN":
+      return "All Operations Requests";
+    case "EXECUTIVE":
+      return "Executive Approval Queue";
+    case "HR_ADMIN":
+      return "HR Review Queue";
+    case "FINANCE_MGR":
+      return "Finance Review Queue";
+    case "PROGRAM_MGR":
+      return "Program Operations Queue";
+    default:
+      return "My Submissions";
+  }
 }
 
 export function normalizeRoster(data: unknown): RosterMember[] {
