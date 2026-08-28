@@ -92,7 +92,6 @@ export function StaffPortal({ user }: { user?: StaffProfile }) {
     setLoading(true);
     setErrorMessage(null);
     try {
-      // 1. Fetch requests
       try {
         const reqRes = await fetch("/api/requests");
         if (reqRes.ok) {
@@ -102,10 +101,9 @@ export function StaffPortal({ user }: { user?: StaffProfile }) {
           }
         }
       } catch (e) {
-        console.warn("Requests endpoint error:", e);
+        console.warn("Requests endpoint warning:", e);
       }
 
-      // 2. Fetch staff roster
       try {
         const dirRes = await fetch("/api/directory");
         if (dirRes.ok) {
@@ -115,16 +113,10 @@ export function StaffPortal({ user }: { user?: StaffProfile }) {
           }
         }
       } catch (e) {
-        console.warn("Directory endpoint error:", e);
+        console.warn("Directory endpoint warning:", e);
       }
     } catch (err: any) {
       console.error("Data load error:", err);
-      setErrorMessage("Could not connect to data repository. Please try refreshing.");
-    } finally {
-      setLoading(false);
-    }
-  }
-        console.error("Data load error:", err);
       setErrorMessage("Could not connect to data repository. Please try refreshing.");
     } finally {
       setLoading(false);
@@ -213,12 +205,9 @@ export function StaffPortal({ user }: { user?: StaffProfile }) {
         </div>
       )}
 
-      {/* Leave Quota and Holidays Card */}
       <LeaveQuotaCard staffName={user?.name} />
 
-      {/* Main Form & History Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Request Submission Form */}
         <div className="lg:col-span-5">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2 text-slate-900">
@@ -357,7 +346,6 @@ export function StaffPortal({ user }: { user?: StaffProfile }) {
           </div>
         </div>
 
-        {/* My Submission History */}
         <div className="lg:col-span-7">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
