@@ -78,8 +78,8 @@ export function StaffPortal({ user }: { user: StaffProfile }) {
     setRefreshing(true);
     try {
       const [reqRes, rosterRes] = await Promise.all([
-        fetch("/api/staff/requests"),
-        fetch("/api/roster"),
+        fetch("/api/staff/requests", { cache: "no-store" }),
+        fetch("/api/roster", { cache: "no-store" }),
       ]);
 
       if (reqRes.ok) {
@@ -87,6 +87,19 @@ export function StaffPortal({ user }: { user: StaffProfile }) {
         setRequests(Array.isArray(reqData.requests) ? reqData.requests : []);
       }
 
+      if (rosterRes.ok) {
+        const rosData = await rosterRes.json();
+        const list = rosData.roster || rosData.data || [];
+        if (Array.isArray(list) && list.length > 0) {
+          setRoster(list);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load staff data:", err);
+    } finally {
+      setRefreshing(false);
+    }
+  }
       if (rosterRes.ok) {
         const rosData = await rosterRes.json();
         const list = rosData.roster || rosData.data || [];
