@@ -12,8 +12,6 @@ import {
   Clock,
   CreditCard,
   Download,
-  FileCheck,
-  FileSpreadsheet,
   FileText,
   Filter,
   Layers,
