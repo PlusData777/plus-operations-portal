@@ -1,18 +1,34 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { CalendarRange, Download } from "lucide-react";
-import { DATE_RANGES, PKR, SNAPSHOTS, type DateRange } from "@/lib/analytics-data";
+import { useState, useEffect, useMemo } from "react";
+import { CalendarRange, Download, Loader2 } from "lucide-react";
+import { DATE_RANGES, PKR, type DateRange } from "@/lib/analytics-data";
 import { MetricCards } from "@/components/analytics/metric-cards";
 import { ExpenseTrendChart } from "@/components/analytics/expense-trend-chart";
 import { StatusDonutChart } from "@/components/analytics/status-donut-chart";
-import { TransactionsTable } from "@/components/analytics/transactions-table";
+import { TransactionTable } from "@/components/analytics/transactions-table";
 
 export function AnalyticsDashboard() {
   const [range, setRange] = useState<DateRange>("month");
-  const snapshot = useMemo(() => SNAPSHOTS[range], [range]);
-  const rangeLabel = DATE_RANGES.find((option) => option.key === range)?.label ?? "";
+  const [records, setRecords] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const res = await fetch("/api/requests");
+        const json = await res.json();
+        if (json.records) setRecords(json.records);
+      } catch (err) {
+        console.error("Failed to load analytics data", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  const rangeLabel = DATE_RANGES.find((option) => option.key === range)?.label ?? "";
   function exportReport() {
     const rows: string[] = [];
     rows.push(`PLUS Executive Analytics Report,${rangeLabel}`);
