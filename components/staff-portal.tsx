@@ -448,7 +448,7 @@ export function StaffPortal({ user }: { user: StaffProfile }) {
             <div className="space-y-4">
               {requests.map((req, idx) => (
                 <div
-                  key={req.id || req.trackingId || idx}
+                  key={req.trackingId || (req as any).rowNumber || idx}
                   className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4"
                 >
                   <div className="flex items-start justify-between">
