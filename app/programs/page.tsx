@@ -56,7 +56,7 @@ export interface ProgramActivity {
   beneficiariesWomen: number;
   beneficiariesMen: number;
   beneficiariesTransgender: number;
-  // Cross-cutting Vulnerability Subsets (Not added to total)
+  // Cross-cutting Vulnerability Subsets
   beneficiariesPWD: number;
   beneficiariesMinority: number;
   keyOutputs: string;
@@ -153,12 +153,12 @@ export default function ProgramOperationsPage() {
   const [formVenue, setFormVenue] = useState("");
   const [formDate, setFormDate] = useState(new Date().toISOString().split("T")[0]);
 
-  // Primary Counts (Forms Total)
+  // Primary Counts
   const [formWomen, setFormWomen] = useState(0);
   const [formMen, setFormMen] = useState(0);
   const [formTransgender, setFormTransgender] = useState(0);
 
-  // Cross-cutting Layers (Does NOT add to total)
+  // Subsets
   const [formPWD, setFormPWD] = useState(0);
   const [formMinority, setFormMinority] = useState(0);
 
@@ -208,7 +208,6 @@ export default function ProgramOperationsPage() {
       totalMinority += Number(act.beneficiariesMinority) || 0;
     });
 
-    // Total = Women + Men + Transgender (PWD and Minorities are overlay layers)
     const totalBeneficiaries = totalWomen + totalMen + totalTransgender;
     const prisonSessions = activities.filter((a) => a.category === "Prison Rehabilitation (NAVTTC)").length;
     const disabilityInterventions = activities.filter((a) => a.category === "Disability Rights & Inclusion").length;
@@ -365,22 +364,24 @@ export default function ProgramOperationsPage() {
             <span className="text-[10px] text-slate-500">Directly represented</span>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-            <div className="flex items-center justify-between text-slate-400">
-              <span className="text-[11px] font-bold uppercase tracking-wider">Minorities (Layer)</span>
-              <Smile className="h-4 w-4 text-[#1b365d]" />
+          {/* Minorities Subset Card (Styled with Soft Blue Tint) */}
+          <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-4 shadow-xs">
+            <div className="flex items-center justify-between text-blue-500">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">Minorities</span>
+              <Smile className="h-4 w-4 text-blue-600" />
             </div>
             <p className="mt-2 text-2xl font-bold text-[#1b365d]">{metrics.totalMinority}</p>
-            <span className="text-[10px] text-slate-500">Non-double counted subset</span>
+            <span className="text-[10px] text-blue-600 font-medium">Included in Total</span>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-            <div className="flex items-center justify-between text-slate-400">
-              <span className="text-[11px] font-bold uppercase tracking-wider">PWDs (Layer)</span>
+          {/* PWDs Subset Card (Styled with Warm Ochre Tint) */}
+          <div className="rounded-2xl border border-orange-200 bg-orange-50/50 p-4 shadow-xs">
+            <div className="flex items-center justify-between text-orange-500">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#c65a28]">PWDs</span>
               <Accessibility className="h-4 w-4 text-[#c65a28]" />
             </div>
             <p className="mt-2 text-2xl font-bold text-[#c65a28]">{metrics.totalPWD}</p>
-            <span className="text-[10px] text-slate-500">Disability quota & access</span>
+            <span className="text-[10px] text-[#c65a28] font-medium">Included in Total</span>
           </div>
         </div>
 
@@ -479,7 +480,10 @@ export default function ProgramOperationsPage() {
         {/* Activity Feed */}
         <div className="space-y-4">
           {filteredActivities.map((act) => {
-            const rowTotal = (Number(act.beneficiariesWomen) || 0) + (Number(act.beneficiariesMen) || 0) + (Number(act.beneficiariesTransgender) || 0);
+            const rowTotal =
+              (Number(act.beneficiariesWomen) || 0) +
+              (Number(act.beneficiariesMen) || 0) +
+              (Number(act.beneficiariesTransgender) || 0);
             return (
               <div
                 key={act.id}
@@ -535,20 +539,26 @@ export default function ProgramOperationsPage() {
 
                   <div className="flex flex-wrap items-center gap-2 shrink-0 font-mono text-[11px] font-bold bg-white p-2.5 rounded-xl border border-slate-200">
                     {/* Primary Headcounts */}
-                    <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">♀ {act.beneficiariesWomen} Women</span>
-                    <span className="text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">♂ {act.beneficiariesMen} Men</span>
-                    <span className="text-[#e59a24] bg-amber-50 px-2 py-0.5 rounded-md">⚧ {act.beneficiariesTransgender} Trans</span>
+                    <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+                      ♀ {act.beneficiariesWomen} Women
+                    </span>
+                    <span className="text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">
+                      ♂ {act.beneficiariesMen} Men
+                    </span>
+                    <span className="text-[#e59a24] bg-amber-50 px-2 py-0.5 rounded-md">
+                      ⚧ {act.beneficiariesTransgender} Trans
+                    </span>
 
                     <span className="text-[#1b365d] bg-[#1b365d]/10 px-2.5 py-0.5 rounded-md">
                       Total: {rowTotal}
                     </span>
 
-                    {/* Cross-Cutting Inclusion Subsets */}
+                    {/* Subsets */}
                     <div className="flex items-center gap-1.5 border-l border-slate-200 pl-2 text-[10px]">
-                      <span className="text-[#c65a28] bg-orange-50 px-1.5 py-0.5 rounded-md" title="Persons with Disabilities (Subset)">
+                      <span className="text-[#c65a28] bg-orange-100/70 border border-orange-200 px-1.5 py-0.5 rounded-md" title="Persons with Disabilities">
                         ♿ {act.beneficiariesPWD} PWD
                       </span>
-                      <span className="text-[#1b365d] bg-blue-50 px-1.5 py-0.5 rounded-md" title="Religious/Ethnic Minorities (Subset)">
+                      <span className="text-blue-800 bg-blue-100/70 border border-blue-200 px-1.5 py-0.5 rounded-md" title="Religious/Ethnic Minorities">
                         🕊 {act.beneficiariesMinority} Minority
                       </span>
                     </div>
@@ -675,7 +685,7 @@ export default function ProgramOperationsPage() {
                 </div>
               </div>
 
-              {/* 1. PRIMARY HEADCOUNTS (Sums up directly to Total) */}
+              {/* 1. PRIMARY HEADCOUNTS */}
               <div className="rounded-2xl border border-slate-200 bg-[#f8fafc] p-3.5 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-[#1b365d]">
@@ -731,19 +741,19 @@ export default function ProgramOperationsPage() {
                 </div>
               </div>
 
-              {/* 2. CROSS-CUTTING INCLUSION SUBSETS (Does NOT increase Total) */}
+              {/* 2. SUBSETS */}
               <div className="rounded-2xl border border-slate-200 bg-white p-3.5 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
-                    2. Cross-Cutting Vulnerability Layer (Subset of Total)
+                    2. Cross-Cutting Subsets
                   </span>
                   <span className="text-[10px] text-slate-400">
-                    *Not added to total count
+                    *Included in total count
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
+                  <div className="rounded-xl border border-orange-100 bg-orange-50/40 p-2">
                     <label className="text-[10px] font-bold uppercase text-[#c65a28] block mb-1">
                       ♿ Persons with Disabilities (PWDs)
                     </label>
@@ -753,12 +763,12 @@ export default function ProgramOperationsPage() {
                       value={formPWD || ""}
                       placeholder="0"
                       onChange={(e) => setFormPWD(parseInt(e.target.value) || 0)}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-bold text-[#1b365d] focus:border-[#1b365d] focus:bg-white focus:outline-hidden font-mono"
+                      className="w-full rounded-xl border border-slate-200 bg-white p-2 text-xs font-bold text-[#1b365d] focus:border-[#1b365d] focus:outline-hidden font-mono"
                     />
                   </div>
 
-                  <div>
-                    <label className="text-[10px] font-bold uppercase text-[#1b365d] block mb-1">
+                  <div className="rounded-xl border border-blue-100 bg-blue-50/40 p-2">
+                    <label className="text-[10px] font-bold uppercase text-blue-800 block mb-1">
                       🕊 Religious / Ethnic Minorities
                     </label>
                     <input
@@ -767,7 +777,7 @@ export default function ProgramOperationsPage() {
                       value={formMinority || ""}
                       placeholder="0"
                       onChange={(e) => setFormMinority(parseInt(e.target.value) || 0)}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-bold text-[#1b365d] focus:border-[#1b365d] focus:bg-white focus:outline-hidden font-mono"
+                      className="w-full rounded-xl border border-slate-200 bg-white p-2 text-xs font-bold text-[#1b365d] focus:border-[#1b365d] focus:outline-hidden font-mono"
                     />
                   </div>
                 </div>
