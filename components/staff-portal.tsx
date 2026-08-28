@@ -15,15 +15,23 @@ const initialForm: FormState = { category: "LEAVE", justification: "", leaveType
 function inclusiveDays(start: string, end: string) { if (!start || !end) return null; const difference = Date.parse(`${end}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`); if (!Number.isFinite(difference) || difference < 0) return null; return Math.floor(difference / 86_400_000) + 1; }
 function replaceRecord(records: PortalRequest[], record: PortalRequest) { return records.map(item => item.rowNumber === record.rowNumber ? record : item); }
 
-export function StaffPortal({ user }: { user: StaffProfile }) {
-  const [requests, setRequests] = useState<PortalRequest[]>([]);
-  const [assignedTasks, setAssignedTasks] = useState<PortalRequest[]>([]);
-  const [roster, setRoster] = useState<RosterMember[]>([]);
-  const [form, setForm] = useState<FormState>(initialForm);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [cancelling, setCancelling] = useState(false);
-  const [updatingTask, setUpdatingTask] = useState(false);
+const [roster, setRoster] = useState<RosterMember[]>([]);
+
+  useEffect(() => {
+    async function loadRoster() {
+      try {
+        const res = await fetch("/api/roster");
+        const json = await res.json();
+        const rosterData = json.roster || json.data || [];
+        if (Array.isArray(rosterData) && rosterData.length > 0) {
+          setRoster(rosterData);
+        }
+      } catch (err) {
+        console.error("Failed to load roster for handover dropdown:", err);
+      }
+    }
+    loadRoster();
+  }, []);  const [updatingTask, setUpdatingTask] = useState(false);
   const [cancellationRequest, setCancellationRequest] = useState<PortalRequest | null>(null);
   const [cancellationReason, setCancellationReason] = useState("");
   const [taskRequest, setTaskRequest] = useState<PortalRequest | null>(null);
