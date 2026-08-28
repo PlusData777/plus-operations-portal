@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Clock,
+  CreditCard,
   FileText,
   HeartHandshake,
   LayoutDashboard,
@@ -160,7 +161,7 @@ export default function WorkspacePage() {
   const [currentUser, setCurrentUser] = useState<StaffProfile | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
-  // Auth State
+  // Authentication State
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPin, setLoginPin] = useState("");
   const [authError, setAuthError] = useState("");
@@ -181,7 +182,7 @@ export default function WorkspacePage() {
   const [formEndDate, setFormEndDate] = useState(new Date().toISOString().split("T")[0]);
   const [formDays, setFormDays] = useState(1);
   const [formAmount, setFormAmount] = useState<number>(0);
-  const [formExpenseCategory, setFormExpenseCategory] = useState("Travel / Field Fuel");
+  const [formExpenseCategory, setFormExpenseCategory] = useState("Travel / Field Fuel & Transport");
   const [formDescription, setFormDescription] = useState("");
   const [formAttachmentUrl, setFormAttachmentUrl] = useState("");
   const [isUploadingFile, setIsUploadingFile] = useState(false);
@@ -633,6 +634,14 @@ export default function WorkspacePage() {
                   <LayoutDashboard className="h-4 w-4 text-[#fad207]" />
                   <span>My Active Work & Tasks</span>
                 </button>
+
+                <Link
+                  href="/finance"
+                  className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
+                >
+                  <CreditCard className="h-4 w-4 text-emerald-600" />
+                  <span>Finance & Grants Desk</span>
+                </Link>
 
                 <Link
                   href="/programs"
@@ -1158,6 +1167,7 @@ export default function WorkspacePage() {
                 />
               </div>
 
+              {/* Task File Attachment Input */}
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
                   Attach Brief / Document (Saved to Drive)
@@ -1300,7 +1310,7 @@ export default function WorkspacePage() {
                       onChange={(e) => setFormExpenseCategory(e.target.value)}
                       className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-medium text-slate-800 focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
                     >
-                      <option value="Travel / Field Fuel">Travel / Field Fuel & Transport</option>
+                      <option value="Travel / Field Fuel & Transport">Travel / Field Fuel & Transport</option>
                       <option value="Court Filing & Legal Fees">Court Filing & Legal Defense Costs</option>
                       <option value="Office Supplies & Utilities">Office Supplies & Logistics</option>
                       <option value="Community Awareness / Camp">Community Legal Awareness Camp</option>
@@ -1321,6 +1331,7 @@ export default function WorkspacePage() {
                     />
                   </div>
 
+                  {/* Expense Receipt Upload Input */}
                   <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
                       Attach Receipt / Bill (PDF / JPG / PNG)
