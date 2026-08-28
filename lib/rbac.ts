@@ -14,15 +14,37 @@ export function normalizeRoster(data: unknown): RosterMember[] {
   for (const entry of data) {
     if (!entry || typeof entry !== "object") continue;
     const row = entry as Record<string, unknown>;
-    const email = text(row.email).toLowerCase();
-    if (!/^\S+@\S+\.\S+$/.test(email)) continue;
-    const candidate = text(row.role).toUpperCase() as PortalRole;
+    const rawEmail = text(row.email || row.Email || row.staffEmail || row["Staff Email"]);
+    const email = rawEmail.toLowerCase().trim();
+    if (!email || !email.includes("@")) continue;
+
+    const rawRole = text(row.role || row.Role || "GENERAL_STAFF").toUpperCase();
+    const candidate = rawRole as PortalRole;
+    const role: PortalRole = recognizedRoles.has(candidate) ? candidate : "GENERAL_STAFF";
+
+    const rawStatus = text(row.status || row.Status || "Active").toLowerCase();
+    if (rawStatus && rawStatus !== "active") continue;
+
     members.set(email, {
+      name: text(row.name || row.Name || row.staffName || row["Staff Name"] || email.split("@")[0]),
       email,
-      name: text(row.name) || email,
-      designation: text(row.designation),
-      role: recognizedRoles.has(candidate) ? candidate : "GENERAL_STAFF",
-      department: text(row.department),
+      role,
+      designation: text(row.designation || row.Designation || role),
+      department: text(row.department || row.Department || "Operations"),
+      approvalScope: text(row.approvalScope || row.ApprovalScope || row["Approval Scope"] || "General"),
+      status: "Active",
+    });
+  }
+
+  return Array.from(members.values());
+}
+
+export function findRosterMember(roster: unknown, email: string): RosterMember | null {
+  if (!email) return null;
+  const list = Array.isArray(roster) ? normalizeRoster(roster) : [];
+  const target = email.toLowerCase().trim();
+  return list.find((m) => m.email.toLowerCase().trim() === target) || null;
+}      department: text(row.department),
       approvalScope: text(row.approvalScope),
     });
   }
