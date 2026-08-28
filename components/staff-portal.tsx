@@ -382,7 +382,7 @@ export function StaffPortal({ user }: { user?: StaffProfile }) {
                           {REQUEST_CATEGORY_LABELS[req.category] || req.category}
                         </span>
                       </div>
-                      <StatusBadge status={req.status || "Submitted"} />
+                      <StatusBadge status={(req.status || "SUBMITTED") as any} />
                     </div>
 
                     <p className="mt-2 text-sm text-slate-800">
@@ -399,7 +399,7 @@ export function StaffPortal({ user }: { user?: StaffProfile }) {
                     </div>
 
                     <div className="mt-3">
-                      <WorkflowStepper status={req.status || "SUBMITTED"} />
+                      <WorkflowStepper status={(req.status || "SUBMITTED") as any} />
                     </div>
                   </div>
                 ))}
