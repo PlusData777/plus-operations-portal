@@ -1,54 +1,508 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, CalendarDays, ClipboardCheck, ClipboardPlus, FileText, LoaderCircle, RefreshCw, Send, ShieldAlert, UserRoundCheck, X } from "lucide-react";
+import {
+  AlertTriangle,
+  CalendarDays,
+  ClipboardCheck,
+  ClipboardPlus,
+  FileText,
+  LoaderCircle,
+  RefreshCw,
+  Send,
+  ShieldAlert,
+  UserRoundCheck,
+  X,
+} from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
 import { WorkflowStepper } from "@/components/workflow-stepper";
-import { REQUEST_CATEGORIES, REQUEST_CATEGORY_LABELS, TASK_STATUSES, type PortalRequest, type RequestCategory, type RosterMember, type TaskStatus } from "@/lib/types";
+import {
+  REQUEST_CATEGORIES,
+  REQUEST_CATEGORY_LABELS,
+  TASK_STATUSES,
+  type PortalRequest,
+  type RequestCategory,
+  type RosterMember,
+  type TaskStatus,
+} from "@/lib/types";
 
-type StaffProfile = { name: string; email: string; department: string };
-type FormState = { category: RequestCategory; justification: string; leaveType: "Casual" | "Sick" | "Annual" | "Emergency"; leaveStartDate: string; leaveEndDate: string; handoverColleagueEmail: string; expenseType: "Travel" | "Vendor" | "Office" | "Meal"; amountPkr: string; expenseDate: string; receiptDriveLink: string; paymentPreference: "Cash" | "Bank Transfer"; itemDescription: string; quantity: string; urgencyLevel: "Normal" | "Urgent" | "Immediate"; deliveryLocation: string; projectNameOrCode: string; activityLocation: string; budgetEstimatePkr: string; transportRequired: boolean; };
-type TaskDraft = { taskStatus: TaskStatus; taskRemarks: string };
+type StaffProfile = {
+  name: string;
+  email: string;
+  department: string;
+};
 
-const initialForm: FormState = { category: "LEAVE", justification: "", leaveType: "Casual", leaveStartDate: "", leaveEndDate: "", handoverColleagueEmail: "", expenseType: "Travel", amountPkr: "", expenseDate: "", receiptDriveLink: "", paymentPreference: "Cash", itemDescription: "", quantity: "", urgencyLevel: "Normal", deliveryLocation: "", projectNameOrCode: "", activityLocation: "", budgetEstimatePkr: "", transportRequired: false };
+type FormState = {
+  category: RequestCategory;
+  justification: string;
+  leaveType: "Casual" | "Sick" | "Annual" | "Emergency";
+  leaveStartDate: string;
+  leaveEndDate: string;
+  handoverColleagueEmail: string;
+  expenseType: "Travel" | "Vendor" | "Office" | "Other";
+  amountPkr: string;
+  expensedDate: string;
+  receiptDriveLink: string;
+  paymentMethod: "Bank Transfer" | "Cash" | "Cheque";
+  vendorName: string;
+  logisticsType: "Asset" | "Vehicle" | "Facility" | "Other";
+  assetDetails: string;
+  requiredByDate: string;
+  priority: "Low" | "Medium" | "High" | "Urgent";
+  caseRef: string;
+  courtForum: string;
+  hearingDate: string;
+  actionRequired: string;
+  summary: string;
+};
 
-function inclusiveDays(start: string, end: string) { if (!start || !end) return null; const difference = Date.parse(`${end}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`); if (!Number.isFinite(difference) || difference < 0) return null; return Math.floor(difference / 86_400_000) + 1; }
-function replaceRecord(records: PortalRequest[], record: PortalRequest) { return records.map(item => item.rowNumber === record.rowNumber ? record : item); }
+const initialForm: FormState = {
+  category: "LEAVE",
+  justification: "",
+  leaveType: "Casual",
+  leaveStartDate: "",
+  leaveEndDate: "",
+  handoverColleagueEmail: "",
+  expenseType: "Travel",
+  amountPkr: "",
+  expensedDate: "",
+  receiptDriveLink: "",
+  paymentMethod: "Bank Transfer",
+  vendorName: "",
+  logisticsType: "Asset",
+  assetDetails: "",
+  requiredByDate: "",
+  priority: "Medium",
+  caseRef: "",
+  courtForum: "",
+  hearingDate: "",
+  actionRequired: "",
+  summary: "",
+};
 
-const [roster, setRoster] = useState<RosterMember[]>([]);
-
-  useEffect(() => {
-    async function loadRoster() {
-      try {
-        const res = await fetch("/api/roster");
-        const json = await res.json();
-        const rosterData = json.roster || json.data || [];
-        if (Array.isArray(rosterData) && rosterData.length > 0) {
-          setRoster(rosterData);
-        }
-      } catch (err) {
-        console.error("Failed to load roster for handover dropdown:", err);
-      }
-    }
-    loadRoster();
-  }, []);  const [updatingTask, setUpdatingTask] = useState(false);
-  const [cancellationRequest, setCancellationRequest] = useState<PortalRequest | null>(null);
-  const [cancellationReason, setCancellationReason] = useState("");
-  const [taskRequest, setTaskRequest] = useState<PortalRequest | null>(null);
-  const [taskDraft, setTaskDraft] = useState<TaskDraft>({ taskStatus: "In Progress", taskRemarks: "" });
-  const [notice, setNotice] = useState<{ kind: "success" | "error"; text: string } | null>(null);
-  const leaveDays = useMemo(() => inclusiveDays(form.leaveStartDate, form.leaveEndDate), [form.leaveStartDate, form.leaveEndDate]);
-  const needsExecutiveClearance = form.category === "FINANCE" && Number(form.amountPkr) > 50_000;
-
-  async function loadRequests() { setLoading(true); try { const response = await fetch("/api/requests", { cache: "no-store" }); const data = await response.json(); if (!response.ok) throw new Error(data.error); setRequests(Array.isArray(data.requests) ? data.requests : []); setAssignedTasks(Array.isArray(data.assignedTasks) ? data.assignedTasks : []); setRoster(Array.isArray(data.roster) ? data.roster : []); } catch (error) { setNotice({ kind: "error", text: error instanceof Error ? error.message : "Unable to load your requests." }); } finally { setLoading(false); } }
-  useEffect(() => { void loadRequests(); }, []);
-
-  async function submit(event: React.FormEvent) { event.preventDefault(); if (form.category === "LEAVE" && !leaveDays) { setNotice({ kind: "error", text: "Choose a valid leave start and end date." }); return; } setSubmitting(true); setNotice(null); try { const response = await fetch("/api/requests", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) }); const data = await response.json(); if (!response.ok) throw new Error(data.error); setForm(initialForm); setNotice({ kind: "success", text: `Request ${data.trackingId} submitted securely. You will receive a decision email when the review is recorded.` }); await loadRequests(); } catch (error) { setNotice({ kind: "error", text: error instanceof Error ? error.message : "Unable to submit request." }); } finally { setSubmitting(false); } }
-  async function cancelRequest() { if (!cancellationRequest || !cancellationReason.trim()) { setNotice({ kind: "error", text: "Enter a cancellation reason before continuing." }); return; } setCancelling(true); try { const response = await fetch(`/api/requests/${cancellationRequest.rowNumber}/cancel`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cancellationReason }) }); const data = await response.json(); if (!response.ok) throw new Error(data.error); setRequests(current => replaceRecord(current, data.request)); setAssignedTasks(current => replaceRecord(current, data.request)); setCancellationRequest(null); setCancellationReason(""); setNotice({ kind: "success", text: "Your pending request has been cancelled and the reason was recorded." }); } catch (error) { setNotice({ kind: "error", text: error instanceof Error ? error.message : "Unable to cancel this request." }); } finally { setCancelling(false); } }
-  function openTaskUpdate(request: PortalRequest) { setTaskRequest(request); setTaskDraft({ taskStatus: request.taskStatus ?? "In Progress", taskRemarks: request.taskRemarks ?? "" }); }
-  async function saveTaskUpdate() { if (!taskRequest) return; setUpdatingTask(true); try { const response = await fetch(`/api/tasks/${taskRequest.rowNumber}/status`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(taskDraft) }); const data = await response.json(); if (!response.ok) throw new Error(data.error); setAssignedTasks(current => replaceRecord(current, data.request)); setRequests(current => replaceRecord(current, data.request)); setTaskRequest(null); setNotice({ kind: "success", text: "Your task update has been recorded in the PLUS workflow register." }); } catch (error) { setNotice({ kind: "error", text: error instanceof Error ? error.message : "Unable to save this task update." }); } finally { setUpdatingTask(false); } }
-  const update = <Key extends keyof FormState>(key: Key, value: FormState[Key]) => setForm(current => ({ ...current, [key]: value }));
-
-  return <div className="space-y-6"><section className="enter"><p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald">Staff request portal</p><h1 className="mt-2 text-3xl font-extrabold tracking-tight text-navy">Make every request traceable.</h1><p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600">Choose a request category and provide only the information that the relevant review team needs. Your identity comes from your verified Google session.</p></section>{notice && <div role="status" className={`flex gap-3 rounded-xl border px-4 py-3 text-sm ${notice.kind === "success" ? "border-emerald/25 bg-emerald/5 text-emerald" : "border-crimson/25 bg-crimson/5 text-crimson"}`}><ShieldAlert size={18} className="mt-0.5 shrink-0" />{notice.text}</div>}<div className="grid gap-6 xl:grid-cols-[minmax(350px,.9fr)_minmax(0,1.45fr)]"><section className="panel p-5 sm:p-6"><div className="mb-6 flex items-start gap-3"><div className="rounded-xl bg-navy/8 p-2.5 text-navy"><ClipboardPlus size={21} /></div><div><h2 className="font-bold text-navy">New request</h2><p className="mt-1 text-xs leading-relaxed text-slate-500">Your request receives a server-generated PLUS tracking ID on submission.</p></div></div><div className="mb-5 rounded-xl border border-slate-100 bg-slate-50 p-4"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-navy"><UserRoundCheck size={15} />Verified requester profile</div><div className="mt-3 grid gap-3 sm:grid-cols-2"><label className="block"><span className="field-label">Staff name</span><input value={user.name} readOnly aria-readonly className="field-control cursor-not-allowed bg-slate-100 text-slate-500" /></label><label className="block"><span className="field-label">Staff email</span><input value={user.email} readOnly aria-readonly className="field-control cursor-not-allowed bg-slate-100 text-slate-500" /></label></div><p className="mt-2 text-xs text-slate-500">Department: <span className="font-semibold text-slate-700">{user.department || "PLUS staff"}</span></p></div><form className="space-y-5" onSubmit={submit}><fieldset><legend className="field-label">Request category</legend><div className="mt-2 grid grid-cols-2 gap-2">{REQUEST_CATEGORIES.map(category => <button key={category} type="button" onClick={() => update("category", category)} className={`rounded-xl border px-3 py-3 text-left text-xs font-bold transition active:scale-[0.98] ${form.category === category ? "border-navy bg-navy text-white" : "border-slate-200 bg-white text-slate-600 hover:border-navy/40 hover:bg-navy/5"}`}><span className="block leading-tight">{REQUEST_CATEGORY_LABELS[category]}</span></button>)}</div></fieldset>{form.category === "LEAVE" && <section className="space-y-4 rounded-xl border border-slate-100 bg-slate-50 p-4"><div className="flex items-center gap-2 text-sm font-bold text-navy"><CalendarDays size={17} />Leave & absence details</div><label className="block"><span className="field-label">Leave type</span><select required value={form.leaveType} onChange={event => update("leaveType", event.target.value as FormState["leaveType"])} className="field-control"><option>Casual</option><option>Sick</option><option>Annual</option><option>Emergency</option></select></label><div className="grid gap-4 sm:grid-cols-2"><label className="block"><span className="field-label">Start date</span><input type="date" required value={form.leaveStartDate} onChange={event => update("leaveStartDate", event.target.value)} className="field-control" /></label><label className="block"><span className="field-label">End date</span><input type="date" required min={form.leaveStartDate || undefined} value={form.leaveEndDate} onChange={event => update("leaveEndDate", event.target.value)} className="field-control" /></label></div><p className="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-navy">{leaveDays ? `${leaveDays} calendar day${leaveDays === 1 ? "" : "s"} requested` : "Select a valid date range to calculate total days."}</p><label className="block"><span className="field-label">Handover colleague</span><select required value={form.handoverColleagueEmail} onChange={event => update("handoverColleagueEmail", event.target.value)} className="field-control"><option value="">Select active colleague</option>{roster.map(member => <option key={member.email} value={member.email}>{member.name} — {member.department || member.role}</option>)}</select></label></section>}{form.category === "FINANCE" && <section className="space-y-4 rounded-xl border border-slate-100 bg-slate-50 p-4"><div className="text-sm font-bold text-navy">Finance & expense details</div><div className="grid gap-4 sm:grid-cols-2"><label className="block"><span className="field-label">Expense type</span><select required value={form.expenseType} onChange={event => update("expenseType", event.target.value as FormState["expenseType"])} className="field-control"><option>Travel</option><option>Vendor</option><option>Office</option><option>Meal</option></select></label><label className="block"><span className="field-label">Amount (PKR)</span><input type="number" min="0.01" step="0.01" required value={form.amountPkr} onChange={event => update("amountPkr", event.target.value)} className="field-control" placeholder="0" /></label><label className="block"><span className="field-label">Expense date</span><input type="date" required value={form.expenseDate} onChange={event => update("expenseDate", event.target.value)} className="field-control" /></label><label className="block"><span className="field-label">Payment mode</span><select required value={form.paymentPreference} onChange={event => update("paymentPreference", event.target.value as FormState["paymentPreference"])} className="field-control"><option>Cash</option><option>Bank Transfer</option></select></label></div><label className="block"><span className="field-label">Bill or receipt Drive link <span className="normal-case text-slate-400">(optional)</span></span><input type="url" value={form.receiptDriveLink} onChange={event => update("receiptDriveLink", event.target.value)} className="field-control" placeholder="https://drive.google.com/..." /></label>{needsExecutiveClearance && <p className="flex gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-xs font-bold leading-relaxed text-amber-900"><AlertTriangle size={16} className="mt-0.5 shrink-0" />Requires Finance Audit + Executive Clearance.</p>}</section>}{form.category === "PROCUREMENT" && <section className="space-y-4 rounded-xl border border-slate-100 bg-slate-50 p-4"><div className="text-sm font-bold text-navy">Logistics & operations details</div><label className="block"><span className="field-label">Item description</span><textarea required maxLength={1200} value={form.itemDescription} onChange={event => update("itemDescription", event.target.value)} className="field-control min-h-24 resize-y" placeholder="Describe the item or service required." /></label><div className="grid gap-4 sm:grid-cols-2"><label className="block"><span className="field-label">Quantity</span><input type="number" min="1" step="1" required value={form.quantity} onChange={event => update("quantity", event.target.value)} className="field-control" /></label><label className="block"><span className="field-label">Priority level</span><select required value={form.urgencyLevel} onChange={event => update("urgencyLevel", event.target.value as FormState["urgencyLevel"])} className="field-control"><option>Normal</option><option>Urgent</option><option>Immediate</option></select></label></div><label className="block"><span className="field-label">Delivery location</span><input required maxLength={300} value={form.deliveryLocation} onChange={event => update("deliveryLocation", event.target.value)} className="field-control" placeholder="Office, project site, or field location" /></label></section>}{form.category === "PROGRAM" && <section className="space-y-4 rounded-xl border border-slate-100 bg-slate-50 p-4"><div className="text-sm font-bold text-navy">Legal & field operations details</div><div className="grid gap-4 sm:grid-cols-2"><label className="block"><span className="field-label">Case / project title</span><input required maxLength={300} value={form.projectNameOrCode} onChange={event => update("projectNameOrCode", event.target.value)} className="field-control" placeholder="Case or project title" /></label><label className="block"><span className="field-label">Activity location</span><input required maxLength={300} value={form.activityLocation} onChange={event => update("activityLocation", event.target.value)} className="field-control" placeholder="Activity location" /></label><label className="block"><span className="field-label">Budget estimate (PKR)</span><input type="number" min="0.01" step="0.01" required value={form.budgetEstimatePkr} onChange={event => update("budgetEstimatePkr", event.target.value)} className="field-control" placeholder="0" /></label><label className="flex min-h-[44px] items-center gap-3 self-end rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-navy"><input type="checkbox" checked={form.transportRequired} onChange={event => update("transportRequired", event.target.checked)} className="size-4 accent-navy" />Vehicle / transport required</label></div></section>}<label className="block"><span className="field-label">Justification and requested action</span><textarea required maxLength={3000} value={form.justification} onChange={event => update("justification", event.target.value)} className="field-control min-h-36 resize-y" placeholder="Provide the context, required approval or action, and timing." /></label><button disabled={submitting} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-navy px-4 py-3 text-sm font-bold text-white transition hover:bg-navy/90 disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.97]">{submitting ? <LoaderCircle className="animate-spin" size={18} /> : <Send size={17} />}{submitting ? "Submitting…" : "Submit for decision"}</button></form></section><div className="space-y-6"><section className="panel overflow-hidden"><div className="flex items-center justify-between border-b border-slate-100 px-5 py-5 sm:px-6"><div><h2 className="font-bold text-navy">Your submissions</h2><p className="mt-1 text-xs text-slate-500">Pending requests can be cancelled with a recorded reason.</p></div><button aria-label="Refresh requests" onClick={() => void loadRequests()} className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-navy"><RefreshCw size={17} className={loading ? "animate-spin" : ""} /></button></div>{loading ? <div className="grid min-h-72 place-items-center text-sm text-slate-500"><LoaderCircle className="mb-3 animate-spin text-navy" size={25} />Loading your requests…</div> : requests.length === 0 ? <div className="grid min-h-56 place-items-center px-6 text-center"><div><FileText className="mx-auto mb-3 text-slate-300" size={34} /><h3 className="font-bold text-navy">No requests yet</h3><p className="mt-1 text-sm text-slate-500">Your submitted requests will appear here.</p></div></div> : <div className="divide-y divide-slate-100">{requests.map(request => <article key={request.rowNumber} className="space-y-4 p-5 sm:px-6"><div className="flex flex-wrap items-start justify-between gap-3"><div><div className="flex flex-wrap items-center gap-2"><p className="font-bold text-navy">{request.requestType}</p><StatusBadge status={request.status} /></div><p className="mt-1 text-xs font-semibold text-slate-500">{request.department} · Submitted {request.timestamp ? new Date(request.timestamp).toLocaleString() : "—"}</p>{request.trackingId && <p className="mt-2 inline-flex rounded-md bg-navy/5 px-2 py-1 font-mono text-[11px] font-bold text-navy">{request.trackingId}</p>}</div>{request.status === "Pending" && <button type="button" onClick={() => { setCancellationRequest(request); setCancellationReason(""); }} className="rounded-lg border border-crimson/25 px-3 py-2 text-xs font-bold text-crimson transition hover:bg-crimson/5 active:scale-[0.97]">Cancel request</button>}</div><p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-600">{request.justification}</p><WorkflowStepper request={request} compact />{request.status !== "Pending" && <div className="rounded-xl bg-slate-50 p-3"><p className="text-xs font-bold uppercase tracking-wide text-slate-500">Workflow remarks</p><p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">{request.remarks || request.cancellationReason || "No additional remarks"}</p>{request.decisionLog && <p className="mt-2 text-xs text-slate-500">{request.decisionLog}</p>}</div>}</article>)}</div>}</section><section className="panel overflow-hidden"><div className="border-b border-slate-100 px-5 py-5 sm:px-6"><div className="flex items-center gap-3"><div className="rounded-lg bg-emerald/10 p-2 text-emerald"><ClipboardCheck size={18} /></div><div><h2 className="font-bold text-navy">Assigned to me</h2><p className="mt-1 text-xs text-slate-500">Tasks linked to your active roster email. Post updates with a clear operational note.</p></div></div></div>{loading ? <div className="grid min-h-36 place-items-center text-sm text-slate-500">Loading assigned tasks…</div> : assignedTasks.length === 0 ? <div className="px-6 py-8 text-center text-sm text-slate-500">No active assignments are linked to your roster email.</div> : <div className="divide-y divide-slate-100">{assignedTasks.map(task => <article key={task.rowNumber} className="space-y-4 p-5 sm:px-6"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-bold text-navy">{task.requestType}</p><p className="mt-1 text-xs text-slate-500">Requester: {task.staffName} · {task.trackingId || `Register row ${task.rowNumber}`}</p>{task.taskStatus && <p className="mt-2 inline-flex rounded-md bg-navy/5 px-2 py-1 text-xs font-bold text-navy">Task status: {task.taskStatus}</p>}</div><button type="button" onClick={() => openTaskUpdate(task)} className="rounded-lg bg-navy px-3 py-2 text-xs font-bold text-white transition hover:bg-navy/90 active:scale-[0.97]">Update task</button></div><p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-600">{task.justification}</p><WorkflowStepper request={task} compact />{task.taskRemarks && <p className="rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600"><span className="font-bold text-navy">Last update:</span> {task.taskRemarks}</p>}</article>)}</div>}</section></div></div>{cancellationRequest && <div role="dialog" aria-modal="true" aria-labelledby="cancel-request-title" className="fixed inset-0 z-50 grid place-items-center bg-navy/50 p-4"><div className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-xl sm:p-6"><div className="flex items-start justify-between gap-4"><div><h2 id="cancel-request-title" className="text-lg font-extrabold text-navy">Cancel pending request</h2><p className="mt-1 text-sm text-slate-600">This records a cancellation reason in the workflow register.</p></div><button aria-label="Close cancellation dialog" onClick={() => setCancellationRequest(null)} className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100"><X size={18} /></button></div><label className="mt-5 block"><span className="field-label">Cancellation reason</span><textarea autoFocus required maxLength={1200} value={cancellationReason} onChange={event => setCancellationReason(event.target.value)} className="field-control mt-1 min-h-28 resize-y" placeholder="Explain why this request is no longer required." /></label><div className="mt-5 flex justify-end gap-2"><button type="button" onClick={() => setCancellationRequest(null)} className="rounded-lg px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100">Keep request</button><button disabled={cancelling} type="button" onClick={() => void cancelRequest()} className="rounded-lg bg-crimson px-4 py-2 text-sm font-bold text-white disabled:opacity-60">{cancelling ? "Cancelling…" : "Confirm cancellation"}</button></div></div></div>}{taskRequest && <div role="dialog" aria-modal="true" aria-labelledby="task-update-title" className="fixed inset-0 z-50 grid place-items-center bg-navy/50 p-4"><div className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-xl sm:p-6"><div className="flex items-start justify-between gap-4"><div><h2 id="task-update-title" className="text-lg font-extrabold text-navy">Update assigned task</h2><p className="mt-1 text-sm text-slate-600">Post the latest operational status and supporting remarks.</p></div><button aria-label="Close task update dialog" onClick={() => setTaskRequest(null)} className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100"><X size={18} /></button></div><label className="mt-5 block"><span className="field-label">Task status</span><select value={taskDraft.taskStatus} onChange={event => setTaskDraft(current => ({ ...current, taskStatus: event.target.value as TaskStatus }))} className="field-control mt-1">{TASK_STATUSES.map(status => <option key={status}>{status}</option>)}</select></label><label className="mt-4 block"><span className="field-label">Update remarks</span><textarea autoFocus required maxLength={1200} value={taskDraft.taskRemarks} onChange={event => setTaskDraft(current => ({ ...current, taskRemarks: event.target.value }))} className="field-control mt-1 min-h-28 resize-y" placeholder="State progress, completion evidence, blocker, or clarification required." /></label><div className="mt-5 flex justify-end gap-2"><button type="button" onClick={() => setTaskRequest(null)} className="rounded-lg px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100">Cancel</button><button disabled={updatingTask} type="button" onClick={() => void saveTaskUpdate()} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white disabled:opacity-60">{updatingTask ? "Saving…" : "Save update"}</button></div></div></div>}</div>;
+function inclusiveDays(start: string, end: string): number | null {
+  if (!start || !end) return null;
+  const difference = Date.parse(`${end}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`);
+  if (!Number.isFinite(difference) || difference < 0) return null;
+  return Math.round(difference / (1000 * 60 * 60 * 24)) + 1;
 }
 
+export function StaffPortal({ user }: { user: StaffProfile }) {
+  const [form, setForm] = useState<FormState>(initialForm);
+  const [roster, setRoster] = useState<RosterMember[]>([]);
+  const [requests, setRequests] = useState<PortalRequest[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  async function loadData() {
+    setRefreshing(true);
+    try {
+      const [reqRes, rosterRes] = await Promise.all([
+        fetch("/api/staff/requests"),
+        fetch("/api/roster"),
+      ]);
+
+      if (reqRes.ok) {
+        const reqData = await reqRes.json();
+        setRequests(Array.isArray(reqData.requests) ? reqData.requests : []);
+      }
+
+      if (rosterRes.ok) {
+        const rosData = await rosterRes.json();
+        const list = rosData.roster || rosData.data || [];
+        setRoster(Array.isArray(list) ? list : []);
+      }
+    } catch (err) {
+      console.error("Failed to load staff data:", err);
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const leaveDays = useMemo(
+    () => inclusiveDays(form.leaveStartDate, form.leaveEndDate),
+    [form.leaveStartDate, form.leaveEndDate]
+  );
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMessage(null);
+    setSubmitSuccess(null);
+
+    try {
+      const payload = {
+        ...form,
+        staffName: user.name,
+        staffEmail: user.email,
+        department: user.department,
+        leaveDays: leaveDays || 0,
+      };
+
+      const res = await fetch("/api/requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Submission failed. Please check required fields.");
+      }
+
+      setSubmitSuccess("Your request was submitted and matrix-routed successfully.");
+      setForm(initialForm);
+      loadData();
+    } catch (err: any) {
+      setErrorMessage(err?.message || "An unexpected error occurred.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const activeColleagues = useMemo(() => {
+    const userEmail = (user.email || "").toLowerCase().trim();
+    return roster.filter((m) => (m.email || "").toLowerCase().trim() !== userEmail);
+  }, [roster, user.email]);
+
+  return (
+    <div className="space-y-6">
+      {errorMessage && (
+        <div className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-red-600" />
+            <span>{errorMessage}</span>
+          </div>
+          <button onClick={() => setErrorMessage(null)}>
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {submitSuccess && (
+        <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
+          <div className="flex items-center gap-2">
+            <ClipboardCheck className="h-4 w-4 text-emerald-600" />
+            <span>{submitSuccess}</span>
+          </div>
+          <button onClick={() => setSubmitSuccess(null)}>
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        {/* Submission Form */}
+        <div className="lg:col-span-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-5">
+            <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+              <ClipboardPlus className="h-5 w-5 text-indigo-600" />
+              New matrix-routed request
+            </h2>
+            <p className="text-xs text-slate-500 mt-1">
+              Profile and reviewer routing are enforced automatically.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                Request category
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {(Object.keys(REQUEST_CATEGORY_LABELS) as RequestCategory[]).map((cat) => (
+                  <button
+                    type="button"
+                    key={cat}
+                    onClick={() => setForm((prev) => ({ ...prev, category: cat }))}
+                    className={`rounded-lg border px-3 py-2 text-xs font-medium text-left transition-colors ${
+                      form.category === cat
+                        ? "border-slate-900 bg-slate-900 text-white"
+                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    {REQUEST_CATEGORY_LABELS[cat]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Leave Fields */}
+            {form.category === "LEAVE" && (
+              <div className="space-y-3 rounded-lg border border-slate-100 bg-slate-50/50 p-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Leave type</label>
+                  <select
+                    value={form.leaveType}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        leaveType: e.target.value as FormState["leaveType"],
+                      }))
+                    }
+                    className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800"
+                  >
+                    <option value="Casual">Casual</option>
+                    <option value="Sick">Sick</option>
+                    <option value="Annual">Annual</option>
+                    <option value="Emergency">Emergency</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">Start date</label>
+                    <input
+                      type="date"
+                      value={form.leaveStartDate}
+                      onChange={(e) => setForm((prev) => ({ ...prev, leaveStartDate: e.target.value }))}
+                      className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">End date</label>
+                    <input
+                      type="date"
+                      value={form.leaveEndDate}
+                      onChange={(e) => setForm((prev) => ({ ...prev, leaveEndDate: e.target.value }))}
+                      className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {leaveDays !== null && (
+                  <div className="text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-100 rounded px-2.5 py-1">
+                    {leaveDays} {leaveDays === 1 ? "calendar day" : "calendar days"}
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                    Handover colleague
+                  </label>
+                  <select
+                    value={form.handoverColleagueEmail}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, handoverColleagueEmail: e.target.value }))
+                    }
+                    className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800"
+                    required
+                  >
+                    <option value="">Select active colleague</option>
+                    {activeColleagues.map((member) => (
+                      <option key={member.email} value={member.email}>
+                        {member.name || member.email} ({member.department || member.designation || "Staff"})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {/* Finance Fields */}
+            {form.category === "FINANCE" && (
+              <div className="space-y-3 rounded-lg border border-slate-100 bg-slate-50/50 p-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">Expense type</label>
+                    <select
+                      value={form.expenseType}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          expenseType: e.target.value as FormState["expenseType"],
+                        }))
+                      }
+                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800"
+                    >
+                      <option value="Travel">Travel</option>
+                      <option value="Vendor">Vendor</option>
+                      <option value="Office">Office</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">Amount (PKR)</label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 15000"
+                      value={form.amountPkr}
+                      onChange={(e) => setForm((prev) => ({ ...prev, amountPkr: e.target.value }))}
+                      className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Receipt Drive Link</label>
+                  <input
+                    type="url"
+                    placeholder="https://drive.google.com/..."
+                    value={form.receiptDriveLink}
+                    onChange={(e) => setForm((prev) => ({ ...prev, receiptDriveLink: e.target.value }))}
+                    className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Logistics Fields */}
+            {form.category === "LOGISTICS" && (
+              <div className="space-y-3 rounded-lg border border-slate-100 bg-slate-50/50 p-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Asset Details</label>
+                  <input
+                    type="text"
+                    placeholder="Asset name / description"
+                    value={form.assetDetails}
+                    onChange={(e) => setForm((prev) => ({ ...prev, assetDetails: e.target.value }))}
+                    className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Required by date</label>
+                  <input
+                    type="date"
+                    value={form.requiredByDate}
+                    onChange={(e) => setForm((prev) => ({ ...prev, requiredByDate: e.target.value }))}
+                    className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs"
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Legal / Field Operations Fields */}
+            {form.category === "LEGAL" && (
+              <div className="space-y-3 rounded-lg border border-slate-100 bg-slate-50/50 p-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Case reference</label>
+                  <input
+                    type="text"
+                    placeholder="Case title or reference number"
+                    value={form.caseRef}
+                    onChange={(e) => setForm((prev) => ({ ...prev, caseRef: e.target.value }))}
+                    className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Court / Forum</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. High Court / Session Court"
+                    value={form.courtForum}
+                    onChange={(e) => setForm((prev) => ({ ...prev, courtForum: e.target.value }))}
+                    className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1">
+                Justification and requested action
+              </label>
+              <textarea
+                rows={3}
+                placeholder="Provide operational context and required action."
+                value={form.justification}
+                onChange={(e) => setForm((prev) => ({ ...prev, justification: e.target.value }))}
+                className="w-full rounded-md border border-slate-300 bg-white p-2.5 text-xs text-slate-800"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50"
+            >
+              {loading ? (
+                <>
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                  Routing to Matrix...
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4" />
+                  Submit Request
+                </>
+              )}
+            </button>
+          </form>
+        </div>
+
+        {/* Submissions & Stepper List */}
+        <div className="lg:col-span-7 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-semibold text-slate-900 flex items-center gap-2">
+              <FileText className="h-4 w-4 text-slate-600" />
+              Your submissions
+            </h3>
+            <button
+              onClick={loadData}
+              disabled={refreshing}
+              className="flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-slate-50 disabled:opacity-50"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
+              Refresh
+            </button>
+          </div>
+
+          {requests.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-slate-300 bg-white p-12 text-center text-slate-400">
+              <ClipboardPlus className="mx-auto h-8 w-8 text-slate-300 mb-2" />
+              <p className="text-sm font-medium">No requests recorded yet.</p>
+              <p className="text-xs text-slate-400">Submit a request using the form on the left.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {requests.map((req, idx) => (
+                <div
+                  key={req.id || req.trackingId || idx}
+                  className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4"
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="font-semibold text-sm text-slate-900">
+                        {req.title || req.summary || `${REQUEST_CATEGORY_LABELS[req.category] || "Request"}`}
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {req.trackingId ? `ID: ${req.trackingId} · ` : ""}
+                        {req.category}
+                      </p>
+                    </div>
+                    <StatusBadge status={req.status} />
+                  </div>
+
+                  {req.justification && (
+                    <p className="text-xs text-slate-700 bg-slate-50 p-2.5 rounded-md border border-slate-100">
+                      {req.justification}
+                    </p>
+                  )}
+
+                  <WorkflowStepper
+                    status={req.status}
+                    currentAssignee={req.currentAssignee || req.assignedTo || "Reviewer"}
+                    approvalTierRequired={req.approvalTierRequired}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
