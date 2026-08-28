@@ -114,7 +114,7 @@ const INITIAL_PORTFOLIO_TASKS: AssignedTask[] = [
   {
     id: "TSK-801",
     title: "Setup Community Legal Clinic & Distribute Rights Booklets",
-    category: "Community Camp",
+    category: "Community Legal Camp",
     dueDateOrHearing: "2026-09-03",
     venue: "UC Sunny Bungalows, Qasimabad",
     hub: "Hyderabad",
@@ -142,7 +142,7 @@ const INITIAL_PORTFOLIO_TASKS: AssignedTask[] = [
   {
     id: "TSK-803",
     title: "Bail Petition Arguments & Case Diary Submission",
-    category: "Legal Casework",
+    category: "Legal Casework / Court",
     dueDateOrHearing: "2026-09-02",
     venue: "Sessions Court, Sukkur",
     hub: "Sukkur",
@@ -156,7 +156,7 @@ const INITIAL_PORTFOLIO_TASKS: AssignedTask[] = [
   {
     id: "TSK-804",
     title: "Institutional Quarterly Partner Review & MoU Compliance",
-    category: "Operational Task",
+    category: "Operational / Admin Task",
     dueDateOrHearing: "2026-09-10",
     venue: "Head Office Karachi / All Hubs",
     hub: "Karachi",
@@ -302,7 +302,7 @@ export default function WorkspacePage() {
     );
   }, [currentUser]);
 
-  // File Upload to Drive Function
+  // Google Drive File Upload
   async function handleFileUpload(file: File): Promise<string> {
     setIsUploadingFile(true);
     return new Promise((resolve, reject) => {
@@ -339,7 +339,7 @@ export default function WorkspacePage() {
     });
   }
 
-  // Scoped Tasks
+  // Scoped Visibility
   const scopedTasks = useMemo(() => {
     if (!currentUser) return [];
     if (isAdminOrExec) return tasks;
@@ -367,6 +367,22 @@ export default function WorkspacePage() {
       (r) => r.requesterEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim()
     );
   }, [requests, currentUser, isAdminOrExec]);
+
+  const filteredRequests = useMemo(() => {
+    return scopedRequests.filter((req) => {
+      const q = searchQuery.toLowerCase().trim();
+      const matchesSearch =
+        !q ||
+        req.requesterName?.toLowerCase().includes(q) ||
+        req.description?.toLowerCase().includes(q) ||
+        req.id?.toLowerCase().includes(q);
+
+      const type = (req.requestType || "").toLowerCase();
+      if (activeRequestFilter === "LEAVE") return matchesSearch && type.includes("leave");
+      if (activeRequestFilter === "EXPENSE") return matchesSearch && (type.includes("expense") || Number(req.amount) > 0);
+      return matchesSearch;
+    });
+  }, [scopedRequests, searchQuery, activeRequestFilter]);
 
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -410,16 +426,14 @@ export default function WorkspacePage() {
       attachmentUrl: taskAttachmentUrl,
     };
 
-    let apiSucceeded = false;
     try {
-      const res = await fetch("/api/tasks", {
+      await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "CREATE_TASK", task: newTask }),
       });
-      apiSucceeded = res.ok;
     } catch (err) {
-      console.warn("API Broadcast notice:", err);
+      console.warn("API broadcast notice:", err);
     }
 
     setTasks([newTask, ...tasks]);
@@ -960,13 +974,13 @@ export default function WorkspacePage() {
                   </div>
                 </div>
 
-                {scopedRequests.length === 0 ? (
+                {filteredRequests.length === 0 ? (
                   <div className="rounded-xl border border-dashed border-slate-200 py-12 text-center text-xs text-slate-500">
                     No operations requests filed by your account. Click <strong>"+ Apply for Leave / Expense"</strong> on the left.
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {scopedRequests.map((req) => (
+                    {filteredRequests.map((req) => (
                       <div
                         key={req.id}
                         className="rounded-xl border border-slate-100 bg-[#f8fafc] p-4 transition hover:border-[#1b365d]/40 hover:bg-white hover:shadow-2xs"
@@ -1183,7 +1197,7 @@ export default function WorkspacePage() {
                 />
               </div>
 
-              {/* File Attachment to Google Drive */}
+              {/* File Attachment Upload */}
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
                   Attach Brief / Document (Saved to Drive)
