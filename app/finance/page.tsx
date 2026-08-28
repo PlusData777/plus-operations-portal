@@ -190,7 +190,7 @@ export default function FinanceMasterPage() {
     }
   }, []);
 
-  const isExecutiveOrAdmin = useMemo(() => {
+const isExecutiveOrAdmin = useMemo(() => {
     if (!currentUser) return false;
     const adminExecEmails = [
       "dataplus.org@gmail.com",
@@ -203,7 +203,6 @@ export default function FinanceMasterPage() {
       adminExecEmails.includes(currentUser.email.toLowerCase().trim())
     );
   }, [currentUser]);
-
   const scopedClaims = useMemo(() => {
     if (!currentUser) return [];
     if (isExecutiveOrAdmin) return claims;
