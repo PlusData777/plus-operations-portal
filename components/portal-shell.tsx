@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboard, UserRound, Users, BarChart3 } from "lucide-react";
+import { LayoutDashboard, UserRound, Users, BarChart3, FolderOpen } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { SignOutButton } from "@/components/auth-buttons";
 import type { PortalUser } from "@/lib/auth";
@@ -13,18 +13,20 @@ export function PortalShell({
 }: {
   children: React.ReactNode;
   user: PortalUser;
-  active: "staff" | "review" | "directory" | "analytics";
+  active: "staff" | "review" | "directory" | "analytics" | "documents";
 }) {
   const privileged = isPrivilegedUser(user);
 
   const staffNav = [
     { href: "/portal", label: "My submissions", icon: UserRound, key: "staff" as const },
     { href: "/directory", label: "Staff Directory", icon: Users, key: "directory" as const },
+    { href: "/documents", label: "Document & Policy Hub", icon: FolderOpen, key: "documents" as const },
   ];
 
   const privilegedNav = [
     { href: "/cockpit", label: queueLabel(user.role), icon: LayoutDashboard, key: "review" as const },
     { href: "/directory", label: "Staff Directory", icon: Users, key: "directory" as const },
+    { href: "/documents", label: "Document & Policy Hub", icon: FolderOpen, key: "documents" as const },
     { href: "/analytics", label: "Executive Analytics", icon: BarChart3, key: "analytics" as const },
   ];
 
