@@ -1,23 +1,24 @@
-import type { Config } from "tailwindcss";
-
-const config: Config = {
-  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
   theme: {
     extend: {
       colors: {
-        navy: "#1d3557",
-        plusSlate: "#334155",
-        emerald: "#16a34a",
-        crimson: "#dc2626",
-        canvas: "#f8fafc"
+        brand: {
+          navy: "#1b365d",
+          "navy-dark": "#122440",
+          yellow: "#fad207",
+          rust: "#c65a28",
+          ochre: "#e59a24",
+          red: "#b82626",
+        },
       },
-      boxShadow: {
-        panel: "0 18px 50px rgba(29, 53, 87, 0.09)",
-        lift: "0 12px 30px rgba(29, 53, 87, 0.14)"
-      }
-    }
+    },
   },
-  plugins: []
+  plugins: [],
 };
-
-export default config;
