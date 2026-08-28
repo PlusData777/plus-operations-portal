@@ -14,6 +14,7 @@ import {
 import { StatusBadge } from "@/components/status-badge";
 import { WorkflowStepper } from "@/components/workflow-stepper";
 import {
+  import { LeaveQuotaCard } from "@/components/leave-quota-card";
   REQUEST_CATEGORY_LABELS,
   type PortalRequest,
   type RequestCategory,
