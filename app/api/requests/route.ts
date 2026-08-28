@@ -1,36 +1,48 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
-import { listRequests } from "@/lib/webhook";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function POST(req: Request) {
+  const scriptUrl =
+    process.env.GOOGLE_MACRO_URL ||
+    process.env.APPS_SCRIPT_URL ||
+    process.env.NEXT_PUBLIC_APPS_SCRIPT_URL;
+
+  if (!scriptUrl) {
+    return NextResponse.json(
+      { success: false, error: "Apps Script URL is not configured." },
+      { status: 500 }
+    );
+  }
+
   try {
-    const user = await getCurrentUser();
-    if (!user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const body = await req.json();
+
+    const res = await fetch(scriptUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8", // Ensures Apps Script postData parses cleanly without CORS/preflight failure
+      },
+      body: JSON.stringify({
+        action: "createRequest",
+        ...body,
+      }),
+      redirect: "follow",
+    });
+
+    const rawText = await res.text();
+    let data;
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      data = { success: true, message: "Request received", raw: rawText };
     }
 
-    const allRequests = await listRequests();
-    const userEmail = user.email.toLowerCase().trim();
-
-    // If Admin/Privileged, show all; otherwise filter by user's email
-    const isPrivileged = ["ADMIN", "EXECUTIVE", "HR_ADMIN", "FINANCE_MGR", "PROGRAM_MGR"].includes(
-      user.role
-    );
-    const requests = isPrivileged
-      ? allRequests
-      : allRequests.filter((r) => (r.staffEmail || "").toLowerCase().trim() === userEmail);
-
-    return NextResponse.json({
-      success: true,
-      requests,
-      data: requests,
-    });
-  } catch (error: any) {
-    console.error("Requests API error:", error);
+    return NextResponse.json(data);
+  } catch (err: any) {
+    console.error("Submission error:", err);
     return NextResponse.json(
-      { error: error?.message || "Failed to load requests" },
+      { success: false, error: err?.message || "Failed to submit request." },
       { status: 500 }
     );
   }
