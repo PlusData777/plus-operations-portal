@@ -203,7 +203,14 @@ const isExecutiveOrAdmin = useMemo(() => {
       adminExecEmails.includes(currentUser.email.toLowerCase().trim())
     );
   }, [currentUser]);
+
   const scopedClaims = useMemo(() => {
+    if (!currentUser) return [];
+    if (isExecutiveOrAdmin) return claims;
+    return claims.filter(
+      (c) => c.requesterEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim()
+    );
+  }, [claims, currentUser, isExecutiveOrAdmin]);  const scopedClaims = useMemo(() => {
     if (!currentUser) return [];
     if (isExecutiveOrAdmin) return claims;
     return claims.filter(
