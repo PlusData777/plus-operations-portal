@@ -93,7 +93,6 @@ export function normalizeRoster(data: unknown): RosterMember[] {
       designation: text(row.designation || row.Designation || role),
       department: text(row.department || row.Department || "Operations"),
       approvalScope: text(row.approvalScope || row.ApprovalScope || row["Approval Scope"] || "General"),
-      status: "Active",
     });
   }
 
