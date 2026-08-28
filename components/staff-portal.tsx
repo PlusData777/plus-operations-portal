@@ -262,18 +262,25 @@ export function StaffPortal({ user }: { user: StaffProfile }) {
                   </div>
                 )}
 
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Handover colleague
-                  </label>
-                  <select
-                    value={form.handoverColleagueEmail}
-                    onChange={(e) =>
-                      setForm((prev) => ({ ...prev, handoverColleagueEmail: e.target.value }))
-                    }
-                    className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800"
-                    required
-                  >
+          <option value="">Select active colleague</option>
+                  {activeColleagues.map((member: any) => {
+                    const displayName =
+                      member.name ||
+                      member.staffName ||
+                      member.fullName ||
+                      member.displayName ||
+                      member.email?.split("@")[0] ||
+                      "Colleague";
+                    const dept = member.department || member.designation || member.role || "";
+
+                    return (
+                      <option key={member.email} value={member.email}>
+                        {displayName} {dept ? `(${dept})` : ""}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
                     <option value="">Select active colleague</option>
                     {activeColleagues.map((member) => (
                       <option key={member.email} value={member.email}>
