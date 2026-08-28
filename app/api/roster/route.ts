@@ -1,24 +1,38 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
-import { listRoster } from "@/lib/webhook";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const scriptUrl =
+    process.env.GOOGLE_MACRO_URL ||
+    process.env.APPS_SCRIPT_URL ||
+    process.env.NEXT_PUBLIC_APPS_SCRIPT_URL;
 
-    const roster = await listRoster();
-    return NextResponse.json({
-      success: true,
-      roster: Array.isArray(roster) ? roster : [],
-      data: Array.isArray(roster) ? roster : [],
+  if (!scriptUrl) {
+    return NextResponse.json(
+      { success: false, error: "Apps Script URL not configured in environment variables." },
+      { status: 500 }
+    );
+  }
+
+  try {
+    const url = new URL(scriptUrl);
+    url.searchParams.set("action", "roster");
+
+    const res = await fetch(url.toString(), {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      redirect: "follow", // Follow Apps Script redirects
+      cache: "no-store",
     });
+
+    const data = await res.json();
+    return NextResponse.json(data);
   } catch (error: any) {
-    console.error("Roster API error:", error);
-    return NextResponse.json({ error: error?.message || "Failed to load roster" }, { status: 500 });
+    console.error("Error fetching roster from Apps Script:", error);
+    return NextResponse.json(
+      { success: false, error: error?.message || "Failed to fetch roster." },
+      { status: 500 }
+    );
   }
 }
