@@ -38,6 +38,7 @@ import {
   ShieldCheck,
   TrendingUp,
   User,
+  UserCheck,
   Users,
   X,
   XCircle,
@@ -324,7 +325,6 @@ export default function WorkspacePage() {
     }
   };
 
-  // User's Direct Deliverable Tasks & Program Portfolios
   const userTasks = useMemo(() => {
     if (!currentUser) return [];
     if (isAdminOrExec) return tasks;
@@ -333,7 +333,6 @@ export default function WorkspacePage() {
     );
   }, [tasks, currentUser, isAdminOrExec]);
 
-  // User's Leave & Expense Requests
   const userRequests = useMemo(() => {
     if (!currentUser) return [];
     if (isAdminOrExec) return requests;
@@ -366,7 +365,6 @@ export default function WorkspacePage() {
     );
   }
 
-  // Login Gate
   if (!currentUser) {
     return (
       <div className="flex min-h-screen flex-col justify-between bg-[#f8fafc] text-slate-900">
@@ -533,6 +531,14 @@ export default function WorkspacePage() {
                 >
                   <Handshake className="h-4 w-4 text-[#1b365d]" />
                   <span>Partners & MoUs</span>
+                </Link>
+
+                <Link
+                  href="/hr"
+                  className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
+                >
+                  <UserCheck className="h-4 w-4 text-[#1b365d]" />
+                  <span>HR & Appraisals</span>
                 </Link>
 
                 <Link
@@ -1005,7 +1011,7 @@ export default function WorkspacePage() {
             <div className="flex items-center gap-3">
               <span className="flex h-2.5 w-2.5 rounded-full bg-[#fad207]" />
               <span className="text-xs font-bold uppercase tracking-wider text-slate-200">
-                Pakistan Legal United Society · Operations & Legal Aid Hub
+                Pakistan Legal United Society · Operations & Legal Aid Hub[cite: 1]
               </span>
             </div>
             <div>
@@ -1029,7 +1035,7 @@ export default function WorkspacePage() {
                 </div>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed max-w-sm">
-                Committed to human rights protection, public interest legal aid, and operational transparency across Sindh and Pakistan.
+                Committed to human rights protection, public interest legal aid, and operational transparency across Sindh and Pakistan[cite: 1].
               </p>
             </div>
 
@@ -1037,42 +1043,42 @@ export default function WorkspacePage() {
               <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-xs">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#fad207] mb-1.5">
                   <MapPin className="h-3.5 w-3.5" />
-                  <span>Head Office (Karachi)</span>
+                  <span>Head Office (Karachi)[cite: 1]</span>
                 </div>
                 <p className="text-[11px] text-slate-300 leading-normal">
-                  Plot 213, St 4, New Bakhtawar Goth, Block-09, Gulistan-e-Johar
+                  Plot 213, St 4, New Bakhtawar Goth, Block-09, Gulistan-e-Johar[cite: 1]
                 </p>
                 <div className="mt-2.5 flex items-center gap-1 text-[11px] font-mono text-slate-200">
                   <Phone className="h-3 w-3 text-[#fad207]" />
-                  <span>021-34011698</span>
+                  <span>021-34011698[cite: 1]</span>
                 </div>
               </div>
 
               <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-xs">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#fad207] mb-1.5">
                   <MapPin className="h-3.5 w-3.5" />
-                  <span>Regional (Hyderabad)</span>
+                  <span>Regional (Hyderabad)[cite: 1]</span>
                 </div>
                 <p className="text-[11px] text-slate-300 leading-normal">
-                  House B/7 Ground Floor, Street 1, Sunny Bungalows, Qasimabad
+                  House B/7 Ground Floor, Street 1, Sunny Bungalows, Qasimabad[cite: 1]
                 </p>
                 <div className="mt-2.5 flex items-center gap-1 text-[11px] font-mono text-slate-200">
                   <Phone className="h-3 w-3 text-[#fad207]" />
-                  <span>022-6112571</span>
+                  <span>022-6112571[cite: 1]</span>
                 </div>
               </div>
 
               <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-xs">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#fad207] mb-1.5">
                   <MapPin className="h-3.5 w-3.5" />
-                  <span>Regional (Sukkur)</span>
+                  <span>Regional (Sukkur)[cite: 1]</span>
                 </div>
                 <p className="text-[11px] text-slate-300 leading-normal">
-                  Women Development Complex, near SRSO, Shikarpur Rd
+                  Women Development Complex, near SRSO, Shikarpur Rd[cite: 1]
                 </p>
                 <div className="mt-2.5 flex items-center gap-1 text-[11px] font-mono text-slate-200">
                   <Phone className="h-3 w-3 text-[#fad207]" />
-                  <span>071-5824119</span>
+                  <span>071-5824119[cite: 1]</span>
                 </div>
               </div>
             </div>
