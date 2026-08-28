@@ -83,13 +83,13 @@ interface StaffProfile {
 }
 
 const OFFICIAL_ROSTER: StaffProfile[] = [
-  { email: "dataplus.org@gmail.com", name: "Atif Ali", designation: "Administrator", role: "ADMIN", department: "IT / Systems", accessPin: "9901" },
+  { email: "dataplus.org@gmail.com", name: "Aatif", designation: "Administrator", role: "ADMIN", department: "IT / Systems", accessPin: "9901" },
   { email: "altafkhoso.adv@gmail.com", name: "Altaf Khoso", designation: "CEO", role: "EXECUTIVE", department: "Executive Board", accessPin: "8821" },
   { email: "rizwanapatel.plus@gmail.com", name: "Rizwana Patel", designation: "Chairperson", role: "EXECUTIVE", department: "Executive Board", accessPin: "7732" },
   { email: "ishfaque.mojai@gmail.com", name: "Ashfaq Ali", designation: "HR & Admin Lead", role: "HR_ADMIN", department: "HR & Operations", accessPin: "4412" },
   { email: "japheth.wilson123@gmail.com", name: "Japheth Wilson", designation: "Finance Manager", role: "FINANCE_MGR", department: "Finance", accessPin: "5523" },
+  { email: "kamanger110@gmail.com", name: "Kamanger", designation: "Program Manager", role: "PROGRAM_MGR", department: "Programs & Operations", accessPin: "3184" },
   { email: "salmahabibbhutto88@gmail.com", name: "Salma Habib Bhutto", designation: "Program Manager", role: "PROGRAM_MGR", department: "Programs", accessPin: "6634" },
-  { email: "kamanger110@gmail.com", name: "Kamanger", designation: "Field & Operations Officer", role: "GENERAL_STAFF", department: "Operations", accessPin: "3184" },
   { email: "advazizullahazizullah@gmail.com", name: "Adv Azizullah", designation: "Legal Associate", role: "LEGAL_STAFF", department: "Legal Aid", accessPin: "2945" },
   { email: "faizthecoach@gmail.com", name: "Faiz", designation: "Field Coordinator", role: "GENERAL_STAFF", department: "Field Ops", accessPin: "5820" },
   { email: "saifrehman.kaloi@gmail.com", name: "Saif Rehman", designation: "Field Coordinator", role: "GENERAL_STAFF", department: "Field Ops", accessPin: "4719" },
@@ -286,6 +286,11 @@ export default function WorkspacePage() {
     setSubmittingForm(true);
     const newReqId = "PLUS-" + (requests.length + 101);
 
+    // Dynamic Routing: Kamanger routes straight to CEO (Altaf Khoso), general staff to HR (Ashfaq Ali)
+    const isKamanger = currentUser.email.toLowerCase().trim() === "kamanger110@gmail.com";
+    const assignedApprover = isKamanger ? "altafkhoso.adv@gmail.com" : "ishfaque.mojai@gmail.com";
+    const initialStatus = isKamanger ? "Submitted · Routed to CEO" : "Submitted · Pending Tier 1";
+
     const newRequest: RequestItem = {
       id: newReqId,
       timestamp: new Date().toISOString(),
@@ -299,8 +304,8 @@ export default function WorkspacePage() {
       amount: formType === "Expense" ? formAmount : undefined,
       expenseCategory: formType === "Expense" ? formExpenseCategory : undefined,
       description: formDescription,
-      status: "Submitted · Pending Tier 1",
-      currentApproverEmail: "ishfaque.mojai@gmail.com",
+      status: initialStatus,
+      currentApproverEmail: assignedApprover,
     };
 
     try {
@@ -978,7 +983,7 @@ export default function WorkspacePage() {
               {submitSuccess ? (
                 <div className="flex items-center justify-center gap-2 rounded-xl bg-emerald-50 p-3 text-xs font-bold text-emerald-700 border border-emerald-200">
                   <CheckCircle2 className="h-4 w-4" />
-                  <span>Submitted Successfully & Routed to Line Manager!</span>
+                  <span>Submitted Successfully & Routed!</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-3 pt-2">
