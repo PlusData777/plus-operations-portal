@@ -17,14 +17,18 @@ export function PortalShell({
 }) {
   const privileged = isPrivilegedUser(user);
 
-  const baseNav = privileged
-    ? [{ href: "/cockpit", label: queueLabel(user.role), icon: LayoutDashboard, key: "review" as const }]
-    : [{ href: "/portal", label: "My submissions", icon: UserRound, key: "staff" as const }];
+  const staffNav = [
+    { href: "/portal", label: "My submissions", icon: UserRound, key: "staff" as const },
+    { href: "/directory", label: "Staff Directory", icon: Users, key: "directory" as const },
+  ];
 
-  const nav = [
-    ...baseNav,
+  const privilegedNav = [
+    { href: "/cockpit", label: queueLabel(user.role), icon: LayoutDashboard, key: "review" as const },
     { href: "/directory", label: "Staff Directory", icon: Users, key: "directory" as const },
     { href: "/analytics", label: "Executive Analytics", icon: BarChart3, key: "analytics" as const },
+  ];
+
+  const nav = privileged ? privilegedNav : staffNav;
   ];
 
   return (
