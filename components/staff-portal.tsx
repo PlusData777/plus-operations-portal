@@ -100,17 +100,6 @@ export function StaffPortal({ user }: { user: StaffProfile }) {
       setRefreshing(false);
     }
   }
-      if (rosterRes.ok) {
-        const rosData = await rosterRes.json();
-        const list = rosData.roster || rosData.data || [];
-        setRoster(Array.isArray(list) ? list : []);
-      }
-    } catch (err) {
-      console.error("Failed to load staff data:", err);
-    } finally {
-      setRefreshing(false);
-    }
-  }
 
   useEffect(() => {
     loadData();
@@ -158,9 +147,13 @@ export function StaffPortal({ user }: { user: StaffProfile }) {
   }
 
   const activeColleagues = useMemo(() => {
-    const userEmail = (user.email || "").toLowerCase().trim();
-    return roster.filter((m) => (m.email || "").toLowerCase().trim() !== userEmail);
-  }, [roster, user.email]);
+    if (!Array.isArray(roster) || roster.length === 0) return [];
+    const currentUserEmail = (user?.email || "").trim().toLowerCase();
+    const filtered = roster.filter(
+      (m: any) => (m.email || "").trim().toLowerCase() !== currentUserEmail
+    );
+    return filtered.length > 0 ? filtered : roster;
+  }, [roster, user?.email]);
 
   return (
     <div className="space-y-6">
