@@ -17,7 +17,7 @@ export default async function PortalPage() {
     : [];
 
   return (
-    <PortalShell user={user} active="portal">
+    <PortalShell user={user} active="staff">
       <StaffPortal user={user} />
     </PortalShell>
   );
