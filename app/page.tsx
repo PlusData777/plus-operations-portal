@@ -14,12 +14,51 @@ import {
   MapPin,
   Phone,
   RefreshCw,
-  Scale,
   Search,
   ShieldAlert,
   TrendingUp,
   Users,
 } from "lucide-react";
+
+/* Custom PLUS Official Brand Emblem SVG */
+function PlusOfficialLogo({ className = "h-10 w-auto", dark = false }: { className?: string; dark?: boolean }) {
+  const fgColor = dark ? "#1b365d" : "#ffffff";
+  const circleStroke = dark ? "#1b365d" : "#fad207";
+  const textMotto = dark ? "#1b365d" : "#fad207";
+
+  return (
+    <svg viewBox="0 0 280 80" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      {/* Circular Scales Seal */}
+      <circle cx="40" cy="40" r="36" stroke={circleStroke} strokeWidth="2.5" strokeDasharray="3 2" />
+      <circle cx="40" cy="40" r="31" stroke={fgColor} strokeWidth="1.5" />
+      
+      {/* Scales of Justice */}
+      <path d="M40 20v40M30 28h20M25 34l5-6 5 6M45 34l5-6 5 6" stroke={fgColor} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M23 34c0 3.5 3.5 5 7 5s7-1.5 7-5M43 34c0 3.5 3.5 5 7 5s7-1.5 7-5" stroke={fgColor} strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      <path d="M34 60h12" stroke={fgColor} strokeWidth="2" strokeLinecap="round" />
+
+      {/* PLUS Acronym Stack */}
+      <g fill={fgColor} fontWeight="900" fontFamily="sans-serif">
+        <text x="85" y="27" fontSize="16" letterSpacing="0.5">P</text>
+        <text x="98" y="27" fontSize="9" fontWeight="700" opacity="0.9">AKISTAN</text>
+
+        <text x="85" y="41" fontSize="16" letterSpacing="0.5">L</text>
+        <text x="98" y="41" fontSize="9" fontWeight="700" opacity="0.9">EGAL</text>
+
+        <text x="85" y="55" fontSize="16" letterSpacing="0.5">U</text>
+        <text x="98" y="55" fontSize="9" fontWeight="700" opacity="0.9">NITED</text>
+
+        <text x="85" y="69" fontSize="16" letterSpacing="0.5">S</text>
+        <text x="98" y="69" fontSize="9" fontWeight="700" opacity="0.9">OCIETY</text>
+      </g>
+
+      {/* Urdu Tagline */}
+      <text x="175" y="48" fill={textMotto} fontSize="17" fontWeight="bold" fontFamily="serif" direction="rtl">
+        انصاف سب کا حق ہے
+      </text>
+    </svg>
+  );
+}
 
 interface RequestItem {
   id: string;
@@ -162,25 +201,22 @@ export default function WorkspacePage() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col justify-between">
-      {/* Top Navbar */}
+      {/* Top Navbar with Official PLUS Emblem */}
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-2xs">
-        <div className="container mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+        <div className="container mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fad207] text-[#1b365d] shadow-xs font-bold">
-              <Scale className="h-5 w-5" />
+            <div className="rounded-xl border border-slate-200 bg-[#1b365d] px-3 py-1.5 shadow-xs">
+              <PlusOfficialLogo className="h-9 w-auto" dark={false} />
             </div>
-            <div>
+            <div className="hidden sm:block">
               <div className="flex items-center gap-2">
-                <h1 className="text-base font-bold tracking-tight text-[#1b365d]">
-                  Pakistan Legal United Society
-                </h1>
-                <span className="hidden sm:inline-block rounded-md bg-[#1b365d]/10 px-2 py-0.5 text-[10px] font-bold text-[#1b365d]">
+                <span className="rounded-md bg-[#1b365d]/10 px-2 py-0.5 text-[10px] font-bold text-[#1b365d]">
                   PLUS OPS
                 </span>
+                <span className="text-[11px] font-medium text-slate-500">
+                  Operations & Governance Workspace
+                </span>
               </div>
-              <p className="text-[11px] font-medium text-slate-500">
-                Operations, Governance & Multi-Tier Approval Workspace
-              </p>
             </div>
           </div>
 
@@ -205,10 +241,10 @@ export default function WorkspacePage() {
         </div>
       </header>
 
-      {/* Main Workspace */}
+      {/* Main Workspace Layout */}
       <main className="container mx-auto max-w-7xl flex-1 px-4 py-8 sm:px-6">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-          {/* Left Sidebar */}
+          {/* Left Navigation Sidebar */}
           <aside className="lg:col-span-3 space-y-6">
             <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-xs">
               <span className="block px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -273,7 +309,7 @@ export default function WorkspacePage() {
               </nav>
             </div>
 
-            {/* Leave Balance Card */}
+            {/* Leave Balance Overview Widget */}
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
@@ -313,9 +349,9 @@ export default function WorkspacePage() {
             </div>
           </aside>
 
-          {/* Right Main Panel */}
+          {/* Right Workspace Main Stream */}
           <div className="lg:col-span-9 space-y-6">
-            {/* Banner */}
+            {/* Action Required Alert Banner */}
             <div className="rounded-2xl border border-[#fad207]/40 bg-[#fad207]/10 p-5 shadow-2xs">
               <div className="flex items-start gap-3">
                 <div className="rounded-xl bg-[#fad207] p-2 text-[#1b365d] shrink-0 mt-0.5">
@@ -334,7 +370,7 @@ export default function WorkspacePage() {
               </div>
             </div>
 
-            {/* Header */}
+            {/* Header Title & Role Badge */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#c65a28]">
@@ -358,7 +394,7 @@ export default function WorkspacePage() {
               </button>
             </div>
 
-            {/* Metric Cards */}
+            {/* KPI Metric Cards */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
                 <div className="flex items-center justify-between text-slate-400">
@@ -395,7 +431,7 @@ export default function WorkspacePage() {
               </div>
             </div>
 
-            {/* List Feed */}
+            {/* Search and Request Feed */}
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
@@ -471,7 +507,7 @@ export default function WorkspacePage() {
         </div>
       </main>
 
-      {/* Built-in Branded Footer */}
+      {/* Branded Footer with Official PLUS Emblem */}
       <footer className="mt-16 border-t border-slate-200 bg-[#1b365d] text-white">
         <div className="border-b border-white/10 bg-[#122440] py-4 px-4 sm:px-6">
           <div className="container mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -491,20 +527,8 @@ export default function WorkspacePage() {
 
         <div className="container mx-auto max-w-7xl px-4 py-10 sm:px-6">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
-            <div className="space-y-3 md:col-span-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fad207] text-[#1b365d] font-bold shadow-md">
-                  <Scale className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold tracking-tight text-white">
-                    Pakistan Legal United Society
-                  </h3>
-                  <p className="text-[12px] font-bold text-[#fad207]">
-                    انصاف سب کا حق ہے
-                  </p>
-                </div>
-              </div>
+            <div className="space-y-4 md:col-span-4">
+              <PlusOfficialLogo className="h-14 w-auto" dark={false} />
               <p className="text-xs text-slate-300 leading-relaxed max-w-sm">
                 Committed to human rights protection, public interest legal aid, and operational transparency across Sindh and Pakistan.
               </p>
