@@ -111,21 +111,18 @@ export function AnalyticsDashboard() {
           <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
         </div>
       ) : (
-        <>
-          <MetricCards metrics={snapshot.metrics} />
-
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+     <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
             <div className="lg:col-span-8">
-              <ExpenseTrendChart data={snapshot.trend} />
+              <ExpenseTrendChart
+                data={(snapshot as any).trend ?? (snapshot as any).expenseTrend ?? []}
+              />
             </div>
             <div className="lg:col-span-4">
-              <StatusDonutChart data={snapshot.statusDistribution} />
+              <StatusDonutChart
+                data={(snapshot as any).statusDistribution ?? (snapshot as any).distribution ?? []}
+              />
             </div>
           </div>
-
-          <TransactionsTable transactions={snapshot.transactions} />
-        </>
-      )}
     </div>
   );
 }
