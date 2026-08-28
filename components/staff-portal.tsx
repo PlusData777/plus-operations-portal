@@ -3,27 +3,21 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
-  CalendarDays,
   ClipboardCheck,
   ClipboardPlus,
   FileText,
   LoaderCircle,
   RefreshCw,
   Send,
-  ShieldAlert,
-  UserRoundCheck,
   X,
 } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
 import { WorkflowStepper } from "@/components/workflow-stepper";
 import {
-  REQUEST_CATEGORIES,
   REQUEST_CATEGORY_LABELS,
-  TASK_STATUSES,
   type PortalRequest,
   type RequestCategory,
   type RosterMember,
-  type TaskStatus,
 } from "@/lib/types";
 
 type StaffProfile = {
@@ -41,19 +35,11 @@ type FormState = {
   handoverColleagueEmail: string;
   expenseType: "Travel" | "Vendor" | "Office" | "Other";
   amountPkr: string;
-  expensedDate: string;
   receiptDriveLink: string;
-  paymentMethod: "Bank Transfer" | "Cash" | "Cheque";
-  vendorName: string;
-  logisticsType: "Asset" | "Vehicle" | "Facility" | "Other";
   assetDetails: string;
   requiredByDate: string;
-  priority: "Low" | "Medium" | "High" | "Urgent";
   caseRef: string;
   courtForum: string;
-  hearingDate: string;
-  actionRequired: string;
-  summary: string;
 };
 
 const initialForm: FormState = {
@@ -65,19 +51,11 @@ const initialForm: FormState = {
   handoverColleagueEmail: "",
   expenseType: "Travel",
   amountPkr: "",
-  expensedDate: "",
   receiptDriveLink: "",
-  paymentMethod: "Bank Transfer",
-  vendorName: "",
-  logisticsType: "Asset",
   assetDetails: "",
   requiredByDate: "",
-  priority: "Medium",
   caseRef: "",
   courtForum: "",
-  hearingDate: "",
-  actionRequired: "",
-  summary: "",
 };
 
 function inclusiveDays(start: string, end: string): number | null {
@@ -355,8 +333,8 @@ export function StaffPortal({ user }: { user: StaffProfile }) {
               </div>
             )}
 
-            {/* Logistics Fields */}
-            {form.category === "LOGISTICS" && (
+            {/* Procurement / Logistics Fields */}
+            {String(form.category) === "PROCUREMENT" && (
               <div className="space-y-3 rounded-lg border border-slate-100 bg-slate-50/50 p-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-700 mb-1">Asset Details</label>
@@ -382,8 +360,8 @@ export function StaffPortal({ user }: { user: StaffProfile }) {
               </div>
             )}
 
-            {/* Legal / Field Operations Fields */}
-            {form.category === "LEGAL" && (
+            {/* Legal Fields */}
+            {String(form.category) === "LEGAL" && (
               <div className="space-y-3 rounded-lg border border-slate-100 bg-slate-50/50 p-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-700 mb-1">Case reference</label>
@@ -443,7 +421,7 @@ export function StaffPortal({ user }: { user: StaffProfile }) {
           </form>
         </div>
 
-        {/* Submissions & Stepper List */}
+        {/* Submissions List */}
         <div className="lg:col-span-7 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-semibold text-slate-900 flex items-center gap-2">
