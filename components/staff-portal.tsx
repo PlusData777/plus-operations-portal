@@ -399,7 +399,7 @@ export function StaffPortal({ user }: { user?: StaffProfile }) {
                     </div>
 
                     <div className="mt-3">
-                      <WorkflowStepper status={(req.status || "SUBMITTED") as any} />
+                      <WorkflowStepper request={req as any} />
                     </div>
                   </div>
                 ))}
