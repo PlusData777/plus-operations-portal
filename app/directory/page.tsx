@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
+  ArrowLeft,
   Building2,
   Check,
   Copy,
@@ -316,7 +318,7 @@ function StaffDrawer({
               isAdmin ? (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-slate-800"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-slate-800 cursor-pointer"
                 >
                   <ShieldCheck className="h-4 w-4 text-emerald-400" />
                   Edit Staff Governance
@@ -324,7 +326,7 @@ function StaffDrawer({
               ) : (
                 <button
                   onClick={onClose}
-                  className="flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  className="flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
                 >
                   Close
                 </button>
@@ -334,14 +336,14 @@ function StaffDrawer({
                 <button
                   onClick={() => setIsEditing(false)}
                   disabled={saving}
-                  className="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                  className="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-emerald-700 disabled:opacity-50"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-emerald-700 disabled:opacity-50 cursor-pointer"
                 >
                   {saving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -552,7 +554,6 @@ export default function StaffDirectoryPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [canEditGovernance, setCanEditGovernance] = useState(false);
 
-  // Check user permissions safely on client mount
   useEffect(() => {
     try {
       const stored = localStorage.getItem("plus_user");
@@ -633,122 +634,143 @@ export default function StaffDirectoryPage() {
   };
 
   return (
-    <div className="container mx-auto max-w-7xl space-y-6 px-4 py-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <Users className="h-6 w-6 text-emerald-600" />
-            <h1 className="text-2xl font-bold text-slate-900">
-              Staff & Governance Directory
-            </h1>
-          </div>
-          <p className="mt-1 text-xs text-slate-500">
-            Pakistan Legal United Society · Operational Roster & Approval Tiers
-          </p>
-        </div>
-
-        <button
-          onClick={loadDirectory}
-          disabled={loading}
-          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50"
-        >
-          <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-          Sync Directory
-        </button>
-      </div>
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-        <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search by staff name, email, or designation..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-4 text-xs focus:border-emerald-600 focus:bg-white focus:outline-hidden"
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-slate-400" />
-          <select
-            value={selectedDept}
-            onChange={(e) => setSelectedDept(e.target.value)}
-            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 focus:border-emerald-600 focus:outline-hidden"
+    <div className="min-h-screen bg-slate-50/60 pb-16">
+      {/* Top Navigation Bar with Back Button */}
+      <div className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-md">
+        <div className="container mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 hover:text-emerald-700"
           >
-            {departments.map((dept) => (
-              <option key={dept} value={dept}>
-                {dept === "ALL" ? "All Departments" : dept}
-              </option>
-            ))}
-          </select>
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to Workspace</span>
+          </Link>
+          <span className="text-[11px] font-semibold text-slate-400">
+            Pakistan Legal United Society
+          </span>
         </div>
       </div>
 
-      {loading ? (
-        <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-        </div>
-      ) : filteredStaff.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center text-sm text-slate-500">
-          No personnel records matched your filter criteria.
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredStaff.map((member) => (
-            <div
-              key={member.email}
-              onClick={() => handleOpenDrawer(member)}
-              className="group cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-emerald-500 hover:shadow-md"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-emerald-700">
-                    {member.name}
-                  </h3>
-                  <p className="text-xs text-slate-500">{member.designation}</p>
-                </div>
-                <span
-                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                    (member.status || "Active") === "Active"
-                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                      : "bg-red-50 text-red-700 border border-red-200"
-                  }`}
-                >
-                  <UserCheck className="h-2.5 w-2.5" />
-                  {member.status || "Active"}
-                </span>
-              </div>
-
-              <div className="mt-4 space-y-1.5 border-t border-slate-100 pt-3 text-xs text-slate-600">
-                <div className="flex items-center gap-2 truncate">
-                  <Building2 className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                  <span className="truncate">{member.department}</span>
-                </div>
-                <div className="flex items-center gap-2 truncate font-mono text-[11px] text-slate-500">
-                  <Mail className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                  <span className="truncate">{member.email}</span>
-                </div>
-              </div>
-
-              <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-[11px] font-semibold text-emerald-600 group-hover:text-emerald-700">
-                <span>View Routing & Profile</span>
-                <span>→</span>
-              </div>
+      <div className="container mx-auto max-w-7xl space-y-6 px-4 pt-6 sm:px-6">
+        {/* Page Title & Sync */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <Users className="h-6 w-6 text-emerald-600" />
+              <h1 className="text-2xl font-bold text-slate-900">
+                Staff & Governance Directory
+              </h1>
             </div>
-          ))}
-        </div>
-      )}
+            <p className="mt-1 text-xs text-slate-500">
+              Operational Roster, Contact Matrix & Multi-Tier Approval Pathways
+            </p>
+          </div>
 
-      {/* Slide-out Governance Drawer with Strict Role Restriction */}
-      <StaffDrawer
-        staff={selectedStaff}
-        isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-        isAdmin={canEditGovernance}
-        allStaff={staff}
-        onSave={handleSaveStaff}
-      />
+          <button
+            onClick={loadDirectory}
+            disabled={loading}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 cursor-pointer"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+            Sync Directory
+          </button>
+        </div>
+
+        {/* Filters and Search Bar */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search by staff name, email, or designation..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-4 text-xs focus:border-emerald-600 focus:bg-white focus:outline-hidden"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-slate-400" />
+            <select
+              value={selectedDept}
+              onChange={(e) => setSelectedDept(e.target.value)}
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 focus:border-emerald-600 focus:outline-hidden"
+            >
+              {departments.map((dept) => (
+                <option key={dept} value={dept}>
+                  {dept === "ALL" ? "All Departments" : dept}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Staff Cards Grid */}
+        {loading ? (
+          <div className="flex h-64 items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+          </div>
+        ) : filteredStaff.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center text-sm text-slate-500">
+            No personnel records matched your filter criteria.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredStaff.map((member) => (
+              <div
+                key={member.email}
+                onClick={() => handleOpenDrawer(member)}
+                className="group cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-emerald-500 hover:shadow-md"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 group-hover:text-emerald-700">
+                      {member.name}
+                    </h3>
+                    <p className="text-xs text-slate-500">{member.designation}</p>
+                  </div>
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                      (member.status || "Active") === "Active"
+                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                        : "bg-red-50 text-red-700 border border-red-200"
+                    }`}
+                  >
+                    <UserCheck className="h-2.5 w-2.5" />
+                    {member.status || "Active"}
+                  </span>
+                </div>
+
+                <div className="mt-4 space-y-1.5 border-t border-slate-100 pt-3 text-xs text-slate-600">
+                  <div className="flex items-center gap-2 truncate">
+                    <Building2 className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                    <span className="truncate">{member.department}</span>
+                  </div>
+                  <div className="flex items-center gap-2 truncate font-mono text-[11px] text-slate-500">
+                    <Mail className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                    <span className="truncate">{member.email}</span>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-[11px] font-semibold text-emerald-600 group-hover:text-emerald-700">
+                  <span>View Routing & Profile</span>
+                  <span>→</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Slide-out Governance Drawer */}
+        <StaffDrawer
+          staff={selectedStaff}
+          isOpen={isDrawerOpen}
+          onClose={() => setIsDrawerOpen(false)}
+          isAdmin={canEditGovernance}
+          allStaff={staff}
+          onSave={handleSaveStaff}
+        />
+      </div>
     </div>
   );
 }
