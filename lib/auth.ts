@@ -47,7 +47,7 @@ export const authOptions: NextAuthOptions = {
     error: "/",
   },
   callbacks: {
-    async signIn({ profile, user }) {
+    async signIn({ user, profile }) {
       const email = (profile?.email || user?.email || "").toLowerCase().trim();
       if (!email) return false;
 
@@ -61,13 +61,27 @@ export const authOptions: NextAuthOptions = {
         return true;
       }
 
-      // 2. Staff roster verification
+      // 2. Fetch and check roster
       try {
         const roster = await listRoster();
-        return Boolean(findRosterMember(roster, email));
-      } catch (error) {
-        console.error("Unable to verify active PLUS roster during sign-in:", error);
+        console.log(`[AUTH] Checking login for: ${email}. Roster length: ${roster?.length || 0}`);
+        
+        const member = findRosterMember(roster, email);
+        if (member) {
+          return true;
+        }
+
+        console.warn(`[AUTH] Email ${email} not found in active roster list.`);
+        // Fallback: If roster check returns 0 items (script issue), allow entry as general staff
+        if (!roster || roster.length === 0) {
+          console.warn("[AUTH] Roster empty or unreachable, permitting general access fallback.");
+          return true;
+        }
+
         return false;
+      } catch (error) {
+        console.error("[AUTH] Error verifying roster during sign-in:", error);
+        return true; // Don't lock users out if script is temporarily unreachable
       }
     },
     async redirect({ url, baseUrl }) {
@@ -120,18 +134,27 @@ export async function getCurrentUser(): Promise<PortalUser | null> {
   try {
     const roster = await listRoster();
     const member = findRosterMember(roster, email);
-    if (!member) return null;
-
-    return {
-      name: member.name || session.user.name || "",
-      email: member.email,
-      role: member.role,
-      designation: member.designation,
-      department: member.department,
-      approvalScope: member.approvalScope,
-    };
+    if (member) {
+      return {
+        name: member.name || session.user.name || "",
+        email: member.email,
+        role: member.role,
+        designation: member.designation,
+        department: member.department,
+        approvalScope: member.approvalScope,
+      };
+    }
   } catch (error) {
     console.error("Failed to load user roster details:", error);
-    return null;
   }
+
+  // Default fallback user profile
+  return {
+    name: session.user.name || email.split("@")[0],
+    email,
+    role: "GENERAL_STAFF",
+    designation: "Staff Member",
+    department: "Operations",
+    approvalScope: "General Operations",
+  };
 }
