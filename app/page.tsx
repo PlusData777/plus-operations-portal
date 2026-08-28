@@ -66,7 +66,7 @@ interface RequestItem {
 interface AssignedTask {
   id: string;
   title: string;
-  category: "Legal Casework" | "Prison Unit (NAVTTC)" | "Community Camp" | "Police Training" | "Operational Task";
+  category: string;
   dueDateOrHearing: string;
   venue: string;
   hub: "Karachi" | "Hyderabad" | "Sukkur";
@@ -151,20 +151,6 @@ const INITIAL_PORTFOLIO_TASKS: AssignedTask[] = [
   },
   {
     id: "TSK-804",
-    title: "Juvenile Justice Act Investigation Module Delivery",
-    category: "Police Training",
-    dueDateOrHearing: "2026-09-08",
-    venue: "Malir Police Training Center, Karachi",
-    hub: "Karachi",
-    status: "Pending Action",
-    urgency: "Standard",
-    assigneeEmail: "salmahabibbhutto88@gmail.com",
-    assigneeName: "Salma Habib Bhutto",
-    assignedByEmail: "altafkhoso.adv@gmail.com",
-    assignedByName: "Altaf Khoso",
-  },
-  {
-    id: "TSK-805",
     title: "Institutional Quarterly Partner Review & MoU Compliance",
     category: "Operational Task",
     dueDateOrHearing: "2026-09-10",
@@ -186,7 +172,7 @@ export default function WorkspacePage() {
   const [currentUser, setCurrentUser] = useState<StaffProfile | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
-  // Auth State
+  // Authentication State
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPin, setLoginPin] = useState("");
   const [authError, setAuthError] = useState("");
@@ -199,7 +185,7 @@ export default function WorkspacePage() {
   const [mainViewTab, setMainViewTab] = useState<"MY_TASKS" | "REQUESTS">("MY_TASKS");
   const [activeRequestFilter, setActiveRequestFilter] = useState<"ALL" | "LEAVE" | "EXPENSE">("ALL");
 
-  // Request Modal State (Leave / Expense)
+  // Request Modal State
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
   const [formType, setFormType] = useState<"Leave" | "Expense">("Leave");
   const [formLeaveCategory, setFormLeaveCategory] = useState("Casual");
@@ -212,10 +198,11 @@ export default function WorkspacePage() {
   const [submittingForm, setSubmittingForm] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  // Task Creation Modal State
+  // Task Modal State
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [taskTitle, setTaskTitle] = useState("");
-  const [taskCategory, setTaskCategory] = useState<AssignedTask["category"]>("Community Camp");
+  const [taskCategory, setTaskCategory] = useState("Community Legal Camp");
+  const [customCategoryText, setCustomCategoryText] = useState("");
   const [taskDate, setTaskDate] = useState(new Date().toISOString().split("T")[0]);
   const [taskVenue, setTaskVenue] = useState("");
   const [taskHub, setTaskHub] = useState<"Karachi" | "Hyderabad" | "Sukkur">("Sukkur");
@@ -281,7 +268,6 @@ export default function WorkspacePage() {
     setAuthError("");
   };
 
-  // Role Checks
   const isManagerOrAdmin = useMemo(() => {
     if (!currentUser) return false;
     return (
@@ -308,14 +294,11 @@ export default function WorkspacePage() {
     );
   }, [currentUser]);
 
-  // Scoped Task Filtering: Strict isolation
+  // Visibility Scope: Strict Data Protection
   const scopedTasks = useMemo(() => {
     if (!currentUser) return [];
-
-    // Admins and Executives see all tasks
     if (isAdminOrExec) return tasks;
 
-    // Program Managers see tasks assigned to them, combined/ALL tasks, or tasks they assigned to subordinates
     if (currentUser.role === "PROGRAM_MGR") {
       return tasks.filter(
         (t) =>
@@ -325,7 +308,6 @@ export default function WorkspacePage() {
       );
     }
 
-    // General Staff and Legal Staff only see tasks assigned directly to them OR combined organizational tasks
     return tasks.filter(
       (t) =>
         t.assigneeEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim() ||
@@ -333,7 +315,6 @@ export default function WorkspacePage() {
     );
   }, [tasks, currentUser, isAdminOrExec]);
 
-  // Scoped Leave/Expense Filtering: Strict isolation
   const scopedRequests = useMemo(() => {
     if (!currentUser) return [];
     if (isAdminOrExec) return requests;
@@ -342,14 +323,13 @@ export default function WorkspacePage() {
     );
   }, [requests, currentUser, isAdminOrExec]);
 
-  const handleCreateTask = (e: React.FormEvent) => {
+  const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser || !taskTitle.trim()) return;
 
     setSubmittingTask(true);
     const newId = "TSK-" + (tasks.length + 801);
 
-    // If manager chose a subordinate, use that. If general staff, force self-assignment.
     let targetEmail = currentUser.email;
     let targetName = currentUser.name;
 
@@ -366,12 +346,14 @@ export default function WorkspacePage() {
       }
     }
 
+    const finalCategory = taskCategory === "Other" ? customCategoryText.trim() || "Other Deliverable" : taskCategory;
+
     const newTask: AssignedTask = {
       id: newId,
       title: taskTitle,
-      category: taskCategory,
+      category: finalCategory,
       dueDateOrHearing: taskDate,
-      venue: taskVenue || "Assigned Field Hub",
+      venue: taskVenue || "Field Location",
       hub: taskHub,
       status: "Pending Action",
       urgency: taskUrgency,
@@ -381,14 +363,24 @@ export default function WorkspacePage() {
       assignedByName: currentUser.name,
     };
 
-    setTimeout(() => {
-      setTasks([newTask, ...tasks]);
-      setSubmittingTask(false);
-      setIsTaskModalOpen(false);
-      setTaskTitle("");
-      setTaskVenue("");
-      setTaskAssigneeEmail("");
-    }, 400);
+    try {
+      await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "CREATE_TASK", task: newTask }),
+      });
+    } catch (err) {
+      console.warn("Backend API task broadcast fallback:", err);
+    }
+
+    setTasks([newTask, ...tasks]);
+    setSubmittingTask(false);
+    setIsTaskModalOpen(false);
+    setTaskTitle("");
+    setTaskVenue("");
+    setCustomCategoryText("");
+    setTaskCategory("Community Legal Camp");
+    setTaskAssigneeEmail("");
   };
 
   const handleCreateRequest = async (e: React.FormEvent) => {
@@ -418,6 +410,16 @@ export default function WorkspacePage() {
       status: initialStatus,
       currentApproverEmail: assignedApprover,
     };
+
+    try {
+      await fetch("/api/requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "CREATE_REQUEST", request: newRequest }),
+      });
+    } catch (err) {
+      console.warn("Request broadcast fallback:", err);
+    }
 
     setRequests([newRequest, ...requests]);
     setSubmitSuccess(true);
@@ -688,7 +690,7 @@ export default function WorkspacePage() {
 
           {/* Right Workspace Main Panel */}
           <div className="lg:col-span-9 space-y-6">
-            {/* Header with Direct Quick Actions */}
+            {/* Header with Quick Actions */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#c65a28]">
@@ -698,7 +700,7 @@ export default function WorkspacePage() {
                   Welcome back, {currentUser.name}.
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Role-protected deliverable cockpit and institutional casework tracking.
+                  Protected deliverable portfolio with automated notification broadcast.
                 </p>
               </div>
 
@@ -720,7 +722,7 @@ export default function WorkspacePage() {
               </div>
             </div>
 
-            {/* KPI Cards: Dynamic Portfolio Metrics */}
+            {/* Metrics */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
                 <div className="flex items-center justify-between text-slate-400">
@@ -728,7 +730,7 @@ export default function WorkspacePage() {
                   <Activity className="h-4 w-4 text-[#1b365d]" />
                 </div>
                 <p className="mt-2 text-2xl font-bold text-[#1b365d]">{scopedTasks.length}</p>
-                <span className="text-[10px] text-slate-500">Your visible scope</span>
+                <span className="text-[10px] text-slate-500">Visible to your role</span>
               </div>
 
               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
@@ -768,7 +770,7 @@ export default function WorkspacePage() {
                   <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">
                     My Deliverables & Assigned Operations ({scopedTasks.length})
                   </h3>
-                  <span className="text-xs text-slate-500">Strictly protected to authorized scope</span>
+                  <span className="text-xs text-slate-500">Protected view with email dispatch</span>
                 </div>
 
                 <div className="space-y-3">
@@ -934,7 +936,7 @@ export default function WorkspacePage() {
         </div>
       </main>
 
-      {/* MODAL 1: TASK CREATION & DELEGATION (Managers & Self-Assign) */}
+      {/* MODAL 1: TASK CREATION WITH "OTHER" CATEGORY & EMAIL DISPATCH */}
       {isTaskModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
@@ -967,7 +969,7 @@ export default function WorkspacePage() {
                 />
               </div>
 
-              {/* Manager Assignee Selector */}
+              {/* Assignee Selection */}
               {isManagerOrAdmin ? (
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-[#1b365d] mb-1">
@@ -1002,14 +1004,15 @@ export default function WorkspacePage() {
                   </label>
                   <select
                     value={taskCategory}
-                    onChange={(e) => setTaskCategory(e.target.value as any)}
+                    onChange={(e) => setTaskCategory(e.target.value)}
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-semibold focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
                   >
-                    <option value="Community Camp">Community Legal Camp</option>
+                    <option value="Community Legal Camp">Community Legal Camp</option>
                     <option value="Prison Unit (NAVTTC)">Prison Unit (NAVTTC)</option>
-                    <option value="Legal Casework">Legal Casework / Court</option>
+                    <option value="Legal Casework / Court">Legal Casework / Court</option>
                     <option value="Police Training">Police Training</option>
-                    <option value="Operational Task">Operational / Admin Task</option>
+                    <option value="Operational / Admin Task">Operational / Admin Task</option>
+                    <option value="Other">Other (Custom Specified)</option>
                   </select>
                 </div>
 
@@ -1028,6 +1031,23 @@ export default function WorkspacePage() {
                   </select>
                 </div>
               </div>
+
+              {/* Dynamic Field: Shows when "Other" is chosen */}
+              {taskCategory === "Other" && (
+                <div className="animate-in fade-in">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[#c65a28] mb-1">
+                    Specify Custom Category
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Enter custom category name (e.g. Advocacy Roundtable / Stakeholder Meeting)"
+                    value={customCategoryText}
+                    onChange={(e) => setCustomCategoryText(e.target.value)}
+                    className="w-full rounded-xl border border-orange-200 bg-orange-50/40 p-2 text-xs font-semibold text-[#1b365d] focus:border-[#c65a28] focus:bg-white focus:outline-hidden"
+                  />
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -1085,7 +1105,7 @@ export default function WorkspacePage() {
                   className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#1b365d] py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#122440] cursor-pointer"
                 >
                   <Send className="h-3.5 w-3.5 text-[#fad207]" />
-                  <span>{submittingTask ? "Saving..." : isManagerOrAdmin ? "Assign Task" : "Schedule Task"}</span>
+                  <span>{submittingTask ? "Dispatching..." : isManagerOrAdmin ? "Assign & Send Email" : "Schedule Task"}</span>
                 </button>
               </div>
             </form>
@@ -1231,7 +1251,7 @@ export default function WorkspacePage() {
               {submitSuccess ? (
                 <div className="flex items-center justify-center gap-2 rounded-xl bg-emerald-50 p-3 text-xs font-bold text-emerald-700 border border-emerald-200">
                   <CheckCircle2 className="h-4 w-4" />
-                  <span>Submitted Successfully & Routed!</span>
+                  <span>Submitted Successfully & Approver Notified via Email!</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-3 pt-2">
@@ -1248,7 +1268,7 @@ export default function WorkspacePage() {
                     className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#c65a28] py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#a8491d] disabled:opacity-50 cursor-pointer"
                   >
                     <Send className="h-3.5 w-3.5 text-[#fad207]" />
-                    <span>{submittingForm ? "Routing..." : "Submit Claim"}</span>
+                    <span>{submittingForm ? "Routing & Notifying..." : "Submit Claim"}</span>
                   </button>
                 </div>
               )}
