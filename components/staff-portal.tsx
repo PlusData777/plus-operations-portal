@@ -14,15 +14,30 @@ import {
 import { StatusBadge } from "@/components/status-badge";
 import { WorkflowStepper } from "@/components/workflow-stepper";
 import { LeaveQuotaCard } from "@/components/leave-quota-card";
-import {
-  REQUEST_CATEGORY_LABELS,
-  type PortalRequest,
-  type RequestCategory,
-} from "@/lib/requests";
-type StaffProfile = {
-  name: string;
-  email: string;
-  department: string;
+
+export type RequestCategory = "OPS" | "LEAVE" | "EXPENSE" | "LEGAL_AID" | "PROCUREMENT" | "GENERAL";
+
+export const REQUEST_CATEGORY_LABELS: Record<string, string> = {
+  OPS: "Operations & Logistics",
+  LEAVE: "Leave Request",
+  EXPENSE: "Expense Reimbursement",
+  LEGAL_AID: "Field Legal Aid Advance",
+  PROCUREMENT: "Procurement & Supplies",
+  GENERAL: "General Request",
+};
+
+export interface PortalRequest {
+  id?: string;
+  category: string;
+  title?: string;
+  description?: string;
+  amount?: string | number;
+  status: string;
+  timestamp?: string;
+  requesterName?: string;
+  requesterEmail?: string;
+  [key: string]: any;
+}
 };
 
 type FormState = {
