@@ -8,57 +8,25 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  FileSpreadsheet,
   FileText,
+  Filter,
+  Layers,
   LayoutDashboard,
   LogOut,
   MapPin,
   Phone,
+  Plus,
   RefreshCw,
   Search,
+  Shield,
   ShieldAlert,
+  ShieldCheck,
   TrendingUp,
+  UserCheck,
   Users,
+  XCircle,
 } from "lucide-react";
-
-/* Custom PLUS Official Brand Emblem SVG */
-function PlusOfficialLogo({ className = "h-10 w-auto", dark = false }: { className?: string; dark?: boolean }) {
-  const fgColor = dark ? "#1b365d" : "#ffffff";
-  const circleStroke = dark ? "#1b365d" : "#fad207";
-  const textMotto = dark ? "#1b365d" : "#fad207";
-
-  return (
-    <svg viewBox="0 0 280 80" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-      {/* Circular Scales Seal */}
-      <circle cx="40" cy="40" r="36" stroke={circleStroke} strokeWidth="2.5" strokeDasharray="3 2" />
-      <circle cx="40" cy="40" r="31" stroke={fgColor} strokeWidth="1.5" />
-      
-      {/* Scales of Justice */}
-      <path d="M40 20v40M30 28h20M25 34l5-6 5 6M45 34l5-6 5 6" stroke={fgColor} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M23 34c0 3.5 3.5 5 7 5s7-1.5 7-5M43 34c0 3.5 3.5 5 7 5s7-1.5 7-5" stroke={fgColor} strokeWidth="1.5" strokeLinecap="round" fill="none" />
-      <path d="M34 60h12" stroke={fgColor} strokeWidth="2" strokeLinecap="round" />
-
-      {/* PLUS Acronym Stack */}
-      <g fill={fgColor} fontWeight="900" fontFamily="sans-serif">
-        <text x="85" y="27" fontSize="16" letterSpacing="0.5">P</text>
-        <text x="98" y="27" fontSize="9" fontWeight="700" opacity="0.9">AKISTAN</text>
-
-        <text x="85" y="41" fontSize="16" letterSpacing="0.5">L</text>
-        <text x="98" y="41" fontSize="9" fontWeight="700" opacity="0.9">EGAL</text>
-
-        <text x="85" y="55" fontSize="16" letterSpacing="0.5">U</text>
-        <text x="98" y="55" fontSize="9" fontWeight="700" opacity="0.9">NITED</text>
-
-        <text x="85" y="69" fontSize="16" letterSpacing="0.5">S</text>
-        <text x="98" y="69" fontSize="9" fontWeight="700" opacity="0.9">OCIETY</text>
-      </g>
-
-      {/* Urdu Tagline */}
-      <text x="175" y="48" fill={textMotto} fontSize="17" fontWeight="bold" fontFamily="serif" direction="rtl">
-        انصاف سب کا حق ہے
-      </text>
-    </svg>
-  );
-}
 
 interface RequestItem {
   id: string;
@@ -88,6 +56,8 @@ interface LeaveBalance {
   medicalUsed: number;
 }
 
+const OFFICIAL_LOGO_URL = "https://grassrootsjusticenetwork.org/wp-content/uploads/2023/12/PLUS-logo-1-768x593.png";
+
 export default function WorkspacePage() {
   const [user, setUser] = useState({
     name: "Data Plus",
@@ -100,6 +70,7 @@ export default function WorkspacePage() {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"ALL" | "LEAVE" | "EXPENSE">("ALL");
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   const [leaveBalances, setLeaveBalances] = useState<LeaveBalance>({
     casualTotal: 5,
@@ -116,16 +87,31 @@ export default function WorkspacePage() {
       if (stored) {
         const u = JSON.parse(stored);
         setUser({
-          name: u.name || "Staff Member",
-          email: u.email || "dataplus.org@gmail.com",
-          role: u.role || "STAFF",
-          designation: u.designation || "Operational Team",
+          name: u.name || "Data Plus",
+          email: (u.email || "dataplus.org@gmail.com").toLowerCase().trim(),
+          role: (u.role || "ADMIN").toUpperCase(),
+          designation: u.designation || "Administrator",
         });
       }
     } catch (e) {
       console.warn("Could not parse user session:", e);
     }
   }, []);
+
+  const isAdminOrExec = useMemo(() => {
+    const adminEmails = [
+      "dataplus.org@gmail.com",
+      "altafkhoso.adv@gmail.com",
+      "rizwanapatel.plus@gmail.com",
+      "ishfaque.mojai@gmail.com",
+      "japheth.wilson123@gmail.com",
+    ];
+    return (
+      user.role === "ADMIN" ||
+      user.role === "EXECUTIVE" ||
+      adminEmails.includes(user.email.toLowerCase().trim())
+    );
+  }, [user.role, user.email]);
 
   async function fetchLiveRequests() {
     setLoading(true);
@@ -148,13 +134,44 @@ export default function WorkspacePage() {
     fetchLiveRequests();
   }, []);
 
+  const handleAction = async (requestId: string, action: "APPROVE" | "REJECT") => {
+    setProcessingId(requestId);
+    try {
+      const res = await fetch("/api/requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "UPDATE_STATUS",
+          requestId,
+          status: action === "APPROVE" ? "Approved" : "Rejected",
+          reviewerEmail: user.email,
+        }),
+      });
+
+      if (res.ok) {
+        setRequests((prev) =>
+          prev.map((r) =>
+            r.id === requestId
+              ? { ...r, status: action === "APPROVE" ? "Approved" : "Rejected" }
+              : r
+          )
+        );
+      }
+    } catch (err) {
+      console.error("Action error:", err);
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   const stats = useMemo(() => {
     const totalCount = requests.length;
     const pendingCount = requests.filter(
       (r) =>
         r.status &&
         (r.status.toLowerCase().includes("pending") ||
-          r.status.toLowerCase().includes("review"))
+          r.status.toLowerCase().includes("review") ||
+          r.status.toLowerCase().includes("submitted"))
     ).length;
 
     const approvedPkrVolume = requests
@@ -164,21 +181,23 @@ export default function WorkspacePage() {
       })
       .reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
 
-    const actionRequiredCount = requests.filter((r) => {
+    const actionList = requests.filter((r) => {
       const pendingTo = (r.currentApproverEmail || "").toLowerCase().trim();
-      const myEmail = (user.email || "").toLowerCase().trim();
+      const myEmail = user.email.toLowerCase().trim();
       const st = (r.status || "").toLowerCase();
-      return pendingTo === myEmail && !st.includes("approved") && !st.includes("rejected");
-    }).length;
+      const isPending = !st.includes("approved") && !st.includes("rejected");
+      return (isAdminOrExec || pendingTo === myEmail) && isPending;
+    });
 
     return {
       totalCount,
       pendingCount,
       approvedPkrVolume,
-      actionRequiredCount,
+      actionList,
     };
-  }, [requests, user.email]);
+  }, [requests, user.email, isAdminOrExec]);
 
+  // Working Quick Filter Logic
   const filteredRequests = useMemo(() => {
     return requests.filter((req) => {
       const q = searchQuery.toLowerCase().trim();
@@ -189,11 +208,16 @@ export default function WorkspacePage() {
         req.description?.toLowerCase().includes(q) ||
         req.id?.toLowerCase().includes(q);
 
+      const type = (req.requestType || "").toLowerCase();
+      const desc = (req.description || "").toLowerCase();
+      const isLeave = type.includes("leave") || desc.includes("leave");
+      const isExpense = type.includes("expense") || Number(req.amount) > 0;
+
       if (activeTab === "LEAVE") {
-        return matchesSearch && req.requestType === "Leave";
+        return matchesSearch && isLeave;
       }
       if (activeTab === "EXPENSE") {
-        return matchesSearch && req.requestType === "Expense";
+        return matchesSearch && isExpense;
       }
       return matchesSearch;
     });
@@ -201,22 +225,29 @@ export default function WorkspacePage() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col justify-between">
-      {/* Top Navbar with Official PLUS Emblem */}
+      {/* Top Navbar with Official PLUS Logo */}
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-2xs">
-        <div className="container mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-6">
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl border border-slate-200 bg-[#1b365d] px-3 py-1.5 shadow-xs">
-              <PlusOfficialLogo className="h-9 w-auto" dark={false} />
+        <div className="container mx-auto flex max-w-7xl items-center justify-between px-4 py-2 sm:px-6">
+          <div className="flex items-center gap-3.5">
+            <div className="flex items-center rounded-xl bg-[#1b365d] p-1.5 shadow-xs">
+              <img
+                src={OFFICIAL_LOGO_URL}
+                alt="Pakistan Legal United Society Logo"
+                className="h-10 w-auto object-contain"
+              />
             </div>
-            <div className="hidden sm:block">
+            <div>
               <div className="flex items-center gap-2">
+                <h1 className="text-sm font-bold tracking-tight text-[#1b365d] sm:text-base">
+                  Pakistan Legal United Society
+                </h1>
                 <span className="rounded-md bg-[#1b365d]/10 px-2 py-0.5 text-[10px] font-bold text-[#1b365d]">
                   PLUS OPS
                 </span>
-                <span className="text-[11px] font-medium text-slate-500">
-                  Operations & Governance Workspace
-                </span>
               </div>
+              <p className="text-[11px] font-medium text-slate-500">
+                Operations, Governance & Multi-Tier Approval Workspace
+              </p>
             </div>
           </div>
 
@@ -241,7 +272,7 @@ export default function WorkspacePage() {
         </div>
       </header>
 
-      {/* Main Workspace Layout */}
+      {/* Main Layout */}
       <main className="container mx-auto max-w-7xl flex-1 px-4 py-8 sm:px-6">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           {/* Left Navigation Sidebar */}
@@ -279,6 +310,7 @@ export default function WorkspacePage() {
                   <span>Staff Timesheets</span>
                 </Link>
 
+                {/* Quick Filters Area */}
                 <div className="border-t border-slate-100 my-2 pt-2">
                   <span className="block px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     Quick Filters
@@ -287,7 +319,7 @@ export default function WorkspacePage() {
                     onClick={() => setActiveTab("LEAVE")}
                     className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2 text-xs font-semibold transition text-left cursor-pointer ${
                       activeTab === "LEAVE"
-                        ? "bg-[#1b365d] text-white"
+                        ? "bg-[#1b365d] text-white font-bold"
                         : "text-slate-600 hover:bg-slate-100"
                     }`}
                   >
@@ -298,18 +330,18 @@ export default function WorkspacePage() {
                     onClick={() => setActiveTab("EXPENSE")}
                     className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2 text-xs font-semibold transition text-left cursor-pointer ${
                       activeTab === "EXPENSE"
-                        ? "bg-[#1b365d] text-white"
+                        ? "bg-[#1b365d] text-white font-bold"
                         : "text-slate-600 hover:bg-slate-100"
                     }`}
                   >
-                    <TrendingUp className="h-3.5 w-3.5 text-[#fad207]" />
+                    <TrendingUp className="h-3.5 w-3.5 text-[#c65a28]" />
                     <span>Expense Claims</span>
                   </button>
                 </div>
               </nav>
             </div>
 
-            {/* Leave Balance Overview Widget */}
+            {/* Leave Balances Widget */}
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
@@ -349,35 +381,95 @@ export default function WorkspacePage() {
             </div>
           </aside>
 
-          {/* Right Workspace Main Stream */}
+          {/* Right Main Panel */}
           <div className="lg:col-span-9 space-y-6">
-            {/* Action Required Alert Banner */}
-            <div className="rounded-2xl border border-[#fad207]/40 bg-[#fad207]/10 p-5 shadow-2xs">
-              <div className="flex items-start gap-3">
-                <div className="rounded-xl bg-[#fad207] p-2 text-[#1b365d] shrink-0 mt-0.5">
-                  <AlertTriangle className="h-4 w-4" />
+            {/* Executive & Admin Action Required Desk */}
+            <div className="rounded-2xl border border-[#fad207]/60 bg-[#fad207]/15 p-5 shadow-2xs">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-xl bg-[#fad207] p-2 text-[#1b365d] shrink-0 mt-0.5 shadow-xs">
+                    <AlertTriangle className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-[#1b365d]">
+                      Action Required by You ({stats.actionList.length})
+                    </h3>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      {stats.actionList.length > 0
+                        ? `You have administrative clearance authority over ${stats.actionList.length} pending request(s).`
+                        : "No approvals are currently awaiting your action."}
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-[#1b365d]">
-                    Action Required by You
-                  </h3>
-                  <p className="text-xs text-slate-600">
-                    {stats.actionRequiredCount > 0
-                      ? `You have ${stats.actionRequiredCount} request(s) awaiting your administrative clearance or review.`
-                      : "No approvals are currently awaiting your action."}
-                  </p>
-                </div>
+
+                {isAdminOrExec && (
+                  <span className="rounded-full bg-[#1b365d] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#fad207]">
+                    Executive Privileges
+                  </span>
+                )}
               </div>
+
+              {/* Actionable Request Items */}
+              {stats.actionList.length > 0 && (
+                <div className="mt-4 space-y-2.5 pt-3 border-t border-[#fad207]/40">
+                  {stats.actionList.slice(0, 3).map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl bg-white p-3.5 shadow-2xs border border-slate-200"
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs font-bold text-[#1b365d]">
+                            {item.id}
+                          </span>
+                          <span className="text-xs font-bold text-slate-800">
+                            {item.requesterName}
+                          </span>
+                          <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">
+                            {item.requestType}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-600 line-clamp-1 mt-0.5">
+                          {item.description}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => handleAction(item.id, "REJECT")}
+                          disabled={processingId === item.id}
+                          className="inline-flex items-center gap-1 rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-[#b82626] hover:bg-red-100 cursor-pointer disabled:opacity-50"
+                        >
+                          <XCircle className="h-3.5 w-3.5" />
+                          Reject
+                        </button>
+                        <button
+                          onClick={() => handleAction(item.id, "APPROVE")}
+                          disabled={processingId === item.id}
+                          className="inline-flex items-center gap-1 rounded-xl bg-[#1b365d] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[#122440] shadow-xs cursor-pointer disabled:opacity-50"
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5 text-[#fad207]" />
+                          Approve
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Header Title & Role Badge */}
+            {/* Title & Sync Header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#c65a28]">
                   {user.role} WORKSPACE
                 </span>
                 <h2 className="text-2xl font-bold tracking-tight text-[#1b365d]">
-                  All Requests.
+                  {activeTab === "LEAVE"
+                    ? "Leave Applications."
+                    : activeTab === "EXPENSE"
+                    ? "Expense Claims."
+                    : "All Operations Requests."}
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Review requests within your verified roster scope. Decisions are synchronized to the PLUS ledger.
@@ -394,7 +486,7 @@ export default function WorkspacePage() {
               </button>
             </div>
 
-            {/* KPI Metric Cards */}
+            {/* Metric KPI Cards */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
                 <div className="flex items-center justify-between text-slate-400">
@@ -431,13 +523,13 @@ export default function WorkspacePage() {
               </div>
             </div>
 
-            {/* Search and Request Feed */}
+            {/* Search and Request Stream */}
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Search requests by name, ID, or description..."
+                  placeholder="Search requests by staff name, ID, description..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-4 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
@@ -450,7 +542,7 @@ export default function WorkspacePage() {
                 </div>
               ) : filteredRequests.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-slate-200 py-12 text-center text-xs text-slate-500">
-                  No active operations requests found matching your filter criteria.
+                  No active operations requests found matching your criteria.
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -492,7 +584,15 @@ export default function WorkspacePage() {
                             </span>
                           )}
                           <div className="mt-1">
-                            <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
+                            <span
+                              className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${
+                                (req.status || "").toLowerCase().includes("approved")
+                                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                  : (req.status || "").toLowerCase().includes("rejected")
+                                  ? "bg-red-50 text-red-700 border border-red-200"
+                                  : "bg-amber-50 text-amber-700 border border-amber-200"
+                              }`}
+                            >
                               {req.status || "Submitted"}
                             </span>
                           </div>
@@ -507,7 +607,7 @@ export default function WorkspacePage() {
         </div>
       </main>
 
-      {/* Branded Footer with Official PLUS Emblem */}
+      {/* Branded Footer */}
       <footer className="mt-16 border-t border-slate-200 bg-[#1b365d] text-white">
         <div className="border-b border-white/10 bg-[#122440] py-4 px-4 sm:px-6">
           <div className="container mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -528,7 +628,23 @@ export default function WorkspacePage() {
         <div className="container mx-auto max-w-7xl px-4 py-10 sm:px-6">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
             <div className="space-y-4 md:col-span-4">
-              <PlusOfficialLogo className="h-14 w-auto" dark={false} />
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl bg-[#1b365d] p-1.5 border border-white/10 shadow-md inline-block">
+                  <img
+                    src={OFFICIAL_LOGO_URL}
+                    alt="Pakistan Legal United Society Logo"
+                    className="h-12 w-auto object-contain"
+                  />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold tracking-tight text-white">
+                    Pakistan Legal United Society
+                  </h3>
+                  <p className="text-[12px] font-bold text-[#fad207]">
+                    انصاف سب کا حق ہے
+                  </p>
+                </div>
+              </div>
               <p className="text-xs text-slate-300 leading-relaxed max-w-sm">
                 Committed to human rights protection, public interest legal aid, and operational transparency across Sindh and Pakistan.
               </p>
