@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { isPrivilegedRole, canAssignTasks, findRosterMember } from "@/lib/rbac";
-import type { PortalRole, RosterMember } from "@/lib/types";
+import type { PortalRole } from "@/lib/types";
 import { listRoster } from "@/lib/webhook";
 
 export type PortalUser = {
