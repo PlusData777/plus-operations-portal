@@ -11,7 +11,6 @@ import {
   CheckCircle2,
   Clock,
   CreditCard,
-  DollarSign,
   Download,
   FileCheck,
   FileSpreadsheet,
@@ -161,7 +160,7 @@ const OFFICIAL_LOGO_URL =
 
 export default function FinanceMasterPage() {
   const [currentUser, setCurrentUser] = useState<StaffProfile | null>(null);
-  const [budgets, setBudgets] = useState<GrantBudget[]>(INITIAL_BUDGETS);
+  const [budgets] = useState<GrantBudget[]>(INITIAL_BUDGETS);
   const [claims, setClaims] = useState<ExpenseClaim[]>(INITIAL_CLAIMS);
   const [filterHub, setFilterHub] = useState<string>("All");
   const [filterType, setFilterType] = useState<string>("All");
@@ -191,7 +190,6 @@ export default function FinanceMasterPage() {
     }
   }, []);
 
-  // Check if user is Executive or Admin (Full Dashboard Access)
   const isExecutiveOrAdmin = useMemo(() => {
     if (!currentUser) return false;
     const adminExecEmails = [
@@ -206,7 +204,6 @@ export default function FinanceMasterPage() {
     );
   }, [currentUser]);
 
-  // Scoped Claims: Executives see all; regular users only see their own claims
   const scopedClaims = useMemo(() => {
     if (!currentUser) return [];
     if (isExecutiveOrAdmin) return claims;
@@ -252,7 +249,7 @@ export default function FinanceMasterPage() {
         const data = await res.json();
         setIsUploading(false);
         if (data.fileUrl) setReceiptUrl(data.fileUrl);
-      } catch (err) {
+      } catch {
         setIsUploading(false);
       }
     };
@@ -351,7 +348,6 @@ export default function FinanceMasterPage() {
       </header>
 
       <main className="container mx-auto max-w-7xl flex-1 px-4 py-8 sm:px-6 space-y-8">
-        {/* Only Executives & Admins see the Overall Financial Metrics */}
         {isExecutiveOrAdmin && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
@@ -400,7 +396,6 @@ export default function FinanceMasterPage() {
           </div>
         )}
 
-        {/* Section 1: Donor Grant & Pillar Ledger (Executive View Only) */}
         {isExecutiveOrAdmin && (
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
@@ -449,7 +444,6 @@ export default function FinanceMasterPage() {
           </div>
         )}
 
-        {/* Section 2: Interactive Expense Claims & Advances Desk */}
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -580,7 +574,6 @@ export default function FinanceMasterPage() {
         </div>
       </main>
 
-      {/* MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
