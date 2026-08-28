@@ -16,14 +16,21 @@ export async function GET() {
       listRoster(),
     ]);
 
-    // Calculate queue metrics
-  const approvedAmount = requests
-      .filter((r) => String(r.status || "").toLowerCase() === "approved")
-      .reduce((sum, r) => {
-        const raw = String(r.amount ?? "").replace(/[^0-9.-]/g, "");
-        const num = parseFloat(raw);
-        return sum + (Number.isFinite(num) ? num : 0);
-      }, 0);
+    const total = Array.isArray(requests) ? requests.length : 0;
+    const pending = Array.isArray(requests)
+      ? requests.filter((r) => !r.status || String(r.status).toLowerCase() === "pending").length
+      : 0;
+
+    const approvedAmount = Array.isArray(requests)
+      ? requests
+          .filter((r) => String(r.status || "").toLowerCase() === "approved")
+          .reduce((sum, r) => {
+            const raw = String(r.amount ?? "").replace(/[^0-9.-]/g, "");
+            const num = parseFloat(raw);
+            return sum + (Number.isFinite(num) ? num : 0);
+          }, 0)
+      : 0;
+
     return NextResponse.json({
       success: true,
       requests,
