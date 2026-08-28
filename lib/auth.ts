@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { resolveAuthOrigin } from "@/lib/auth-origin";
-import { findRosterMember } from "@/lib/rbac";
+import { findRosterMember, isPrivilegedRole, canAssignTasks } from "@/lib/rbac";
 import type { PortalRole, RosterMember } from "@/lib/types";
 import { listRoster } from "@/lib/webhook";
 
@@ -21,6 +21,16 @@ export function isAuthConfigured() {
       process.env.GOOGLE_CLIENT_ID &&
       process.env.GOOGLE_CLIENT_SECRET
   );
+}
+
+export function isPrivilegedUser(user: PortalUser | null | undefined): boolean {
+  if (!user) return false;
+  return isPrivilegedRole(user.role);
+}
+
+export function canUserAssignTasks(user: PortalUser | null | undefined): boolean {
+  if (!user) return false;
+  return canAssignTasks(user.role);
 }
 
 export const authOptions: NextAuthOptions = {
@@ -69,7 +79,7 @@ export const authOptions: NextAuthOptions = {
         return trustedOrigin;
       }
     },
-    async jwt({ token, user, profile }) {
+    async jwt({ token, user }) {
       if (user) {
         token.email = user.email;
         token.name = user.name;
