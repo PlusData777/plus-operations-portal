@@ -5,10 +5,6 @@ export const dynamic = "force-dynamic";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-// ... rest of the imports and code
-
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import {
   Activity,
   AlertCircle,
