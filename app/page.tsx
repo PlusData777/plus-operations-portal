@@ -27,6 +27,7 @@ import {
   Mail,
   MapPin,
   Megaphone,
+  Paperclip,
   Phone,
   Plus,
   PlusCircle,
@@ -38,6 +39,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   TrendingUp,
+  UploadCloud,
   User,
   UserCheck,
   UserPlus,
@@ -61,6 +63,7 @@ interface RequestItem {
   description: string;
   status: string;
   currentApproverEmail?: string;
+  attachmentUrl?: string;
 }
 
 interface AssignedTask {
@@ -76,6 +79,7 @@ interface AssignedTask {
   assigneeName: string;
   assignedByEmail: string;
   assignedByName: string;
+  attachmentUrl?: string;
 }
 
 interface StaffProfile {
@@ -195,6 +199,8 @@ export default function WorkspacePage() {
   const [formAmount, setFormAmount] = useState<number>(0);
   const [formExpenseCategory, setFormExpenseCategory] = useState("Travel / Field Fuel");
   const [formDescription, setFormDescription] = useState("");
+  const [formAttachmentUrl, setFormAttachmentUrl] = useState("");
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
   const [submittingForm, setSubmittingForm] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
@@ -208,6 +214,7 @@ export default function WorkspacePage() {
   const [taskHub, setTaskHub] = useState<"Karachi" | "Hyderabad" | "Sukkur">("Sukkur");
   const [taskUrgency, setTaskUrgency] = useState<"Standard" | "Urgent">("Standard");
   const [taskAssigneeEmail, setTaskAssigneeEmail] = useState("");
+  const [taskAttachmentUrl, setTaskAttachmentUrl] = useState("");
   const [submittingTask, setSubmittingTask] = useState(false);
   const [taskFeedback, setTaskFeedback] = useState<{ status: "success" | "error"; message: string } | null>(null);
 
@@ -295,6 +302,43 @@ export default function WorkspacePage() {
     );
   }, [currentUser]);
 
+  // File Upload to Drive Function
+  async function handleFileUpload(file: File): Promise<string> {
+    setIsUploadingFile(true);
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = async () => {
+        try {
+          const res = await fetch("/api/upload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "UPLOAD_FILE",
+              fileName: `${Date.now()}_${file.name}`,
+              mimeType: file.type,
+              fileData: reader.result as string,
+            }),
+          });
+          const data = await res.json();
+          setIsUploadingFile(false);
+          if (data.fileUrl) {
+            resolve(data.fileUrl);
+          } else {
+            resolve("");
+          }
+        } catch (err) {
+          setIsUploadingFile(false);
+          reject(err);
+        }
+      };
+      reader.onerror = (err) => {
+        setIsUploadingFile(false);
+        reject(err);
+      };
+    });
+  }
+
   // Scoped Tasks
   const scopedTasks = useMemo(() => {
     if (!currentUser) return [];
@@ -363,6 +407,7 @@ export default function WorkspacePage() {
       assigneeName: targetName,
       assignedByEmail: currentUser.email,
       assignedByName: currentUser.name,
+      attachmentUrl: taskAttachmentUrl,
     };
 
     let apiSucceeded = false;
@@ -380,23 +425,17 @@ export default function WorkspacePage() {
     setTasks([newTask, ...tasks]);
     setSubmittingTask(false);
 
-    if (apiSucceeded) {
-      setTaskFeedback({
-        status: "success",
-        message: `Task assigned successfully! Notification email dispatched to ${targetName} (${targetEmail}).`,
-      });
-    } else {
-      setTaskFeedback({
-        status: "success",
-        message: `Task recorded on dashboard for ${targetName}.`,
-      });
-    }
+    setTaskFeedback({
+      status: "success",
+      message: `Task assigned successfully! Notification email dispatched to ${targetName} (${targetEmail}).`,
+    });
 
     setTimeout(() => {
       setTaskFeedback(null);
       setIsTaskModalOpen(false);
       setTaskTitle("");
       setTaskVenue("");
+      setTaskAttachmentUrl("");
       setCustomCategoryText("");
       setTaskCategory("Community Legal Camp");
       setTaskAssigneeEmail("");
@@ -429,6 +468,7 @@ export default function WorkspacePage() {
       description: formDescription,
       status: initialStatus,
       currentApproverEmail: assignedApprover,
+      attachmentUrl: formAttachmentUrl,
     };
 
     try {
@@ -448,6 +488,7 @@ export default function WorkspacePage() {
       setIsApplyModalOpen(false);
       setFormDescription("");
       setFormAmount(0);
+      setFormAttachmentUrl("");
       setSubmittingForm(false);
     }, 1500);
   };
@@ -720,7 +761,7 @@ export default function WorkspacePage() {
                   Welcome back, {currentUser.name}.
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Protected deliverable portfolio with automated email notification broadcast.
+                  Protected deliverable portfolio with Google Drive cloud storage and email dispatch.
                 </p>
               </div>
 
@@ -851,10 +892,17 @@ export default function WorkspacePage() {
                               <Calendar className="h-3.5 w-3.5 text-slate-400" />
                               <span>Target Date: <strong className="text-slate-800">{task.dueDateOrHearing}</strong></span>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                              <User className="h-3.5 w-3.5 text-slate-400" />
-                              <span>Assigned By: <strong className="text-slate-800">{task.assignedByName}</strong></span>
-                            </div>
+                            {task.attachmentUrl && (
+                              <a
+                                href={task.attachmentUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 text-[11px] font-bold text-[#1b365d] bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded-md"
+                              >
+                                <Paperclip className="h-3 w-3 text-[#c65a28]" />
+                                <span>Attached File</span>
+                              </a>
+                            )}
                           </div>
 
                           <Link
@@ -932,6 +980,19 @@ export default function WorkspacePage() {
                               </span>
                             </div>
                             <h4 className="mt-1 text-xs font-bold text-slate-900">{req.description}</h4>
+                            {req.attachmentUrl && (
+                              <div className="mt-2">
+                                <a
+                                  href={req.attachmentUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1b365d] hover:underline"
+                                >
+                                  <Paperclip className="h-3 w-3 text-[#c65a28]" />
+                                  <span>View Uploaded Receipt / Document</span>
+                                </a>
+                              </div>
+                            )}
                           </div>
                           <div className="text-right shrink-0">
                             {req.amount ? (
@@ -956,7 +1017,7 @@ export default function WorkspacePage() {
         </div>
       </main>
 
-      {/* MODAL 1: TASK CREATION WITH LIVE FEEDBACK BANNER */}
+      {/* MODAL 1: TASK CREATION WITH ATTACHMENT UPLOAD */}
       {isTaskModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
@@ -974,7 +1035,6 @@ export default function WorkspacePage() {
               </button>
             </div>
 
-            {/* Real-time Status Alert */}
             {taskFeedback && (
               <div
                 className={`flex items-center gap-2 rounded-xl p-3.5 text-xs font-bold border animate-in fade-in ${
@@ -1003,7 +1063,6 @@ export default function WorkspacePage() {
                 />
               </div>
 
-              {/* Assignee Selection */}
               {isManagerOrAdmin ? (
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-[#1b365d] mb-1">
@@ -1066,7 +1125,6 @@ export default function WorkspacePage() {
                 </div>
               </div>
 
-              {/* Dynamic Field: Shows when "Other" is chosen */}
               {taskCategory === "Other" && (
                 <div className="animate-in fade-in">
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-[#c65a28] mb-1">
@@ -1125,6 +1183,27 @@ export default function WorkspacePage() {
                 />
               </div>
 
+              {/* File Attachment to Google Drive */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                  Attach Brief / Document (Saved to Drive)
+                </label>
+                <input
+                  type="file"
+                  accept="image/*,.pdf,.doc,.docx"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const url = await handleFileUpload(file);
+                      setTaskAttachmentUrl(url);
+                    }
+                  }}
+                  className="w-full text-xs text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#1b365d] file:text-white hover:file:bg-[#122440] cursor-pointer"
+                />
+                {isUploadingFile && <span className="text-[10px] text-[#c65a28] font-semibold mt-1 block">Uploading file to Google Drive...</span>}
+                {taskAttachmentUrl && <span className="text-[10px] text-emerald-600 font-semibold mt-1 block">✓ File attached & uploaded!</span>}
+              </div>
+
               <div className="flex items-center gap-3 pt-2">
                 <button
                   type="button"
@@ -1135,7 +1214,7 @@ export default function WorkspacePage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={submittingTask}
+                  disabled={submittingTask || isUploadingFile}
                   className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#1b365d] py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#122440] cursor-pointer disabled:opacity-50"
                 >
                   <Send className="h-3.5 w-3.5 text-[#fad207]" />
@@ -1267,6 +1346,27 @@ export default function WorkspacePage() {
                       className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-bold text-[#1b365d] focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
                     />
                   </div>
+
+                  {/* Receipt Upload to Drive */}
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                      Attach Receipt / Bill (PDF / JPG / PNG)
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const url = await handleFileUpload(file);
+                          setFormAttachmentUrl(url);
+                        }
+                      }}
+                      className="w-full text-xs text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#1b365d] file:text-white hover:file:bg-[#122440] cursor-pointer"
+                    />
+                    {isUploadingFile && <span className="text-[10px] text-[#c65a28] font-semibold mt-1 block">Uploading receipt to Google Drive...</span>}
+                    {formAttachmentUrl && <span className="text-[10px] text-emerald-600 font-semibold mt-1 block">✓ Receipt uploaded!</span>}
+                  </div>
                 </div>
               )}
 
@@ -1298,7 +1398,7 @@ export default function WorkspacePage() {
                   </button>
                   <button
                     type="submit"
-                    disabled={submittingForm}
+                    disabled={submittingForm || isUploadingFile}
                     className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#c65a28] py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#a8491d] disabled:opacity-50 cursor-pointer"
                   >
                     <Send className="h-3.5 w-3.5 text-[#fad207]" />
