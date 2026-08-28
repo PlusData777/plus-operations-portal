@@ -27,7 +27,6 @@ import {
   Scale,
   Search,
   Send,
-  User,
   UserCheck,
   Users,
   X,
@@ -161,7 +160,7 @@ export default function WorkspacePage() {
   const [currentUser, setCurrentUser] = useState<StaffProfile | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
-  // Authentication State
+  // Auth State
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPin, setLoginPin] = useState("");
   const [authError, setAuthError] = useState("");
@@ -174,7 +173,7 @@ export default function WorkspacePage() {
   const [mainViewTab, setMainViewTab] = useState<"MY_TASKS" | "REQUESTS">("MY_TASKS");
   const [activeRequestFilter, setActiveRequestFilter] = useState<"ALL" | "LEAVE" | "EXPENSE">("ALL");
 
-  // Request Modal State
+  // Request Form Modal State
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
   const [formType, setFormType] = useState<"Leave" | "Expense">("Leave");
   const [formLeaveCategory, setFormLeaveCategory] = useState("Casual");
@@ -189,7 +188,7 @@ export default function WorkspacePage() {
   const [submittingForm, setSubmittingForm] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  // Task Modal State
+  // Task Creation Modal State
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [taskTitle, setTaskTitle] = useState("");
   const [taskCategory, setTaskCategory] = useState("Community Legal Camp");
@@ -993,6 +992,7 @@ export default function WorkspacePage() {
         </div>
       </main>
 
+      {/* TASK CREATION MODAL */}
       {isTaskModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
@@ -1200,6 +1200,7 @@ export default function WorkspacePage() {
         </div>
       )}
 
+      {/* OPERATIONS REQUEST MODAL */}
       {isApplyModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
@@ -1383,6 +1384,7 @@ export default function WorkspacePage() {
         </div>
       )}
 
+      {/* FOOTER */}
       <footer className="mt-16 border-t border-slate-200 bg-[#1b365d] text-white">
         <div className="border-b border-white/10 bg-[#122440] py-4 px-4 sm:px-6">
           <div className="container mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-3">
