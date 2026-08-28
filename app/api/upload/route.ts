@@ -19,7 +19,6 @@ export async function POST(req: Request) {
     const result = await response.json();
     return NextResponse.json(result);
   } catch (error: any) {
-    console.error("Upload API route error:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
