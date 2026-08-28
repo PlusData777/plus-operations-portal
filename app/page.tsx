@@ -11,6 +11,7 @@ import {
   FileText,
   KeyRound,
   LayoutDashboard,
+  Lock,
   LogIn,
   LogOut,
   Mail,
@@ -52,6 +53,7 @@ interface StaffProfile {
   role: string;
   designation: string;
   department: string;
+  accessPin?: string;
 }
 
 const OFFICIAL_ROSTER: StaffProfile[] = [
@@ -61,6 +63,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Administrator",
     role: "ADMIN",
     department: "IT / Systems",
+    accessPin: "9900",
   },
   {
     email: "altafkhoso.adv@gmail.com",
@@ -68,6 +71,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "CEO",
     role: "EXECUTIVE",
     department: "Executive Board",
+    accessPin: "9900",
   },
   {
     email: "rizwanapatel.plus@gmail.com",
@@ -75,6 +79,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Chairperson",
     role: "EXECUTIVE",
     department: "Executive Board",
+    accessPin: "9900",
   },
   {
     email: "ishfaque.mojai@gmail.com",
@@ -82,6 +87,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "HR & Admin Lead",
     role: "HR_ADMIN",
     department: "HR & Operations",
+    accessPin: "2026",
   },
   {
     email: "japheth.wilson123@gmail.com",
@@ -89,6 +95,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Finance Manager",
     role: "FINANCE_MGR",
     department: "Finance",
+    accessPin: "2026",
   },
   {
     email: "salmahabibbhutto88@gmail.com",
@@ -96,6 +103,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Program Manager",
     role: "PROGRAM_MGR",
     department: "Programs",
+    accessPin: "2026",
   },
   {
     email: "kamanger110@gmail.com",
@@ -103,6 +111,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Team Member",
     role: "GENERAL_STAFF",
     department: "Operations",
+    accessPin: "2026",
   },
   {
     email: "faizthecoach@gmail.com",
@@ -110,6 +119,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Field Coordinator",
     role: "GENERAL_STAFF",
     department: "Field Ops",
+    accessPin: "2026",
   },
   {
     email: "advazizullahazizullah@gmail.com",
@@ -117,6 +127,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Legal Associate",
     role: "LEGAL_STAFF",
     department: "Legal Aid",
+    accessPin: "2026",
   },
   {
     email: "saifrehman.kaloi@gmail.com",
@@ -124,6 +135,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Field Coordinator",
     role: "GENERAL_STAFF",
     department: "Field Ops",
+    accessPin: "2026",
   },
   {
     email: "salaudinlarik1@gmail.com",
@@ -131,6 +143,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Team Member",
     role: "GENERAL_STAFF",
     department: "Operations",
+    accessPin: "2026",
   },
   {
     email: "imrankhanchang555@gmail.com",
@@ -138,6 +151,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "IT / Program Support",
     role: "GENERAL_STAFF",
     department: "Programs",
+    accessPin: "2026",
   },
   {
     email: "imranalimallah128@gmail.com",
@@ -145,6 +159,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Team Member",
     role: "GENERAL_STAFF",
     department: "Operations",
+    accessPin: "2026",
   },
   {
     email: "sadiqimransoomro@gmail.com",
@@ -152,6 +167,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Team Member",
     role: "GENERAL_STAFF",
     department: "Operations",
+    accessPin: "2026",
   },
   {
     email: "sajjadkhoso0011@gmail.com",
@@ -159,6 +175,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Team Member",
     role: "GENERAL_STAFF",
     department: "Operations",
+    accessPin: "2026",
   },
   {
     email: "safiart998@gmail.com",
@@ -166,6 +183,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Media Support",
     role: "GENERAL_STAFF",
     department: "Communications",
+    accessPin: "2026",
   },
   {
     email: "waseelaqasim60@gmail.com",
@@ -173,6 +191,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Associate",
     role: "GENERAL_STAFF",
     department: "Programs",
+    accessPin: "2026",
   },
   {
     email: "muskandinochanna@gmail.com",
@@ -180,6 +199,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Associate",
     role: "GENERAL_STAFF",
     department: "Programs",
+    accessPin: "2026",
   },
   {
     email: "aneesabro98@gmail.com",
@@ -187,6 +207,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Team Member",
     role: "GENERAL_STAFF",
     department: "Operations",
+    accessPin: "2026",
   },
   {
     email: "aakashali414@gmail.com",
@@ -194,6 +215,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Team Member",
     role: "GENERAL_STAFF",
     department: "Operations",
+    accessPin: "2026",
   },
   {
     email: "kashee742@gmail.com",
@@ -201,6 +223,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Team Member",
     role: "GENERAL_STAFF",
     department: "Operations",
+    accessPin: "2026",
   },
   {
     email: "arkkaloi1@gmail.com",
@@ -208,6 +231,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Team Member",
     role: "GENERAL_STAFF",
     department: "Operations",
+    accessPin: "2026",
   },
 ];
 
@@ -217,16 +241,21 @@ const OFFICIAL_LOGO_URL =
 export default function WorkspacePage() {
   const [currentUser, setCurrentUser] = useState<StaffProfile | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
-  const [loginEmailInput, setLoginEmailInput] = useState("");
+  
+  // Auth Form State
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPin, setLoginPin] = useState("");
   const [authError, setAuthError] = useState("");
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
 
+  // App State
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"ALL" | "LEAVE" | "EXPENSE">("ALL");
   const [processingId, setProcessingId] = useState<string | null>(null);
 
-  // Initialize and check local storage session
+  // Load verified session
   useEffect(() => {
     try {
       const stored = localStorage.getItem("plus_user");
@@ -240,57 +269,64 @@ export default function WorkspacePage() {
         if (matched) {
           setCurrentUser(matched);
         } else {
-          setCurrentUser({
-            name: u.name || "Staff Member",
-            email: email,
-            role: (u.role || "GENERAL_STAFF").toUpperCase(),
-            designation: u.designation || "Operations Staff",
-            department: u.department || "Operations",
-          });
+          localStorage.removeItem("plus_user");
         }
       }
     } catch (e) {
       console.warn("Session check failed:", e);
+      localStorage.removeItem("plus_user");
     } finally {
       setIsAuthChecking(false);
     }
   }, []);
 
-  const handleLogin = (emailToLogin: string) => {
-    const cleanEmail = emailToLogin.toLowerCase().trim();
-    if (!cleanEmail) {
-      setAuthError("Please enter your registered email address.");
+  const handleAuthenticate = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError("");
+    setIsAuthenticating(true);
+
+    const emailClean = loginEmail.toLowerCase().trim();
+    const pinClean = loginPin.trim();
+
+    if (!emailClean || !pinClean) {
+      setAuthError("Both email and security PIN are required.");
+      setIsAuthenticating(false);
       return;
     }
 
-    const matched = OFFICIAL_ROSTER.find(
-      (s) => s.email.toLowerCase().trim() === cleanEmail
+    const matchedStaff = OFFICIAL_ROSTER.find(
+      (s) => s.email.toLowerCase().trim() === emailClean
     );
 
-    if (matched) {
-      localStorage.setItem("plus_user", JSON.stringify(matched));
-      setCurrentUser(matched);
-      setAuthError("");
-    } else {
-      // Allow general login
-      const guestProfile: StaffProfile = {
-        name: cleanEmail.split("@")[0],
-        email: cleanEmail,
-        role: "GENERAL_STAFF",
-        designation: "Field / General Staff",
-        department: "Operations",
-      };
-      localStorage.setItem("plus_user", JSON.stringify(guestProfile));
-      setCurrentUser(guestProfile);
-      setAuthError("");
+    if (!matchedStaff) {
+      setAuthError("Email address is not registered in the PLUS Roster.");
+      setIsAuthenticating(false);
+      return;
     }
+
+    // PIN Authentication Check (Specific PIN, Global Staff PIN 2026, or Master 9900)
+    const validPin = matchedStaff.accessPin || "2026";
+    if (pinClean !== validPin && pinClean !== "9900" && pinClean !== "2026") {
+      setAuthError("Invalid Security PIN. Please contact System Administrator.");
+      setIsAuthenticating(false);
+      return;
+    }
+
+    // Success: Store Session & Authorize
+    localStorage.setItem("plus_user", JSON.stringify(matchedStaff));
+    setCurrentUser(matchedStaff);
+    setLoginEmail("");
+    setLoginPin("");
+    setIsAuthenticating(false);
   };
 
   const handleSignOut = () => {
     localStorage.removeItem("plus_user");
     sessionStorage.clear();
     setCurrentUser(null);
-    setLoginEmailInput("");
+    setLoginEmail("");
+    setLoginPin("");
+    setAuthError("");
   };
 
   // Determine true administrative privileges
@@ -401,7 +437,6 @@ export default function WorkspacePage() {
     };
   }, [requests, currentUser, isAdminOrExec]);
 
-  // Quick Filters
   const filteredRequests = useMemo(() => {
     return requests.filter((req) => {
       const q = searchQuery.toLowerCase().trim();
@@ -427,19 +462,18 @@ export default function WorkspacePage() {
     });
   }, [requests, searchQuery, activeTab]);
 
-  // Loading state
   if (isAuthChecking) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f8fafc]">
         <div className="flex flex-col items-center gap-3">
           <img src={OFFICIAL_LOGO_URL} alt="PLUS Logo" className="h-16 w-auto animate-pulse" />
-          <p className="text-xs font-bold text-[#1b365d]">Initializing PLUS Workspace...</p>
+          <p className="text-xs font-bold text-[#1b365d]">Verifying Security Credentials...</p>
         </div>
       </div>
     );
   }
 
-  // If No Active Session: Show Dedicated Portal Login
+  // Strictly Enforced Login Screen
   if (!currentUser) {
     return (
       <div className="flex min-h-screen flex-col justify-between bg-[#f8fafc] text-slate-900">
@@ -454,86 +488,70 @@ export default function WorkspacePage() {
               </h2>
               <p className="text-xs font-bold text-[#c65a28] font-serif">انصاف سب کا حق ہے</p>
               <p className="mt-1 text-xs text-slate-500">
-                Operations, Governance & Multi-Tier Approval Workspace
+                Authorized Personnel Authentication Gate
               </p>
             </div>
 
-            <div className="mt-6 space-y-4">
+            <form onSubmit={handleAuthenticate} className="mt-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
-                  Quick Select Verified Staff Account
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                  Registered Staff Email
                 </label>
-                <select
-                  onChange={(e) => {
-                    if (e.target.value) handleLogin(e.target.value);
-                  }}
-                  defaultValue=""
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-medium text-slate-800 focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
-                >
-                  <option value="" disabled>
-                    -- Choose Your Account --
-                  </option>
-                  <optgroup label="Governance & Admin">
-                    <option value="dataplus.org@gmail.com">Atif Ali (Admin · IT / Systems)</option>
-                    <option value="altafkhoso.adv@gmail.com">Altaf Khoso (CEO · Executive Board)</option>
-                    <option value="rizwanapatel.plus@gmail.com">Rizwana Patel (Chairperson)</option>
-                    <option value="ishfaque.mojai@gmail.com">Ashfaq Ali (HR & Admin Lead)</option>
-                    <option value="japheth.wilson123@gmail.com">Japheth Wilson (Finance Manager)</option>
-                  </optgroup>
-                  <optgroup label="Operational & Field Staff">
-                    <option value="kamanger110@gmail.com">Kamanger (Operations Team)</option>
-                    <option value="salmahabibbhutto88@gmail.com">Salma Habib Bhutto (Program Manager)</option>
-                    <option value="advazizullahazizullah@gmail.com">Adv Azizullah (Legal Associate)</option>
-                    <option value="faizthecoach@gmail.com">Faiz (Field Coordinator)</option>
-                    <option value="saifrehman.kaloi@gmail.com">Saif Rehman (Field Coordinator)</option>
-                    <option value="salaudinlarik1@gmail.com">Salaudin Larik (Operations)</option>
-                    <option value="imrankhanchang555@gmail.com">Imran Khan Chang (Programs)</option>
-                    <option value="waseelaqasim60@gmail.com">Waseela Qasim (Associate)</option>
-                    <option value="muskandinochanna@gmail.com">Muskan Channa (Associate)</option>
-                    <option value="aneesabro98@gmail.com">Anees Ahmed (Operations)</option>
-                    <option value="aakashali414@gmail.com">Aakash Bhurgri (Operations)</option>
-                    <option value="kashee742@gmail.com">Kashif (Operations)</option>
-                  </optgroup>
-                </select>
-              </div>
-
-              <div className="relative flex items-center py-1">
-                <div className="grow border-t border-slate-200"></div>
-                <span className="mx-3 shrink text-[10px] font-bold uppercase text-slate-400">or sign in with email</span>
-                <div className="grow border-t border-slate-200"></div>
-              </div>
-
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleLogin(loginEmailInput);
-                }}
-                className="space-y-3"
-              >
-                <div>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
                   <input
                     type="email"
-                    placeholder="Enter registered email address..."
-                    value={loginEmailInput}
-                    onChange={(e) => setLoginEmailInput(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                    required
+                    placeholder="name@gmail.com"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-3 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
                   />
-                  {authError && <p className="mt-1 text-[11px] font-semibold text-red-600">{authError}</p>}
                 </div>
+              </div>
 
-                <button
-                  type="submit"
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1b365d] py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#122440] cursor-pointer"
-                >
-                  <LogIn className="h-4 w-4 text-[#fad207]" />
-                  Sign In to Workspace
-                </button>
-              </form>
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                  Security Access PIN
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+                  <input
+                    type="password"
+                    required
+                    placeholder="Enter assigned PIN"
+                    value={loginPin}
+                    onChange={(e) => setLoginPin(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-3 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                  />
+                </div>
+              </div>
+
+              {authError && (
+                <div className="flex items-center gap-2 rounded-xl bg-red-50 p-3 text-xs font-semibold text-red-700 border border-red-200">
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-red-600" />
+                  <span>{authError}</span>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isAuthenticating}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1b365d] py-3 text-xs font-bold text-white shadow-md transition hover:bg-[#122440] disabled:opacity-50 cursor-pointer"
+              >
+                <LogIn className="h-4 w-4 text-[#fad207]" />
+                <span>{isAuthenticating ? "Verifying..." : "Verify & Access Workspace"}</span>
+              </button>
+            </form>
+
+            <div className="mt-6 border-t border-slate-100 pt-4 text-center">
+              <span className="text-[11px] text-slate-400">
+                Staff PIN default: <code className="font-mono text-slate-600">2026</code> · Admin Key: <code className="font-mono text-slate-600">9900</code>
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Footer */}
         <footer className="border-t border-slate-200 bg-[#1b365d] py-4 text-center text-[11px] text-slate-300">
           Pakistan Legal United Society · Operational & Approval System
         </footer>
@@ -541,7 +559,7 @@ export default function WorkspacePage() {
     );
   }
 
-  // Render Logged-in Workspace
+  // Render Secure Dashboard
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col justify-between">
       {/* Top Navbar */}
@@ -694,7 +712,7 @@ export default function WorkspacePage() {
 
           {/* Right Workspace Main Stream */}
           <div className="lg:col-span-9 space-y-6">
-            {/* Executive & Admin Action Required Desk (Shown ONLY when relevant) */}
+            {/* Executive & Admin Action Required Desk */}
             <div className="rounded-2xl border border-[#fad207]/60 bg-[#fad207]/15 p-5 shadow-2xs">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
