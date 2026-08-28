@@ -92,11 +92,38 @@ export function StaffPortal({ user }: { user?: StaffProfile }) {
     setLoading(true);
     setErrorMessage(null);
     try {
-      const [reqRes, dirRes] = await Promise.all([
-        fetch("/api/requests"),
-        fetch("/api/directory"),
-      ]);
+      // 1. Fetch requests
+      try {
+        const reqRes = await fetch("/api/requests");
+        if (reqRes.ok) {
+          const reqData = await reqRes.json();
+          if (reqData.records && Array.isArray(reqData.records)) {
+            setRequests(reqData.records);
+          }
+        }
+      } catch (e) {
+        console.warn("Requests endpoint error:", e);
+      }
 
+      // 2. Fetch staff roster
+      try {
+        const dirRes = await fetch("/api/directory");
+        if (dirRes.ok) {
+          const dirData = await dirRes.json();
+          if (dirData.staff && Array.isArray(dirData.staff)) {
+            setRoster(dirData.staff);
+          }
+        }
+      } catch (e) {
+        console.warn("Directory endpoint error:", e);
+      }
+    } catch (err: any) {
+      console.error("Data load error:", err);
+      setErrorMessage("Could not connect to data repository. Please try refreshing.");
+    } finally {
+      setLoading(false);
+    }
+  }
       const reqData = await reqRes.json();
       const dirData = await dirRes.json();
 
