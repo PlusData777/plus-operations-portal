@@ -1,8 +1,7 @@
 import { getServerSession } from "next-auth";
 import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { resolveAuthOrigin } from "@/lib/auth-origin";
-import { findRosterMember, isPrivilegedRole, canAssignTasks } from "@/lib/rbac";
+import { isPrivilegedRole, canAssignTasks, findRosterMember } from "@/lib/rbac";
 import type { PortalRole, RosterMember } from "@/lib/types";
 import { listRoster } from "@/lib/webhook";
 
@@ -15,7 +14,7 @@ export type PortalUser = {
   approvalScope: string;
 };
 
-export function isAuthConfigured() {
+export function isAuthConfigured(): boolean {
   return Boolean(
     process.env.NEXTAUTH_SECRET &&
       process.env.GOOGLE_CLIENT_ID &&
@@ -47,43 +46,11 @@ export const authOptions: NextAuthOptions = {
     error: "/",
   },
   callbacks: {
-    async signIn({ user, profile, account }) {
-      // Allow all valid Google authentications through
+    async signIn() {
       return true;
     },
-    async redirect({ url, baseUrl }) {
-      // Always route successfully authenticated users to the cockpit
+    async redirect({ baseUrl }) {
       return `${baseUrl}/cockpit`;
-    },
-    async jwt({ token, user }) {
-      if (user) {
-        token.email = user.email;
-        token.name = user.name;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.email = token.email as string;
-        session.user.name = token.name as string;
-      }
-      return session;
-    },
-  },
-        return false;
-      } catch (error) {
-        console.error("[AUTH] Error verifying roster during sign-in:", error);
-        return true; // Don't lock users out if script is temporarily unreachable
-      }
-    },
-    async redirect({ url, baseUrl }) {
-      const trustedOrigin = resolveAuthOrigin() ?? baseUrl;
-      if (url.startsWith("/")) return `${trustedOrigin}${url}`;
-      try {
-        return new URL(url).origin === trustedOrigin ? url : trustedOrigin;
-      } catch {
-        return trustedOrigin;
-      }
     },
     async jwt({ token, user }) {
       if (user) {
@@ -140,7 +107,6 @@ export async function getCurrentUser(): Promise<PortalUser | null> {
     console.error("Failed to load user roster details:", error);
   }
 
-  // Default fallback user profile
   return {
     name: session.user.name || email.split("@")[0],
     email,
