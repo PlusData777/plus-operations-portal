@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { LayoutDashboard, UserRound, Users, BarChart3 } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { SignOutButton } from "@/components/auth-buttons";
@@ -15,7 +16,7 @@ export function PortalShell({
   active: "staff" | "review" | "directory" | "analytics";
 }) {
   const privileged = isPrivilegedUser(user);
-  
+
   const baseNav = privileged
     ? [{ href: "/cockpit", label: queueLabel(user.role), icon: LayoutDashboard, key: "review" as const }]
     : [{ href: "/portal", label: "My submissions", icon: UserRound, key: "staff" as const }];
@@ -25,6 +26,7 @@ export function PortalShell({
     { href: "/directory", label: "Staff Directory", icon: Users, key: "directory" as const },
     { href: "/analytics", label: "Executive Analytics", icon: BarChart3, key: "analytics" as const },
   ];
+
   return (
     <div className="min-h-screen bg-canvas">
       <header className="border-b border-slate-200 bg-white/95 backdrop-blur">
