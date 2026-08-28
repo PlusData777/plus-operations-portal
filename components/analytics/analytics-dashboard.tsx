@@ -6,7 +6,7 @@ import { DATE_RANGES, PKR, type DateRange } from "@/lib/analytics-data";
 import { MetricCards } from "@/components/analytics/metric-cards";
 import { ExpenseTrendChart } from "@/components/analytics/expense-trend-chart";
 import { StatusDonutChart } from "@/components/analytics/status-donut-chart";
-import { TransactionTable } from "@/components/analytics/transactions-table";
+import { TransactionsTable } from "@/components/analytics/transactions-table";
 
 export function AnalyticsDashboard() {
   const [range, setRange] = useState<DateRange>("month");
