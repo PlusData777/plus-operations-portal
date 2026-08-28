@@ -454,7 +454,7 @@ export function StaffPortal({ user }: { user: StaffProfile }) {
                   <div className="flex items-start justify-between">
                     <div>
                       <h4 className="font-semibold text-sm text-slate-900">
-                        {REQUEST_CATEGORY_LABELS[req.category] || "Request"}
+                        {(req.category && REQUEST_CATEGORY_LABELS[req.category]) || "Request"}
                       </h4>
                       <p className="text-xs text-slate-500 mt-0.5">
                         {req.trackingId ? `ID: ${req.trackingId} · ` : ""}
