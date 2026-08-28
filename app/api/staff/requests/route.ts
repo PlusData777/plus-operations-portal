@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { listRequests } from "@/lib/webhook";
+import { listRequests, listRoster } from "@/lib/webhook";
 
 export const dynamic = "force-dynamic";
 
@@ -11,18 +11,21 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const allRequests = await listRequests();
-    const userEmail = user.email.toLowerCase().trim();
+    const [allRequests, roster] = await Promise.all([
+      listRequests(),
+      listRoster(),
+    ]);
 
-    // Filter requests submitted by this specific staff user
-    const userRequests = allRequests.filter(
-      (r) => (r.staffEmail || "").toLowerCase().trim() === userEmail
-    );
+    const userEmail = user.email.toLowerCase().trim();
+    const userRequests = Array.isArray(allRequests)
+      ? allRequests.filter((r) => (r.staffEmail || "").toLowerCase().trim() === userEmail)
+      : [];
 
     return NextResponse.json({
       success: true,
       requests: userRequests,
       data: userRequests,
+      roster: Array.isArray(roster) ? roster : [],
     });
   } catch (error: any) {
     console.error("Staff requests GET error:", error);
