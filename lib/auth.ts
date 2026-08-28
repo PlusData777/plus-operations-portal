@@ -1,25 +1,43 @@
 import { getServerSession } from "next-auth";
 import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { normalizedEmail } from "@/lib/authorization";
 import { resolveAuthOrigin } from "@/lib/auth-origin";
-import { canAssignTasks, findRosterMember, isPrivilegedRole } from "@/lib/rbac";
+import { findRosterMember } from "@/lib/rbac";
 import type { PortalRole, RosterMember } from "@/lib/types";
 import { listRoster } from "@/lib/webhook";
 
-export type PortalUser = { name: string; email: string; role: PortalRole; designation: string; department: string; approvalScope: string };
+export type PortalUser = {
+  name: string;
+  email: string;
+  role: PortalRole;
+  designation: string;
+  department: string;
+  approvalScope: string;
+};
 
 export function isAuthConfigured() {
-  return Boolean(process.env.NEXTAUTH_SECRET && process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+  return Boolean(
+    process.env.NEXTAUTH_SECRET &&
+      process.env.GOOGLE_CLIENT_ID &&
+      process.env.GOOGLE_CLIENT_SECRET
+  );
 }
 
 export const authOptions: NextAuthOptions = {
-  providers: [GoogleProvider({ clientId: process.env.GOOGLE_CLIENT_ID ?? "", clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "" })],
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+    }),
+  ],
   secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
-  pages: { signIn: "/", error: "/" },
+  pages: {
+    signIn: "/",
+    error: "/",
+  },
   callbacks: {
- async signIn({ profile, user }) {
+    async signIn({ profile, user }) {
       const email = (profile?.email || user?.email || "").toLowerCase().trim();
       if (!email) return false;
 
@@ -28,53 +46,82 @@ export const authOptions: NextAuthOptions = {
         .split(",")
         .map((e) => e.trim());
 
-      // 1. Direct admin bypass
+      // 1. Direct admin access
       if (adminList.includes(email)) {
         return true;
       }
 
-      // 2. Staff roster lookup
+      // 2. Staff roster verification
       try {
         const roster = await listRoster();
         return Boolean(findRosterMember(roster, email));
       } catch (error) {
-        console.error("Unable to verify the active PLUS roster during sign-in", error);
+        console.error("Unable to verify active PLUS roster during sign-in:", error);
         return false;
       }
     },
     async redirect({ url, baseUrl }) {
       const trustedOrigin = resolveAuthOrigin() ?? baseUrl;
       if (url.startsWith("/")) return `${trustedOrigin}${url}`;
-      try { return new URL(url).origin === trustedOrigin ? url : trustedOrigin; }
-      catch { return trustedOrigin; }
-    }
-  }
+      try {
+        return new URL(url).origin === trustedOrigin ? url : trustedOrigin;
+      } catch {
+        return trustedOrigin;
+      }
+    },
+    async jwt({ token, user, profile }) {
+      if (user) {
+        token.email = user.email;
+        token.name = user.name;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.email = token.email as string;
+        session.user.name = token.name as string;
+      }
+      return session;
+    },
+  },
 };
 
-export async function getCurrentUser() {
-  if (!isAuthConfigured()) return null;
+export async function getCurrentUser(): Promise<PortalUser | null> {
   const session = await getServerSession(authOptions);
-  const email = session?.user?.email ? normalizedEmail(session.user.email) : null;
-  if (!email) return null;
+  if (!session?.user?.email) return null;
+
+  const email = session.user.email.toLowerCase().trim();
+  const adminList = (process.env.ADMIN_EMAILS || "dataplus.org@gmail.com,kamanger110@gmail.com")
+    .toLowerCase()
+    .split(",")
+    .map((e) => e.trim());
+
+  if (adminList.includes(email)) {
+    return {
+      name: session.user.name || "Administrator",
+      email,
+      role: "ADMIN",
+      designation: "System Administrator",
+      department: "IT / Systems",
+      approvalScope: "Full Access / Task Assigner",
+    };
+  }
+
   try {
-    const rosterMember = findRosterMember(await listRoster(), email);
-    if (!rosterMember) return null;
-    return { ...rosterMember, name: rosterMember.name || session?.user?.name?.trim() || email };
+    const roster = await listRoster();
+    const member = findRosterMember(roster, email);
+    if (!member) return null;
+
+    return {
+      name: member.name || session.user.name || "",
+      email: member.email,
+      role: member.role,
+      designation: member.designation,
+      department: member.department,
+      approvalScope: member.approvalScope,
+    };
   } catch (error) {
-    console.error("Unable to verify the active PLUS roster for the current session", error);
+    console.error("Failed to load user roster details:", error);
     return null;
   }
-}
-
-export function isPrivilegedUser(user: Pick<PortalUser, "role">) {
-  return isPrivilegedRole(user.role);
-}
-
-export function canCurrentUserAssignTasks(user: Pick<PortalUser, "role">) {
-  return canAssignTasks(user.role);
-}
-
-export async function getCurrentPrivilegedUser() {
-  const user = await getCurrentUser();
-  return user && isPrivilegedUser(user) ? user : null;
 }
