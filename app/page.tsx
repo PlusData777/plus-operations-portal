@@ -1,7 +1,474 @@
-import { redirect } from "next/navigation";
-import { ArrowRight, CheckCircle2, LockKeyhole, Workflow } from "lucide-react";
-import { SignInButton } from "@/components/auth-buttons";
-import { Brand, OfficialPlusLogo } from "@/components/brand";
-import { getCurrentUser, isPrivilegedUser, isAuthConfigured } from "@/lib/auth";
+"use client";
 
-export default async function HomePage({ searchParams }: { searchParams: Promise<{ error?: string }> }) { const authConfigured = isAuthConfigured(); const user = await getCurrentUser(); if (user) redirect(isPrivilegedUser(user) ? "/cockpit" : "/portal"); const { error } = await searchParams; const accessDenied = error === "AccessDenied"; return <main className="min-h-screen overflow-hidden bg-canvas"><header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5"><Brand /><span className="hidden rounded-full bg-navy/5 px-3 py-1.5 text-xs font-bold text-navy sm:inline">Secure internal workspace</span></header><section className="relative mx-auto grid max-w-7xl gap-12 px-5 pb-16 pt-12 lg:grid-cols-[1.1fr_.9fr] lg:items-center lg:pb-24 lg:pt-20"><div className="absolute -left-32 top-4 -z-0 h-72 w-72 rounded-full bg-emerald/10 blur-3xl" /><div className="absolute right-0 top-0 -z-0 h-96 w-96 rounded-full bg-navy/10 blur-3xl" /><div className="relative z-10"><div className="flex flex-wrap items-center gap-3"><OfficialPlusLogo className="h-20 w-28 rounded-xl bg-white p-1.5 shadow-lift" alt="Pakistan Legal United Society official PLUS logo" /><p className="inline-flex items-center gap-2 rounded-full border border-emerald/20 bg-emerald/5 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.13em] text-emerald"><CheckCircle2 size={14} /> Structured. Secure. Accountable.</p></div><h1 className="mt-6 max-w-3xl text-4xl font-extrabold leading-[1.08] tracking-tight text-navy sm:text-5xl">An orderly route from request to executive decision.</h1><p className="mt-6 max-w-2xl text-base leading-relaxed text-slate-600">The PLUS Operations & Approval Portal gives staff a clear submission record and gives executive leadership a focused decision cockpit, governed by verified Google access and role-based controls.</p>{accessDenied && <p role="alert" className="mt-6 max-w-xl rounded-xl border border-crimson/25 bg-crimson/5 px-4 py-3 text-sm font-semibold text-crimson">Access denied. This Google account is not on the active PLUS staff roster.</p>}<div className="mt-8"><SignInButton disabled={!authConfigured} /></div><p className="mt-4 flex items-center gap-2 text-xs text-slate-500"><LockKeyhole size={14} /> {authConfigured ? "Sign in with your authorized Google account to continue." : "Google sign-in is temporarily unavailable. Contact the PLUS portal administrator."}</p></div><div className="relative z-10 panel p-5 sm:p-7"><div className="rounded-2xl bg-navy p-6 text-white"><div className="flex items-center justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-white/65">PLUS decision flow</p><h2 className="mt-2 text-xl font-bold">A confident operational rhythm</h2></div><Workflow className="text-emerald-300" size={28} /></div><div className="mt-7 space-y-4">{[["01", "Submit", "Staff record the context and priority."], ["02", "Review", "Authorized reviewers assess a protected queue."], ["03", "Decide", "A documented outcome is saved and notified."]].map(([number, title, copy]) => <div key={number} className="flex items-start gap-4"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white/10 text-xs font-extrabold text-emerald-300">{number}</span><div><p className="font-bold">{title}</p><p className="mt-0.5 text-sm text-white/65">{copy}</p></div></div>)}</div></div><div className="mt-5 flex items-center gap-2 text-sm font-bold text-navy">Authorized access only <ArrowRight size={17} /></div></div></section></main>; }
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import {
+  AlertCircle,
+  AlertTriangle,
+  ArrowRight,
+  Award,
+  Building2,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  ExternalLink,
+  FileCheck,
+  FileSpreadsheet,
+  FileText,
+  Filter,
+  Layers,
+  LayoutDashboard,
+  LogOut,
+  Plus,
+  RefreshCw,
+  Scale,
+  Search,
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
+  Sparkles,
+  TrendingUp,
+  User,
+  Users,
+} from "lucide-react";
+import { BrandFooter } from "@/components/brand-footer";
+
+interface RequestItem {
+  id: string;
+  timestamp: string;
+  requesterEmail: string;
+  requesterName: string;
+  requestType: "Leave" | "Expense" | "General";
+  leaveCategory?: string;
+  startDate?: string;
+  endDate?: string;
+  days?: number;
+  amount?: number;
+  expenseCategory?: string;
+  description: string;
+  status: string;
+  currentApproverEmail?: string;
+  tier1Approved?: boolean;
+  tier2Approved?: boolean;
+}
+
+interface LeaveBalance {
+  casualTotal: number;
+  casualUsed: number;
+  annualTotal: number;
+  annualUsed: number;
+  medicalTotal: number;
+  medicalUsed: number;
+}
+
+export default function WorkspacePage() {
+  const [user, setUser] = useState({
+    name: "Data Plus",
+    email: "dataplus.org@gmail.com",
+    role: "ADMIN",
+    designation: "Administrator",
+  });
+
+  const [requests, setRequests] = useState<RequestItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<"ALL" | "LEAVE" | "EXPENSE">("ALL");
+
+  const [leaveBalances, setLeaveBalances] = useState<LeaveBalance>({
+    casualTotal: 5,
+    casualUsed: 0,
+    annualTotal: 5,
+    annualUsed: 0,
+    medicalTotal: 2,
+    medicalUsed: 0,
+  });
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("plus_user");
+      if (stored) {
+        const u = JSON.parse(stored);
+        setUser({
+          name: u.name || "Staff Member",
+          email: u.email || "dataplus.org@gmail.com",
+          role: u.role || "STAFF",
+          designation: u.designation || "Operational Team",
+        });
+      }
+    } catch (e) {
+      console.warn("Could not parse user session:", e);
+    }
+  }, []);
+
+  async function fetchLiveRequests() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/requests");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.requests && Array.isArray(data.requests)) {
+          setRequests(data.requests);
+        }
+      }
+    } catch (e) {
+      console.warn("Error loading requests:", e);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchLiveRequests();
+  }, []);
+
+  // Safe Metric Calculations (Fixes RsNaN bug)
+  const stats = useMemo(() => {
+    const totalCount = requests.length;
+    const pendingCount = requests.filter(
+      (r) =>
+        r.status &&
+        (r.status.toLowerCase().includes("pending") ||
+          r.status.toLowerCase().includes("review"))
+    ).length;
+
+    const approvedPkrVolume = requests
+      .filter((r) => {
+        const st = (r.status || "").toLowerCase();
+        return st.includes("approved") && Number(r.amount) > 0;
+      })
+      .reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+
+    const actionRequiredCount = requests.filter((r) => {
+      const pendingTo = (r.currentApproverEmail || "").toLowerCase().trim();
+      const myEmail = (user.email || "").toLowerCase().trim();
+      const st = (r.status || "").toLowerCase();
+      return pendingTo === myEmail && !st.includes("approved") && !st.includes("rejected");
+    }).length;
+
+    return {
+      totalCount,
+      pendingCount,
+      approvedPkrVolume,
+      actionRequiredCount,
+    };
+  }, [requests, user.email]);
+
+  const filteredRequests = useMemo(() => {
+    return requests.filter((req) => {
+      const q = searchQuery.toLowerCase().trim();
+      const matchesSearch =
+        !q ||
+        req.requesterName?.toLowerCase().includes(q) ||
+        req.requesterEmail?.toLowerCase().includes(q) ||
+        req.description?.toLowerCase().includes(q) ||
+        req.id?.toLowerCase().includes(q);
+
+      if (activeTab === "LEAVE") {
+        return matchesSearch && req.requestType === "Leave";
+      }
+      if (activeTab === "EXPENSE") {
+        return matchesSearch && req.requestType === "Expense";
+      }
+      return matchesSearch;
+    });
+  }, [requests, searchQuery, activeTab]);
+
+  return (
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col justify-between">
+      {/* Top Navbar */}
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-2xs">
+        <div className="container mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fad207] text-[#1b365d] shadow-sm font-bold">
+              <Scale className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-base font-bold tracking-tight text-[#1b365d]">
+                  Pakistan Legal United Society
+                </h1>
+                <span className="hidden sm:inline-block rounded-md bg-[#1b365d]/10 px-2 py-0.5 text-[10px] font-bold text-[#1b365d]">
+                  PLUS OPS
+                </span>
+              </div>
+              <p className="text-[11px] font-medium text-slate-500">
+                Operations, Governance & Multi-Tier Approval Workspace
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="hidden text-right md:block">
+              <div className="text-xs font-bold text-[#1b365d]">{user.name}</div>
+              <div className="text-[11px] font-mono text-slate-500">{user.email}</div>
+            </div>
+            <button
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  localStorage.removeItem("plus_user");
+                  window.location.reload();
+                }
+              }}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 hover:text-[#b82626] cursor-pointer"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span>Sign out</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Workspace Layout */}
+      <main className="container mx-auto max-w-7xl flex-1 px-4 py-8 sm:px-6">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+          {/* Left Navigation Sidebar */}
+          <aside className="lg:col-span-3 space-y-6">
+            <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-xs">
+              <span className="block px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Secure Workspace
+              </span>
+              <nav className="space-y-1">
+                <button
+                  onClick={() => setActiveTab("ALL")}
+                  className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-bold transition text-left cursor-pointer ${
+                    activeTab === "ALL"
+                      ? "bg-[#1b365d] text-white shadow-xs"
+                      : "text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  <LayoutDashboard className="h-4 w-4 text-[#fad207]" />
+                  <span>All Operations Requests</span>
+                </button>
+
+                <Link
+                  href="/directory"
+                  className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
+                >
+                  <Users className="h-4 w-4 text-[#c65a28]" />
+                  <span>Staff Directory</span>
+                </Link>
+
+                <Link
+                  href="/timesheets"
+                  className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
+                >
+                  <Clock className="h-4 w-4 text-[#e59a24]" />
+                  <span>Staff Timesheets</span>
+                </Link>
+
+                <div className="border-t border-slate-100 my-2 pt-2">
+                  <span className="block px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Quick Filters
+                  </span>
+                  <button
+                    onClick={() => setActiveTab("LEAVE")}
+                    className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2 text-xs font-semibold transition text-left cursor-pointer ${
+                      activeTab === "LEAVE"
+                        ? "bg-[#1b365d] text-white"
+                        : "text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    <Calendar className="h-3.5 w-3.5 text-[#fad207]" />
+                    <span>Leave Applications</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("EXPENSE")}
+                    className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2 text-xs font-semibold transition text-left cursor-pointer ${
+                      activeTab === "EXPENSE"
+                        ? "bg-[#1b365d] text-white"
+                        : "text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    <TrendingUp className="h-3.5 w-3.5 text-[#fad207]" />
+                    <span>Expense Claims</span>
+                  </button>
+                </div>
+              </nav>
+            </div>
+
+            {/* Leave Balance Overview Widget */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <Award className="h-4 w-4 text-[#c65a28]" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                    My Leave Balance
+                  </h3>
+                </div>
+                <span className="text-[10px] font-bold text-[#1b365d]">FY 2026</span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-xl border border-slate-100 bg-[#f8fafc] p-2.5">
+                  <span className="text-[10px] font-bold uppercase text-slate-400">Casual</span>
+                  <p className="text-base font-bold text-[#1b365d]">
+                    {leaveBalances.casualTotal - leaveBalances.casualUsed}
+                    <span className="text-[10px] text-slate-400 font-normal">/{leaveBalances.casualTotal}</span>
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-slate-100 bg-[#f8fafc] p-2.5">
+                  <span className="text-[10px] font-bold uppercase text-slate-400">Annual</span>
+                  <p className="text-base font-bold text-[#1b365d]">
+                    {leaveBalances.annualTotal - leaveBalances.annualUsed}
+                    <span className="text-[10px] text-slate-400 font-normal">/{leaveBalances.annualTotal}</span>
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-slate-100 bg-[#f8fafc] p-2.5">
+                  <span className="text-[10px] font-bold uppercase text-slate-400">Sick</span>
+                  <p className="text-base font-bold text-[#1b365d]">
+                    {leaveBalances.medicalTotal - leaveBalances.medicalUsed}
+                    <span className="text-[10px] text-slate-400 font-normal">/{leaveBalances.medicalTotal}</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* Right Workspace Main Stream */}
+          <div className="lg:col-span-9 space-y-6">
+            {/* Action Required Alert Banner */}
+            <div className="rounded-2xl border border-[#fad207]/40 bg-[#fad207]/10 p-5 shadow-2xs">
+              <div className="flex items-start gap-3">
+                <div className="rounded-xl bg-[#fad207] p-2 text-[#1b365d] shrink-0 mt-0.5">
+                  <AlertTriangle className="h-4 w-4" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-bold text-[#1b365d]">
+                    Action Required by You
+                  </h3>
+                  <p className="text-xs text-slate-600">
+                    {stats.actionRequiredCount > 0
+                      ? `You have ${stats.actionRequiredCount} request(s) awaiting your administrative clearance or review.`
+                      : "No approvals are currently awaiting your action."}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Header Title & Role Badge */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#c65a28]">
+                  {user.role} WORKSPACE
+                </span>
+                <h2 className="text-2xl font-bold tracking-tight text-[#1b365d]">
+                  All Requests.
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Review requests within your verified roster scope. Decisions are synchronized to the PLUS ledger.
+                </p>
+              </div>
+
+              <button
+                onClick={fetchLiveRequests}
+                disabled={loading}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 cursor-pointer"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+                <span>Sync Requests</span>
+              </button>
+            </div>
+
+            {/* KPI Metric Cards */}
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                <div className="flex items-center justify-between text-slate-400">
+                  <span className="text-[11px] font-bold uppercase tracking-wider">Queue Total</span>
+                  <FileText className="h-4 w-4 text-[#1b365d]" />
+                </div>
+                <p className="mt-2 text-2xl font-bold text-[#1b365d]">{stats.totalCount}</p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                <div className="flex items-center justify-between text-slate-400">
+                  <span className="text-[11px] font-bold uppercase tracking-wider">Pending</span>
+                  <Clock className="h-4 w-4 text-[#e59a24]" />
+                </div>
+                <p className="mt-2 text-2xl font-bold text-[#e59a24]">{stats.pendingCount}</p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                <div className="flex items-center justify-between text-slate-400">
+                  <span className="text-[11px] font-bold uppercase tracking-wider">Approved PKR</span>
+                  <CheckCircle2 className="h-4 w-4 text-[#1b365d]" />
+                </div>
+                <p className="mt-2 text-xl font-bold text-[#1b365d]">
+                  Rs {stats.approvedPkrVolume.toLocaleString("en-PK")}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                <div className="flex items-center justify-between text-slate-400">
+                  <span className="text-[11px] font-bold uppercase tracking-wider">&gt;48h Warnings</span>
+                  <ShieldAlert className="h-4 w-4 text-[#b82626]" />
+                </div>
+                <p className="mt-2 text-2xl font-bold text-[#b82626]">0</p>
+              </div>
+            </div>
+
+            {/* Search and Request Feed */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search requests by name, ID, or description..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-4 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                  />
+                </div>
+              </div>
+
+              {loading ? (
+                <div className="py-12 text-center text-xs text-slate-500">
+                  Loading verified records from sheet...
+                </div>
+              ) : filteredRequests.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-slate-200 py-12 text-center text-xs text-slate-500">
+                  No active operations requests found matching your filter criteria.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {filteredRequests.map((req) => (
+                    <div
+                      key={req.id}
+                      className="rounded-xl border border-slate-100 bg-[#f8fafc] p-4 transition hover:border-[#1b365d]/40 hover:bg-white hover:shadow-2xs"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-[11px] font-bold text-[#1b365d]">
+                              {req.id}
+                            </span>
+                            <span
+                              className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                                req.requestType === "Expense"
+                                  ? "bg-[#e59a24]/15 text-[#c65a28]"
+                                  : "bg-[#1b365d]/10 text-[#1b365d]"
+                              }`}
+                            >
+                              {req.requestType}
+                            </span>
+                          </div>
+                          <h4 className="mt-1 text-xs font-bold text-slate-900">
+                            {req.requesterName} ({req.requesterEmail})
+                          </h4>
+                          <p className="mt-1 text-xs text-slate-600">{req.description}</p>
+                        </div>
+
+                        <div className="text-right shrink-0">
+                          {req.amount && Number(req.amount) > 0 ? (
+                            <span className="text-sm font-bold text-[#1b365d]">
+                              PKR {Number(req.amount).toLocaleString("en-PK")}
+                            </span>
+                          ) : (
+                            <span className="text-xs font-bold text-[#1b365d]">
+                              {req.days || 1} Day(s) Leave
+                            </span>
+                          )}
+                          <div className="mt-1">
+                            <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold text-slate-7
