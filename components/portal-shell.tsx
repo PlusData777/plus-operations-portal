@@ -29,7 +29,6 @@ export function PortalShell({
   ];
 
   const nav = privileged ? privilegedNav : staffNav;
-  ];
 
   return (
     <div className="min-h-screen bg-canvas">
