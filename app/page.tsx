@@ -584,7 +584,7 @@ export default function WorkspacePage() {
               </nav>
             </div>
 
-            {/* Leave Balance Overview Widget */}
+            {/* Leave Balance Widget */}
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
@@ -615,7 +615,7 @@ export default function WorkspacePage() {
 
           {/* Right Workspace Main Panel */}
           <div className="lg:col-span-9 space-y-6">
-            {/* Header with Direct Quick Actions */}
+            {/* Header with Quick Actions */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#c65a28]">
@@ -647,7 +647,7 @@ export default function WorkspacePage() {
               </div>
             </div>
 
-            {/* KPI Cards: Dynamic Portfolio Metrics */}
+            {/* Metrics Grid */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
                 <div className="flex items-center justify-between text-slate-400">
@@ -688,7 +688,7 @@ export default function WorkspacePage() {
               </div>
             </div>
 
-            {/* Main Interactive Work View */}
+            {/* Task View */}
             {mainViewTab === "MY_TASKS" ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -1011,7 +1011,7 @@ export default function WorkspacePage() {
             <div className="flex items-center gap-3">
               <span className="flex h-2.5 w-2.5 rounded-full bg-[#fad207]" />
               <span className="text-xs font-bold uppercase tracking-wider text-slate-200">
-                Pakistan Legal United Society · Operations & Legal Aid Hub[cite: 1]
+                Pakistan Legal United Society · Operations & Legal Aid Hub
               </span>
             </div>
             <div>
@@ -1035,7 +1035,7 @@ export default function WorkspacePage() {
                 </div>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed max-w-sm">
-                Committed to human rights protection, public interest legal aid, and operational transparency across Sindh and Pakistan[cite: 1].
+                Committed to human rights protection, public interest legal aid, and operational transparency across Sindh and Pakistan.
               </p>
             </div>
 
@@ -1043,42 +1043,42 @@ export default function WorkspacePage() {
               <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-xs">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#fad207] mb-1.5">
                   <MapPin className="h-3.5 w-3.5" />
-                  <span>Head Office (Karachi)[cite: 1]</span>
+                  <span>Head Office (Karachi)</span>
                 </div>
                 <p className="text-[11px] text-slate-300 leading-normal">
-                  Plot 213, St 4, New Bakhtawar Goth, Block-09, Gulistan-e-Johar[cite: 1]
+                  Plot 213, St 4, New Bakhtawar Goth, Block-09, Gulistan-e-Johar
                 </p>
                 <div className="mt-2.5 flex items-center gap-1 text-[11px] font-mono text-slate-200">
                   <Phone className="h-3 w-3 text-[#fad207]" />
-                  <span>021-34011698[cite: 1]</span>
+                  <span>021-34011698</span>
                 </div>
               </div>
 
               <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-xs">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#fad207] mb-1.5">
                   <MapPin className="h-3.5 w-3.5" />
-                  <span>Regional (Hyderabad)[cite: 1]</span>
+                  <span>Regional (Hyderabad)</span>
                 </div>
                 <p className="text-[11px] text-slate-300 leading-normal">
-                  House B/7 Ground Floor, Street 1, Sunny Bungalows, Qasimabad[cite: 1]
+                  House B/7 Ground Floor, Street 1, Sunny Bungalows, Qasimabad
                 </p>
                 <div className="mt-2.5 flex items-center gap-1 text-[11px] font-mono text-slate-200">
                   <Phone className="h-3 w-3 text-[#fad207]" />
-                  <span>022-6112571[cite: 1]</span>
+                  <span>022-6112571</span>
                 </div>
               </div>
 
               <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-xs">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#fad207] mb-1.5">
                   <MapPin className="h-3.5 w-3.5" />
-                  <span>Regional (Sukkur)[cite: 1]</span>
+                  <span>Regional (Sukkur)</span>
                 </div>
                 <p className="text-[11px] text-slate-300 leading-normal">
-                  Women Development Complex, near SRSO, Shikarpur Rd[cite: 1]
+                  Women Development Complex, near SRSO, Shikarpur Rd
                 </p>
                 <div className="mt-2.5 flex items-center gap-1 text-[11px] font-mono text-slate-200">
                   <Phone className="h-3 w-3 text-[#fad207]" />
-                  <span>071-5824119[cite: 1]</span>
+                  <span>071-5824119</span>
                 </div>
               </div>
             </div>
