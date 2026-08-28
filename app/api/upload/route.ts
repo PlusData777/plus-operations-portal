@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const endpoint = process.env.GOOGLE_SCRIPT_URL || process.env.APPS_SCRIPT_URL;
 
     if (!endpoint) {
-      return NextResponse.json({ success: false, error: "Missing backend endpoint URL" }, { status: 500 });
+      return NextResponse.json(
+        { success: false, error: "Missing backend endpoint URL" },
+        { status: 500 }
+      );
     }
 
     const response = await fetch(endpoint, {
@@ -18,7 +23,11 @@ export async function POST(req: Request) {
 
     const result = await response.json();
     return NextResponse.json(result);
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "Upload processing failed";
+    return NextResponse.json(
+      { success: false, error: errorMessage },
+      { status: 500 }
+    );
   }
 }
