@@ -470,11 +470,7 @@ export function StaffPortal({ user }: { user: StaffProfile }) {
                     </p>
                   )}
 
-                  <WorkflowStepper
-                    status={req.status}
-                    currentAssignee={req.currentAssignee || (req as any).assignedTo || "Reviewer"}
-                    approvalTierRequired={req.approvalTierRequired}
-                  />
+                  <WorkflowStepper request={req} />
                 </div>
               ))}
             </div>
