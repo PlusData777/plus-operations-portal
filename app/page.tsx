@@ -8,8 +8,10 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  DollarSign,
+  FileSpreadsheet,
   FileText,
-  KeyRound,
+  Filter,
   LayoutDashboard,
   Lock,
   LogIn,
@@ -17,14 +19,17 @@ import {
   Mail,
   MapPin,
   Phone,
+  Plus,
   RefreshCw,
   Search,
+  Send,
   Shield,
   ShieldAlert,
   ShieldCheck,
   TrendingUp,
   User,
   Users,
+  X,
   XCircle,
 } from "lucide-react";
 
@@ -53,9 +58,10 @@ interface StaffProfile {
   role: string;
   designation: string;
   department: string;
-  accessPin?: string;
+  accessPin: string;
 }
 
+/* Dedicated, Unique Individual PINs per Account */
 const OFFICIAL_ROSTER: StaffProfile[] = [
   {
     email: "dataplus.org@gmail.com",
@@ -63,7 +69,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Administrator",
     role: "ADMIN",
     department: "IT / Systems",
-    accessPin: "9900",
+    accessPin: "9901",
   },
   {
     email: "altafkhoso.adv@gmail.com",
@@ -71,7 +77,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "CEO",
     role: "EXECUTIVE",
     department: "Executive Board",
-    accessPin: "9900",
+    accessPin: "8821",
   },
   {
     email: "rizwanapatel.plus@gmail.com",
@@ -79,7 +85,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Chairperson",
     role: "EXECUTIVE",
     department: "Executive Board",
-    accessPin: "9900",
+    accessPin: "7732",
   },
   {
     email: "ishfaque.mojai@gmail.com",
@@ -87,7 +93,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "HR & Admin Lead",
     role: "HR_ADMIN",
     department: "HR & Operations",
-    accessPin: "2026",
+    accessPin: "4412",
   },
   {
     email: "japheth.wilson123@gmail.com",
@@ -95,7 +101,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Finance Manager",
     role: "FINANCE_MGR",
     department: "Finance",
-    accessPin: "2026",
+    accessPin: "5523",
   },
   {
     email: "salmahabibbhutto88@gmail.com",
@@ -103,7 +109,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Program Manager",
     role: "PROGRAM_MGR",
     department: "Programs",
-    accessPin: "2026",
+    accessPin: "6634",
   },
   {
     email: "kamanger110@gmail.com",
@@ -111,15 +117,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Team Member",
     role: "GENERAL_STAFF",
     department: "Operations",
-    accessPin: "2026",
-  },
-  {
-    email: "faizthecoach@gmail.com",
-    name: "Faiz",
-    designation: "Field Coordinator",
-    role: "GENERAL_STAFF",
-    department: "Field Ops",
-    accessPin: "2026",
+    accessPin: "3184",
   },
   {
     email: "advazizullahazizullah@gmail.com",
@@ -127,7 +125,15 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Legal Associate",
     role: "LEGAL_STAFF",
     department: "Legal Aid",
-    accessPin: "2026",
+    accessPin: "2945",
+  },
+  {
+    email: "faizthecoach@gmail.com",
+    name: "Faiz",
+    designation: "Field Coordinator",
+    role: "GENERAL_STAFF",
+    department: "Field Ops",
+    accessPin: "5820",
   },
   {
     email: "saifrehman.kaloi@gmail.com",
@@ -135,7 +141,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Field Coordinator",
     role: "GENERAL_STAFF",
     department: "Field Ops",
-    accessPin: "2026",
+    accessPin: "4719",
   },
   {
     email: "salaudinlarik1@gmail.com",
@@ -143,7 +149,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Team Member",
     role: "GENERAL_STAFF",
     department: "Operations",
-    accessPin: "2026",
+    accessPin: "6291",
   },
   {
     email: "imrankhanchang555@gmail.com",
@@ -151,7 +157,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "IT / Program Support",
     role: "GENERAL_STAFF",
     department: "Programs",
-    accessPin: "2026",
+    accessPin: "7382",
   },
   {
     email: "imranalimallah128@gmail.com",
@@ -159,7 +165,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Team Member",
     role: "GENERAL_STAFF",
     department: "Operations",
-    accessPin: "2026",
+    accessPin: "8473",
   },
   {
     email: "sadiqimransoomro@gmail.com",
@@ -167,7 +173,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Team Member",
     role: "GENERAL_STAFF",
     department: "Operations",
-    accessPin: "2026",
+    accessPin: "9564",
   },
   {
     email: "sajjadkhoso0011@gmail.com",
@@ -175,7 +181,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Team Member",
     role: "GENERAL_STAFF",
     department: "Operations",
-    accessPin: "2026",
+    accessPin: "1655",
   },
   {
     email: "safiart998@gmail.com",
@@ -183,7 +189,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Media Support",
     role: "GENERAL_STAFF",
     department: "Communications",
-    accessPin: "2026",
+    accessPin: "2746",
   },
   {
     email: "waseelaqasim60@gmail.com",
@@ -191,7 +197,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Associate",
     role: "GENERAL_STAFF",
     department: "Programs",
-    accessPin: "2026",
+    accessPin: "3837",
   },
   {
     email: "muskandinochanna@gmail.com",
@@ -199,7 +205,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Associate",
     role: "GENERAL_STAFF",
     department: "Programs",
-    accessPin: "2026",
+    accessPin: "4928",
   },
   {
     email: "aneesabro98@gmail.com",
@@ -207,7 +213,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Team Member",
     role: "GENERAL_STAFF",
     department: "Operations",
-    accessPin: "2026",
+    accessPin: "5019",
   },
   {
     email: "aakashali414@gmail.com",
@@ -215,7 +221,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Team Member",
     role: "GENERAL_STAFF",
     department: "Operations",
-    accessPin: "2026",
+    accessPin: "6120",
   },
   {
     email: "kashee742@gmail.com",
@@ -223,7 +229,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Team Member",
     role: "GENERAL_STAFF",
     department: "Operations",
-    accessPin: "2026",
+    accessPin: "7231",
   },
   {
     email: "arkkaloi1@gmail.com",
@@ -231,7 +237,7 @@ const OFFICIAL_ROSTER: StaffProfile[] = [
     designation: "Team Member",
     role: "GENERAL_STAFF",
     department: "Operations",
-    accessPin: "2026",
+    accessPin: "8342",
   },
 ];
 
@@ -241,21 +247,33 @@ const OFFICIAL_LOGO_URL =
 export default function WorkspacePage() {
   const [currentUser, setCurrentUser] = useState<StaffProfile | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
-  
-  // Auth Form State
+
+  // Auth States
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPin, setLoginPin] = useState("");
   const [authError, setAuthError] = useState("");
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
-  // App State
+  // App States
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"ALL" | "LEAVE" | "EXPENSE">("ALL");
   const [processingId, setProcessingId] = useState<string | null>(null);
 
-  // Load verified session
+  // New Request Form Modal State
+  const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
+  const [formType, setFormType] = useState<"Leave" | "Expense">("Leave");
+  const [formLeaveCategory, setFormLeaveCategory] = useState("Casual");
+  const [formStartDate, setFormStartDate] = useState(new Date().toISOString().split("T")[0]);
+  const [formEndDate, setFormEndDate] = useState(new Date().toISOString().split("T")[0]);
+  const [formDays, setFormDays] = useState(1);
+  const [formAmount, setFormAmount] = useState<number>(0);
+  const [formExpenseCategory, setFormExpenseCategory] = useState("Travel / Field Fuel");
+  const [formDescription, setFormDescription] = useState("");
+  const [submittingForm, setSubmittingForm] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
   useEffect(() => {
     try {
       const stored = localStorage.getItem("plus_user");
@@ -273,7 +291,7 @@ export default function WorkspacePage() {
         }
       }
     } catch (e) {
-      console.warn("Session check failed:", e);
+      console.warn("Session check error:", e);
       localStorage.removeItem("plus_user");
     } finally {
       setIsAuthChecking(false);
@@ -288,31 +306,22 @@ export default function WorkspacePage() {
     const emailClean = loginEmail.toLowerCase().trim();
     const pinClean = loginPin.trim();
 
-    if (!emailClean || !pinClean) {
-      setAuthError("Both email and security PIN are required.");
-      setIsAuthenticating(false);
-      return;
-    }
-
     const matchedStaff = OFFICIAL_ROSTER.find(
       (s) => s.email.toLowerCase().trim() === emailClean
     );
 
     if (!matchedStaff) {
-      setAuthError("Email address is not registered in the PLUS Roster.");
+      setAuthError("Email address is not found in the verified PLUS roster.");
       setIsAuthenticating(false);
       return;
     }
 
-    // PIN Authentication Check (Specific PIN, Global Staff PIN 2026, or Master 9900)
-    const validPin = matchedStaff.accessPin || "2026";
-    if (pinClean !== validPin && pinClean !== "9900" && pinClean !== "2026") {
-      setAuthError("Invalid Security PIN. Please contact System Administrator.");
+    if (pinClean !== matchedStaff.accessPin) {
+      setAuthError("Invalid Security PIN for this account.");
       setIsAuthenticating(false);
       return;
     }
 
-    // Success: Store Session & Authorize
     localStorage.setItem("plus_user", JSON.stringify(matchedStaff));
     setCurrentUser(matchedStaff);
     setLoginEmail("");
@@ -329,7 +338,6 @@ export default function WorkspacePage() {
     setAuthError("");
   };
 
-  // Determine true administrative privileges
   const isAdminOrExec = useMemo(() => {
     if (!currentUser) return false;
     const adminEmails = [
@@ -400,13 +408,70 @@ export default function WorkspacePage() {
     }
   };
 
+  const handleCreateRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser || !formDescription.trim()) return;
+
+    setSubmittingForm(true);
+    const newReqId = "PLUS-" + (requests.length + 101);
+
+    const newRequest: RequestItem = {
+      id: newReqId,
+      timestamp: new Date().toISOString(),
+      requesterEmail: currentUser.email,
+      requesterName: currentUser.name,
+      requestType: formType,
+      leaveCategory: formType === "Leave" ? formLeaveCategory : undefined,
+      startDate: formType === "Leave" ? formStartDate : undefined,
+      endDate: formType === "Leave" ? formEndDate : undefined,
+      days: formType === "Leave" ? formDays : undefined,
+      amount: formType === "Expense" ? formAmount : undefined,
+      expenseCategory: formType === "Expense" ? formExpenseCategory : undefined,
+      description: formDescription,
+      status: "Submitted · Pending Tier 1",
+      currentApproverEmail: "ishfaque.mojai@gmail.com",
+    };
+
+    try {
+      await fetch("/api/requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "CREATE_REQUEST", request: newRequest }),
+      });
+
+      setRequests([newRequest, ...requests]);
+      setSubmitSuccess(true);
+      setTimeout(() => {
+        setSubmitSuccess(false);
+        setIsApplyModalOpen(false);
+        setFormDescription("");
+        setFormAmount(0);
+      }, 1500);
+    } catch (err) {
+      console.error("Submit error:", err);
+    } finally {
+      setSubmittingForm(false);
+    }
+  };
+
+  // Visibility: Staff only see their own requests; Admins/Execs see all
+  const userVisibleRequests = useMemo(() => {
+    if (!currentUser) return [];
+    if (isAdminOrExec) return requests;
+    return requests.filter(
+      (r) =>
+        (r.requesterEmail || "").toLowerCase().trim() ===
+        currentUser.email.toLowerCase().trim()
+    );
+  }, [requests, currentUser, isAdminOrExec]);
+
   const stats = useMemo(() => {
     if (!currentUser) {
       return { totalCount: 0, pendingCount: 0, approvedPkrVolume: 0, actionList: [] };
     }
 
-    const totalCount = requests.length;
-    const pendingCount = requests.filter(
+    const totalCount = userVisibleRequests.length;
+    const pendingCount = userVisibleRequests.filter(
       (r) =>
         r.status &&
         (r.status.toLowerCase().includes("pending") ||
@@ -414,7 +479,7 @@ export default function WorkspacePage() {
           r.status.toLowerCase().includes("submitted"))
     ).length;
 
-    const approvedPkrVolume = requests
+    const approvedPkrVolume = userVisibleRequests
       .filter((r) => {
         const st = (r.status || "").toLowerCase();
         return st.includes("approved") && Number(r.amount) > 0;
@@ -435,10 +500,10 @@ export default function WorkspacePage() {
       approvedPkrVolume,
       actionList,
     };
-  }, [requests, currentUser, isAdminOrExec]);
+  }, [userVisibleRequests, requests, currentUser, isAdminOrExec]);
 
   const filteredRequests = useMemo(() => {
-    return requests.filter((req) => {
+    return userVisibleRequests.filter((req) => {
       const q = searchQuery.toLowerCase().trim();
       const matchesSearch =
         !q ||
@@ -460,20 +525,20 @@ export default function WorkspacePage() {
       }
       return matchesSearch;
     });
-  }, [requests, searchQuery, activeTab]);
+  }, [userVisibleRequests, searchQuery, activeTab]);
 
   if (isAuthChecking) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f8fafc]">
         <div className="flex flex-col items-center gap-3">
           <img src={OFFICIAL_LOGO_URL} alt="PLUS Logo" className="h-16 w-auto animate-pulse" />
-          <p className="text-xs font-bold text-[#1b365d]">Verifying Security Credentials...</p>
+          <p className="text-xs font-bold text-[#1b365d]">Verifying Security Access...</p>
         </div>
       </div>
     );
   }
 
-  // Strictly Enforced Login Screen
+  // Security Login Screen
   if (!currentUser) {
     return (
       <div className="flex min-h-screen flex-col justify-between bg-[#f8fafc] text-slate-900">
@@ -502,27 +567,27 @@ export default function WorkspacePage() {
                   <input
                     type="email"
                     required
-                    placeholder="name@gmail.com"
+                    placeholder="e.g. kamanger110@gmail.com"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-3 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-3 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden font-mono"
                   />
                 </div>
               </div>
 
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
-                  Security Access PIN
+                  Personal Security Access PIN
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
                   <input
                     type="password"
                     required
-                    placeholder="Enter assigned PIN"
+                    placeholder="Enter your assigned 4-digit PIN"
                     value={loginPin}
                     onChange={(e) => setLoginPin(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-3 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-3 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden font-mono"
                   />
                 </div>
               </div>
@@ -540,15 +605,9 @@ export default function WorkspacePage() {
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1b365d] py-3 text-xs font-bold text-white shadow-md transition hover:bg-[#122440] disabled:opacity-50 cursor-pointer"
               >
                 <LogIn className="h-4 w-4 text-[#fad207]" />
-                <span>{isAuthenticating ? "Verifying..." : "Verify & Access Workspace"}</span>
+                <span>{isAuthenticating ? "Authenticating..." : "Verify & Access Workspace"}</span>
               </button>
             </form>
-
-            <div className="mt-6 border-t border-slate-100 pt-4 text-center">
-              <span className="text-[11px] text-slate-400">
-                Staff PIN default: <code className="font-mono text-slate-600">2026</code> · Admin Key: <code className="font-mono text-slate-600">9900</code>
-              </span>
-            </div>
           </div>
         </div>
 
@@ -559,7 +618,6 @@ export default function WorkspacePage() {
     );
   }
 
-  // Render Secure Dashboard
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col justify-between">
       {/* Top Navbar */}
@@ -604,11 +662,20 @@ export default function WorkspacePage() {
         </div>
       </header>
 
-      {/* Main Workspace Layout */}
+      {/* Main Layout */}
       <main className="container mx-auto max-w-7xl flex-1 px-4 py-8 sm:px-6">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           {/* Left Navigation Sidebar */}
           <aside className="lg:col-span-3 space-y-6">
+            {/* Direct Action: + New Request Button */}
+            <button
+              onClick={() => setIsApplyModalOpen(true)}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#c65a28] py-3.5 px-4 text-xs font-bold text-white shadow-md transition hover:bg-[#a8491d] cursor-pointer"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Apply for Leave / Expense</span>
+            </button>
+
             <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-xs">
               <span className="block px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                 Secure Workspace
@@ -623,7 +690,7 @@ export default function WorkspacePage() {
                   }`}
                 >
                   <LayoutDashboard className="h-4 w-4 text-[#fad207]" />
-                  <span>All Operations Requests</span>
+                  <span>My Operations Requests</span>
                 </button>
 
                 <Link
@@ -642,7 +709,6 @@ export default function WorkspacePage() {
                   <span>Staff Timesheets</span>
                 </Link>
 
-                {/* Quick Filters */}
                 <div className="border-t border-slate-100 my-2 pt-2">
                   <span className="block px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     Quick Filters
@@ -710,36 +776,31 @@ export default function WorkspacePage() {
             </div>
           </aside>
 
-          {/* Right Workspace Main Stream */}
+          {/* Right Main Stream */}
           <div className="lg:col-span-9 space-y-6">
-            {/* Executive & Admin Action Required Desk */}
-            <div className="rounded-2xl border border-[#fad207]/60 bg-[#fad207]/15 p-5 shadow-2xs">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3">
-                  <div className="rounded-xl bg-[#fad207] p-2 text-[#1b365d] shrink-0 mt-0.5 shadow-xs">
-                    <AlertTriangle className="h-4 w-4" />
+            {/* Executive & Admin Action Required Box (ONLY displayed for Admins & Approvers) */}
+            {isAdminOrExec && stats.actionList.length > 0 && (
+              <div className="rounded-2xl border border-[#fad207]/60 bg-[#fad207]/15 p-5 shadow-2xs">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-xl bg-[#fad207] p-2 text-[#1b365d] shrink-0 mt-0.5 shadow-xs">
+                      <AlertTriangle className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-[#1b365d]">
+                        Action Required by You ({stats.actionList.length})
+                      </h3>
+                      <p className="text-xs text-slate-600 mt-0.5">
+                        You have pending authorization authority over {stats.actionList.length} request(s).
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-[#1b365d]">
-                      Action Required by You ({stats.actionList.length})
-                    </h3>
-                    <p className="text-xs text-slate-600 mt-0.5">
-                      {stats.actionList.length > 0
-                        ? `You have pending authorization authority over ${stats.actionList.length} request(s).`
-                        : "No approvals are currently awaiting your action."}
-                    </p>
-                  </div>
-                </div>
 
-                {isAdminOrExec && (
                   <span className="rounded-full bg-[#1b365d] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#fad207]">
                     Executive Privileges
                   </span>
-                )}
-              </div>
+                </div>
 
-              {/* Actionable Request Items */}
-              {stats.actionList.length > 0 && (
                 <div className="mt-4 space-y-2.5 pt-3 border-t border-[#fad207]/40">
                   {stats.actionList.slice(0, 3).map((item) => (
                     <div
@@ -784,10 +845,10 @@ export default function WorkspacePage() {
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
-            {/* Title & Role View Header */}
+            {/* Header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#c65a28]">
@@ -798,24 +859,33 @@ export default function WorkspacePage() {
                     ? "Leave Applications."
                     : activeTab === "EXPENSE"
                     ? "Expense Claims."
-                    : "All Operations Requests."}
+                    : "Operations Requests."}
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Reviewing operational roster activities and verified sheet records.
+                  Showing operational activities and verified sheet records.
                 </p>
               </div>
 
-              <button
-                onClick={fetchLiveRequests}
-                disabled={loading}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 cursor-pointer"
-              >
-                <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-                <span>Sync Requests</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsApplyModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#1b365d] px-3.5 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-[#122440] cursor-pointer"
+                >
+                  <Plus className="h-3.5 w-3.5 text-[#fad207]" />
+                  <span>+ New Request</span>
+                </button>
+                <button
+                  onClick={fetchLiveRequests}
+                  disabled={loading}
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 cursor-pointer"
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+                  <span>Sync</span>
+                </button>
+              </div>
             </div>
 
-            {/* KPI Metric Cards */}
+            {/* Metric KPI Cards */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
                 <div className="flex items-center justify-between text-slate-400">
@@ -858,7 +928,7 @@ export default function WorkspacePage() {
                 <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Search requests by staff name, ID, description..."
+                  placeholder="Search requests by ID, purpose, or details..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-4 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
@@ -871,7 +941,7 @@ export default function WorkspacePage() {
                 </div>
               ) : filteredRequests.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-slate-200 py-12 text-center text-xs text-slate-500">
-                  No active operations requests found matching your filter criteria.
+                  No active operations requests found. Click <strong>"+ New Request"</strong> to apply for Leave or Expenses.
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -935,6 +1005,190 @@ export default function WorkspacePage() {
           </div>
         </div>
       </main>
+
+      {/* OPERATIONS APPLICATION MODAL */}
+      {isApplyModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs animate-in fade-in">
+          <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-base font-bold text-[#1b365d]">New Operations Request</h3>
+                <p className="text-[11px] text-slate-500">
+                  Submitting as: <span className="font-semibold text-slate-800">{currentUser.name}</span> ({currentUser.email})
+                </p>
+              </div>
+              <button
+                onClick={() => setIsApplyModalOpen(false)}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateRequest} className="space-y-4">
+              {/* Type Toggle */}
+              <div className="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
+                <button
+                  type="button"
+                  onClick={() => setFormType("Leave")}
+                  className={`rounded-lg py-2 text-xs font-bold transition cursor-pointer ${
+                    formType === "Leave"
+                      ? "bg-white text-[#1b365d] shadow-2xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  Apply for Leave
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormType("Expense")}
+                  className={`rounded-lg py-2 text-xs font-bold transition cursor-pointer ${
+                    formType === "Expense"
+                      ? "bg-white text-[#1b365d] shadow-2xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  Expense / Reimbursement
+                </button>
+              </div>
+
+              {formType === "Leave" ? (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                      Leave Category
+                    </label>
+                    <select
+                      value={formLeaveCategory}
+                      onChange={(e) => setFormLeaveCategory(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-medium text-slate-800 focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                    >
+                      <option value="Casual">Casual Leave (5 Days Quota)</option>
+                      <option value="Annual">Annual Leave (5 Days Quota)</option>
+                      <option value="Sick">Sick / Medical Leave (2 Days Quota)</option>
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                        Start Date
+                      </label>
+                      <input
+                        type="date"
+                        value={formStartDate}
+                        onChange={(e) => setFormStartDate(e.target.value)}
+                        required
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                        End Date
+                      </label>
+                      <input
+                        type="date"
+                        value={formEndDate}
+                        onChange={(e) => setFormEndDate(e.target.value)}
+                        required
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                      Total Days
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="30"
+                      value={formDays}
+                      onChange={(e) => setFormDays(parseInt(e.target.value) || 1)}
+                      required
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                      Expense Category
+                    </label>
+                    <select
+                      value={formExpenseCategory}
+                      onChange={(e) => setFormExpenseCategory(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-medium text-slate-800 focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                    >
+                      <option value="Travel / Field Fuel">Travel / Field Fuel & Transport</option>
+                      <option value="Court Filing & Legal Fees">Court Filing & Legal Defense Costs</option>
+                      <option value="Office Supplies & Utilities">Office Supplies & Logistics</option>
+                      <option value="Community Awareness / Camp">Community Legal Awareness Camp</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                      Amount Requested (PKR)
+                    </label>
+                    <input
+                      type="number"
+                      min="100"
+                      step="50"
+                      placeholder="e.g. 7500"
+                      value={formAmount || ""}
+                      onChange={(e) => setFormAmount(parseFloat(e.target.value) || 0)}
+                      required
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-bold text-[#1b365d] focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                  Reason & Operational Justification
+                </label>
+                <textarea
+                  rows={3}
+                  required
+                  placeholder="Detail the case matter, field trip, or leave purpose..."
+                  value={formDescription}
+                  onChange={(e) => setFormDescription(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden resize-none"
+                />
+              </div>
+
+              {submitSuccess ? (
+                <div className="flex items-center justify-center gap-2 rounded-xl bg-emerald-50 p-3 text-xs font-bold text-emerald-700 border border-emerald-200">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span>Submitted Successfully & Routed to Line Manager!</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsApplyModalOpen(false)}
+                    className="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submittingForm}
+                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#1b365d] py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#122440] disabled:opacity-50 cursor-pointer"
+                  >
+                    <Send className="h-3.5 w-3.5 text-[#fad207]" />
+                    <span>{submittingForm ? "Routing..." : "Submit to Approvers"}</span>
+                  </button>
+                </div>
+              )}
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Branded Footer */}
       <footer className="mt-16 border-t border-slate-200 bg-[#1b365d] text-white">
