@@ -18,7 +18,7 @@ import {
   REQUEST_CATEGORY_LABELS,
   type PortalRequest,
   type RequestCategory,
-} from "@/lib/portal-data";
+} from "@/lib/requests";
 type StaffProfile = {
   name: string;
   email: string;
