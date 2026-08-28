@@ -22,6 +22,7 @@ import {
   Phone,
   Plus,
   RefreshCw,
+  Scale,
   Search,
   Send,
   Shield,
@@ -312,7 +313,7 @@ export default function WorkspacePage() {
     );
 
     if (!matchedStaff) {
-      setAuthError("Email address is not found in the verified PLUS roster.");
+      setAuthError("Email address is not registered in the PLUS Roster.");
       setIsAuthenticating(false);
       return;
     }
@@ -455,6 +456,7 @@ export default function WorkspacePage() {
     }
   };
 
+  // Visibility: Staff only see their own requests; Admins/Execs see all
   const userVisibleRequests = useMemo(() => {
     if (!currentUser) return [];
     if (isAdminOrExec) return requests;
@@ -706,6 +708,14 @@ export default function WorkspacePage() {
                 >
                   <Clock className="h-4 w-4 text-[#e59a24]" />
                   <span>Staff Timesheets</span>
+                </Link>
+
+                <Link
+                  href="/cases"
+                  className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
+                >
+                  <Scale className="h-4 w-4 text-[#1b365d]" />
+                  <span>Case Load & Docket</span>
                 </Link>
 
                 {/* Executive Analytics - Exclusively Visible for Admin & Executive Roles */}
