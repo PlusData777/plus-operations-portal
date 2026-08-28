@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   AlertTriangle,
   Award,
+  BarChart3,
   Calendar,
   CheckCircle2,
   Clock,
@@ -61,7 +62,7 @@ interface StaffProfile {
   accessPin: string;
 }
 
-/* Dedicated, Unique Individual PINs per Account */
+/* Verified Roster with Dedicated Unique Security PINs */
 const OFFICIAL_ROSTER: StaffProfile[] = [
   {
     email: "dataplus.org@gmail.com",
@@ -454,7 +455,6 @@ export default function WorkspacePage() {
     }
   };
 
-  // Visibility: Staff only see their own requests; Admins/Execs see all
   const userVisibleRequests = useMemo(() => {
     if (!currentUser) return [];
     if (isAdminOrExec) return requests;
@@ -667,7 +667,6 @@ export default function WorkspacePage() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           {/* Left Navigation Sidebar */}
           <aside className="lg:col-span-3 space-y-6">
-            {/* Direct Action: + New Request Button */}
             <button
               onClick={() => setIsApplyModalOpen(true)}
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#c65a28] py-3.5 px-4 text-xs font-bold text-white shadow-md transition hover:bg-[#a8491d] cursor-pointer"
@@ -708,6 +707,17 @@ export default function WorkspacePage() {
                   <Clock className="h-4 w-4 text-[#e59a24]" />
                   <span>Staff Timesheets</span>
                 </Link>
+
+                {/* Executive Analytics - Exclusively Visible for Admin & Executive Roles */}
+                {isAdminOrExec && (
+                  <Link
+                    href="/analytics"
+                    className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-bold text-[#1b365d] bg-[#1b365d]/5 hover:bg-[#1b365d]/10 transition"
+                  >
+                    <BarChart3 className="h-4 w-4 text-[#1b365d]" />
+                    <span>Executive Analytics</span>
+                  </Link>
+                )}
 
                 <div className="border-t border-slate-100 my-2 pt-2">
                   <span className="block px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -778,7 +788,7 @@ export default function WorkspacePage() {
 
           {/* Right Main Stream */}
           <div className="lg:col-span-9 space-y-6">
-            {/* Executive & Admin Action Required Box (ONLY displayed for Admins & Approvers) */}
+            {/* Executive & Admin Action Required Desk */}
             {isAdminOrExec && stats.actionList.length > 0 && (
               <div className="rounded-2xl border border-[#fad207]/60 bg-[#fad207]/15 p-5 shadow-2xs">
                 <div className="flex items-start justify-between gap-3">
