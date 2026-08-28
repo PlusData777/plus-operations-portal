@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { CalendarRange, Download, Loader2 } from "lucide-react";
-import { DATE_RANGES, PKR, SNAPSHOTS, type DateRange } from "@/lib/analytics-data";
+import { Download, Loader2 } from "lucide-react";
+import { DATE_RANGES, SNAPSHOTS, type DateRange } from "@/lib/analytics-data";
 import { MetricCards } from "@/components/analytics/metric-cards";
 import { ExpenseTrendChart } from "@/components/analytics/expense-trend-chart";
 import { StatusDonutChart } from "@/components/analytics/status-donut-chart";
@@ -31,7 +31,7 @@ export function AnalyticsDashboard() {
   }, []);
 
   const snapshot = useMemo(() => {
-    return SNAPSHOTS[range] ?? SNAPSHOTS.month;
+    return (SNAPSHOTS as any)[range] ?? (SNAPSHOTS as any).month;
   }, [range]);
 
   const rangeLabel = DATE_RANGES.find((option) => option.key === range)?.label ?? "";
@@ -42,17 +42,21 @@ export function AnalyticsDashboard() {
     rows.push(`"Report Range","${rangeLabel}"`);
     rows.push("");
     rows.push("Metric,Value,Change");
-    snapshot.metrics.forEach((metric: any) =>
-      rows.push(`"${metric.label}","${metric.value}","${metric.delta}%"`)
-    );
+    if (snapshot.metrics) {
+      snapshot.metrics.forEach((metric: any) =>
+        rows.push(`"${metric.label}","${metric.value}","${metric.delta}%"`)
+      );
+    }
     rows.push("");
     rows.push("High-Value Transactions");
     rows.push("Reference,Description,Category,Date,Amount (PKR),Approver,Status");
-    snapshot.transactions.forEach((tx: any) =>
-      rows.push(
-        `"${tx.id}","${tx.description}","${tx.category}","${tx.date}","${tx.amount}","${tx.approver}","${tx.status}"`
-      )
-    );
+    if (snapshot.transactions) {
+      snapshot.transactions.forEach((tx: any) =>
+        rows.push(
+          `"${tx.id}","${tx.description}","${tx.category}","${tx.date}","${tx.amount}","${tx.approver}","${tx.status}"`
+        )
+      );
+    }
 
     const blob = new Blob([rows.join("\n")], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -111,18 +115,25 @@ export function AnalyticsDashboard() {
           <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
         </div>
       ) : (
-     <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <>
+          <MetricCards metrics={snapshot.metrics ?? []} />
+
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
             <div className="lg:col-span-8">
               <ExpenseTrendChart
-                data={(snapshot as any).trend ?? (snapshot as any).expenseTrend ?? []}
+                data={snapshot.trend ?? snapshot.expenseTrend ?? []}
               />
             </div>
             <div className="lg:col-span-4">
               <StatusDonutChart
-                data={(snapshot as any).statusDistribution ?? (snapshot as any).distribution ?? []}
+                data={snapshot.statusDistribution ?? snapshot.distribution ?? []}
               />
             </div>
           </div>
+
+          <TransactionsTable transactions={snapshot.transactions ?? []} />
+        </>
+      )}
     </div>
   );
 }
