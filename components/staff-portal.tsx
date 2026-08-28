@@ -124,17 +124,7 @@ export function StaffPortal({ user }: { user?: StaffProfile }) {
       setLoading(false);
     }
   }
-      const reqData = await reqRes.json();
-      const dirData = await dirRes.json();
-
-      if (reqData.records && Array.isArray(reqData.records)) {
-        setRequests(reqData.records);
-      }
-      if (dirData.staff && Array.isArray(dirData.staff)) {
-        setRoster(dirData.staff);
-      }
-    } catch (err: any) {
-      console.error("Data load error:", err);
+        console.error("Data load error:", err);
       setErrorMessage("Could not connect to data repository. Please try refreshing.");
     } finally {
       setLoading(false);
