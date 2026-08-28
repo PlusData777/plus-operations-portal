@@ -17,12 +17,13 @@ export async function GET() {
     ]);
 
     // Calculate queue metrics
-    const total = requests.length;
-    const pending = requests.filter((r) => !r.status || r.status.toLowerCase() === "pending").length;
-    const approvedAmount = requests
-      .filter((r) => r.status?.toLowerCase() === "approved")
-      .reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
-
+  const approvedAmount = requests
+      .filter((r) => String(r.status || "").toLowerCase() === "approved")
+      .reduce((sum, r) => {
+        const raw = String(r.amount ?? "").replace(/[^0-9.-]/g, "");
+        const num = parseFloat(raw);
+        return sum + (Number.isFinite(num) ? num : 0);
+      }, 0);
     return NextResponse.json({
       success: true,
       requests,
