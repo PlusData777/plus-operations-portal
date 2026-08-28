@@ -62,6 +62,15 @@ interface ExpenseClaim {
   notes: string;
 }
 
+interface StaffProfile {
+  name: string;
+  email: string;
+  role: "ADMIN" | "EXECUTIVE" | "HR_ADMIN" | "FINANCE_MGR" | "PROGRAM_MGR" | "LEGAL_STAFF" | "GENERAL_STAFF";
+  designation: string;
+  department: string;
+  accessPin: string;
+}
+
 const INITIAL_BUDGETS: GrantBudget[] = [
   {
     id: "BGT-01",
@@ -151,6 +160,7 @@ const OFFICIAL_LOGO_URL =
   "https://grassrootsjusticenetwork.org/wp-content/uploads/2023/12/PLUS-logo-1-768x593.png";
 
 export default function FinanceMasterPage() {
+  const [currentUser, setCurrentUser] = useState<StaffProfile | null>(null);
   const [budgets, setBudgets] = useState<GrantBudget[]>(INITIAL_BUDGETS);
   const [claims, setClaims] = useState<ExpenseClaim[]>(INITIAL_CLAIMS);
   const [filterHub, setFilterHub] = useState<string>("All");
@@ -160,8 +170,6 @@ export default function FinanceMasterPage() {
 
   // Form State
   const [claimType, setClaimType] = useState<"Reimbursement" | "Cash Advance" | "Vendor Payment">("Reimbursement");
-  const [applicantName, setApplicantName] = useState("Kamanger");
-  const [applicantEmail, setApplicantEmail] = useState("kamanger110@gmail.com");
   const [selectedGrant, setSelectedGrant] = useState("PLUS-LEGAL-2026");
   const [expenseHead, setExpenseHead] = useState("");
   const [hub, setHub] = useState<"Karachi" | "Hyderabad" | "Sukkur">("Sukkur");
@@ -172,13 +180,43 @@ export default function FinanceMasterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  const totalAllocated = useMemo(() => budgets.reduce((acc, b) => acc + b.allocatedAmount, 0), [budgets]);
-  const totalSpent = useMemo(() => budgets.reduce((acc, b) => acc + b.spentAmount, 0), [budgets]);
-  const remainingCash = totalAllocated - totalSpent;
-  const burnRatePercentage = totalAllocated > 0 ? Math.round((totalSpent / totalAllocated) * 100) : 0;
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("plus_user");
+      if (stored) {
+        setCurrentUser(JSON.parse(stored));
+      }
+    } catch {
+      // fallback
+    }
+  }, []);
+
+  // Check if user is Executive or Admin (Full Dashboard Access)
+  const isExecutiveOrAdmin = useMemo(() => {
+    if (!currentUser) return false;
+    const adminExecEmails = [
+      "dataplus.org@gmail.com",
+      "altafkhoso.adv@gmail.com",
+      "rizwanapatel.plus@gmail.com",
+    ];
+    return (
+      currentUser.role === "ADMIN" ||
+      currentUser.role === "EXECUTIVE" ||
+      adminExecEmails.includes(currentUser.email.toLowerCase().trim())
+    );
+  }, [currentUser]);
+
+  // Scoped Claims: Executives see all; regular users only see their own claims
+  const scopedClaims = useMemo(() => {
+    if (!currentUser) return [];
+    if (isExecutiveOrAdmin) return claims;
+    return claims.filter(
+      (c) => c.requesterEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim()
+    );
+  }, [claims, currentUser, isExecutiveOrAdmin]);
 
   const filteredClaims = useMemo(() => {
-    return claims.filter((c) => {
+    return scopedClaims.filter((c) => {
       const matchHub = filterHub === "All" || c.hub === filterHub;
       const matchType = filterType === "All" || c.claimType === filterType;
       const matchSearch =
@@ -188,7 +226,12 @@ export default function FinanceMasterPage() {
         c.id.toLowerCase().includes(searchQuery.toLowerCase());
       return matchHub && matchType && matchSearch;
     });
-  }, [claims, filterHub, filterType, searchQuery]);
+  }, [scopedClaims, filterHub, filterType, searchQuery]);
+
+  const totalAllocated = useMemo(() => budgets.reduce((acc, b) => acc + b.allocatedAmount, 0), [budgets]);
+  const totalSpent = useMemo(() => budgets.reduce((acc, b) => acc + b.spentAmount, 0), [budgets]);
+  const remainingCash = totalAllocated - totalSpent;
+  const burnRatePercentage = totalAllocated > 0 ? Math.round((totalSpent / totalAllocated) * 100) : 0;
 
   async function handleFileUpload(file: File) {
     setIsUploading(true);
@@ -217,7 +260,7 @@ export default function FinanceMasterPage() {
 
   const handleSubmitClaim = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || !expenseHead) return;
+    if (!currentUser || !amount || !expenseHead) return;
 
     setIsSubmitting(true);
     let level: "Level 1 (Admin)" | "Level 2 (Finance Mgr)" | "Level 3 (CEO / Exec)" = "Level 1 (Admin)";
@@ -238,8 +281,8 @@ export default function FinanceMasterPage() {
       id: "CLM-" + (claims.length + 901),
       timestamp: new Date().toISOString().split("T")[0],
       claimType,
-      requesterName: applicantName,
-      requesterEmail: applicantEmail,
+      requesterName: currentUser.name,
+      requesterEmail: currentUser.email,
       projectCode: selectedGrant,
       expenseHead,
       hub,
@@ -290,7 +333,7 @@ export default function FinanceMasterPage() {
                 <img src={OFFICIAL_LOGO_URL} alt="PLUS Logo" className="h-8 w-auto object-contain" />
               </div>
               <h1 className="text-sm font-bold tracking-tight text-[#1b365d] sm:text-base">
-                Fiscal & Grants Governance Suite
+                {isExecutiveOrAdmin ? "Executive Fiscal & Grants Governance" : "My Personal Financial Claims & Advances"}
               </h1>
             </div>
           </div>
@@ -301,112 +344,121 @@ export default function FinanceMasterPage() {
               className="inline-flex items-center gap-1.5 rounded-xl bg-[#c65a28] px-3.5 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-[#a8491d] cursor-pointer"
             >
               <PlusCircle className="h-4 w-4 text-[#fad207]" />
-              <span>+ New Fiscal Claim / Advance</span>
+              <span>+ New Claim / Cash Advance</span>
             </button>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto max-w-7xl flex-1 px-4 py-8 sm:px-6 space-y-8">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
-            <div className="flex items-center justify-between text-slate-400">
-              <span className="text-[11px] font-bold uppercase tracking-wider">Total Grants Budget</span>
-              <Wallet className="h-4 w-4 text-[#1b365d]" />
+        {/* Only Executives & Admins see the Overall Financial Metrics */}
+        {isExecutiveOrAdmin && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
+              <div className="flex items-center justify-between text-slate-400">
+                <span className="text-[11px] font-bold uppercase tracking-wider">Total Grants Budget</span>
+                <Wallet className="h-4 w-4 text-[#1b365d]" />
+              </div>
+              <p className="mt-2 text-2xl font-bold text-[#1b365d]">
+                PKR {totalAllocated.toLocaleString()}
+              </p>
+              <span className="text-[10px] font-semibold text-emerald-600">3 Active Donor Pillars</span>
             </div>
-            <p className="mt-2 text-2xl font-bold text-[#1b365d]">
-              PKR {totalAllocated.toLocaleString()}
-            </p>
-            <span className="text-[10px] font-semibold text-emerald-600">3 Active Donor Pillars</span>
-          </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
-            <div className="flex items-center justify-between text-slate-400">
-              <span className="text-[11px] font-bold uppercase tracking-wider">Utilized / Spent</span>
-              <TrendingUp className="h-4 w-4 text-[#c65a28]" />
+            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
+              <div className="flex items-center justify-between text-slate-400">
+                <span className="text-[11px] font-bold uppercase tracking-wider">Utilized / Spent</span>
+                <TrendingUp className="h-4 w-4 text-[#c65a28]" />
+              </div>
+              <p className="mt-2 text-2xl font-bold text-[#c65a28]">
+                PKR {totalSpent.toLocaleString()}
+              </p>
+              <span className="text-[10px] font-semibold text-slate-500">{burnRatePercentage}% Burn Rate</span>
             </div>
-            <p className="mt-2 text-2xl font-bold text-[#c65a28]">
-              PKR {totalSpent.toLocaleString()}
-            </p>
-            <span className="text-[10px] font-semibold text-slate-500">{burnRatePercentage}% Burn Rate</span>
-          </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
-            <div className="flex items-center justify-between text-slate-400">
-              <span className="text-[11px] font-bold uppercase tracking-wider">Remaining Liquidity</span>
-              <Banknote className="h-4 w-4 text-emerald-600" />
+            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
+              <div className="flex items-center justify-between text-slate-400">
+                <span className="text-[11px] font-bold uppercase tracking-wider">Remaining Liquidity</span>
+                <Banknote className="h-4 w-4 text-emerald-600" />
+              </div>
+              <p className="mt-2 text-2xl font-bold text-emerald-600">
+                PKR {remainingCash.toLocaleString()}
+              </p>
+              <span className="text-[10px] font-semibold text-slate-500">Available across all hubs</span>
             </div>
-            <p className="mt-2 text-2xl font-bold text-emerald-600">
-              PKR {remainingCash.toLocaleString()}
-            </p>
-            <span className="text-[10px] font-semibold text-slate-500">Available across all hubs</span>
-          </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
-            <div className="flex items-center justify-between text-slate-400">
-              <span className="text-[11px] font-bold uppercase tracking-wider">Pending Claims Queue</span>
-              <Receipt className="h-4 w-4 text-[#e59a24]" />
+            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
+              <div className="flex items-center justify-between text-slate-400">
+                <span className="text-[11px] font-bold uppercase tracking-wider">Pending Claims Queue</span>
+                <Receipt className="h-4 w-4 text-[#e59a24]" />
+              </div>
+              <p className="mt-2 text-2xl font-bold text-[#e59a24]">
+                {claims.filter((c) => c.status !== "Approved & Disbursed").length} In Review
+              </p>
+              <span className="text-[10px] font-semibold text-slate-500">Tier 1 to Tier 3 clearance</span>
             </div>
-            <p className="mt-2 text-2xl font-bold text-[#e59a24]">
-              {claims.filter((c) => c.status !== "Approved & Disbursed").length} In Review
-            </p>
-            <span className="text-[10px] font-semibold text-slate-500">Tier 1 to Tier 3 clearance</span>
           </div>
-        </div>
+        )}
 
-        {/* Section 1: Donor Grant & Pillar Ledger */}
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
-            <div>
-              <h2 className="text-base font-bold text-[#1b365d]">Grant Portfolios & Program Burn Rates</h2>
-              <p className="text-xs text-slate-500">Active donor projects and regional field allocations</p>
+        {/* Section 1: Donor Grant & Pillar Ledger (Executive View Only) */}
+        {isExecutiveOrAdmin && (
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+              <div>
+                <h2 className="text-base font-bold text-[#1b365d]">Grant Portfolios & Program Burn Rates</h2>
+                <p className="text-xs text-slate-500">Active donor projects and regional field allocations</p>
+              </div>
+              <span className="rounded-full bg-[#1b365d]/10 px-3 py-1 text-[11px] font-bold text-[#1b365d]">
+                FY 2026-2027 Ledger
+              </span>
             </div>
-            <span className="rounded-full bg-[#1b365d]/10 px-3 py-1 text-[11px] font-bold text-[#1b365d]">
-              FY 2026-2027 Ledger
-            </span>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {budgets.map((b) => {
-              const pct = Math.round((b.spentAmount / b.allocatedAmount) * 100);
-              return (
-                <div key={b.id} className="rounded-2xl border border-slate-100 bg-[#f8fafc] p-4 space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <span className="font-mono text-[11px] font-bold text-[#1b365d]">{b.grantCode}</span>
-                      <h4 className="text-xs font-bold text-slate-800 line-clamp-1">{b.projectTitle}</h4>
-                      <p className="text-[10px] text-slate-500">{b.donorName}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {budgets.map((b) => {
+                const pct = Math.round((b.spentAmount / b.allocatedAmount) * 100);
+                return (
+                  <div key={b.id} className="rounded-2xl border border-slate-100 bg-[#f8fafc] p-4 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <span className="font-mono text-[11px] font-bold text-[#1b365d]">{b.grantCode}</span>
+                        <h4 className="text-xs font-bold text-slate-800 line-clamp-1">{b.projectTitle}</h4>
+                        <p className="text-[10px] text-slate-500">{b.donorName}</p>
+                      </div>
+                      <span className="rounded-md bg-white border border-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-600">
+                        {b.hub}
+                      </span>
                     </div>
-                    <span className="rounded-md bg-white border border-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-600">
-                      {b.hub}
-                    </span>
+
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-[11px]">
+                        <span className="text-slate-500">Spent: PKR {b.spentAmount.toLocaleString()}</span>
+                        <span className="font-bold text-[#1b365d]">{pct}%</span>
+                      </div>
+                      <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden">
+                        <div className="h-full rounded-full bg-[#1b365d]" style={{ width: `${pct}%` }} />
+                      </div>
+                      <div className="flex justify-between text-[10px] text-slate-400 pt-1">
+                        <span>Allocated: {b.allocatedAmount.toLocaleString()}</span>
+                        <span>Rem: {(b.allocatedAmount - b.spentAmount).toLocaleString()}</span>
+                      </div>
+                    </div>
                   </div>
-
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[11px]">
-                      <span className="text-slate-500">Spent: PKR {b.spentAmount.toLocaleString()}</span>
-                      <span className="font-bold text-[#1b365d]">{pct}%</span>
-                    </div>
-                    <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden">
-                      <div className="h-full rounded-full bg-[#1b365d]" style={{ width: `${pct}%` }} />
-                    </div>
-                    <div className="flex justify-between text-[10px] text-slate-400 pt-1">
-                      <span>Allocated: {b.allocatedAmount.toLocaleString()}</span>
-                      <span>Rem: {(b.allocatedAmount - b.spentAmount).toLocaleString()}</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Section 2: Interactive Expense Claims & Advances Desk */}
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-base font-bold text-[#1b365d]">Expense Claims, Advances & Field Vouchers</h2>
-              <p className="text-xs text-slate-500">Tiered authorization ledger with automated email triggers</p>
+              <h2 className="text-base font-bold text-[#1b365d]">
+                {isExecutiveOrAdmin ? "All Staff Expense Claims & Field Vouchers" : "My Submitted Claims & Cash Advances"}
+              </h2>
+              <p className="text-xs text-slate-500">
+                {isExecutiveOrAdmin ? "Organization-wide financial tracking and approvals" : "Track status of your submitted reimbursement and advance requests"}
+              </p>
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
@@ -414,23 +466,25 @@ export default function FinanceMasterPage() {
                 <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Search voucher or staff..."
+                  placeholder="Search voucher..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="rounded-xl border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-3 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
                 />
               </div>
 
-              <select
-                value={filterHub}
-                onChange={(e) => setFilterHub(e.target.value)}
-                className="rounded-xl border border-slate-200 bg-slate-50 py-1.5 px-3 text-xs font-semibold focus:outline-hidden"
-              >
-                <option value="All">All Hubs</option>
-                <option value="Karachi">Karachi</option>
-                <option value="Hyderabad">Hyderabad</option>
-                <option value="Sukkur">Sukkur</option>
-              </select>
+              {isExecutiveOrAdmin && (
+                <select
+                  value={filterHub}
+                  onChange={(e) => setFilterHub(e.target.value)}
+                  className="rounded-xl border border-slate-200 bg-slate-50 py-1.5 px-3 text-xs font-semibold focus:outline-hidden"
+                >
+                  <option value="All">All Hubs</option>
+                  <option value="Karachi">Karachi</option>
+                  <option value="Hyderabad">Hyderabad</option>
+                  <option value="Sukkur">Sukkur</option>
+                </select>
+              )}
 
               <select
                 value={filterType}
@@ -459,59 +513,67 @@ export default function FinanceMasterPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredClaims.map((claim) => (
-                  <tr key={claim.id} className="hover:bg-slate-50/80 transition">
-                    <td className="py-3.5 px-4 font-mono font-bold text-[#1b365d]">
-                      {claim.id}
-                      <span className="block text-[10px] font-normal text-slate-400">{claim.timestamp}</span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="font-bold text-slate-900">{claim.requesterName}</div>
-                      <span className="text-[10px] text-slate-500">{claim.hub} Regional</span>
-                    </td>
-                    <td className="py-3.5 px-4 max-w-xs">
-                      <span className="rounded-sm bg-[#1b365d]/10 text-[#1b365d] px-1.5 py-0.5 text-[10px] font-bold">
-                        {claim.projectCode}
-                      </span>
-                      <div className="text-xs font-semibold text-slate-800 line-clamp-1 mt-0.5">
-                        {claim.expenseHead}
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4 font-mono font-bold text-slate-900">
-                      PKR {claim.requestedAmount.toLocaleString()}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className="text-[11px] font-bold text-slate-700">{claim.approvalLevel}</span>
-                      <span className="block text-[10px] text-slate-400">{claim.currentApprover}</span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span
-                        className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
-                          claim.status === "Approved & Disbursed"
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                            : "bg-amber-50 text-amber-700 border-amber-200"
-                        }`}
-                      >
-                        {claim.status}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      {claim.receiptUrl ? (
-                        <a
-                          href={claim.receiptUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 rounded-lg bg-[#1b365d] px-2.5 py-1 text-[11px] font-bold text-white shadow-xs hover:bg-[#122440]"
-                        >
-                          <Paperclip className="h-3 w-3 text-[#fad207]" />
-                          <span>View Doc</span>
-                        </a>
-                      ) : (
-                        <span className="text-[10px] text-slate-400 italic">No File</span>
-                      )}
+                {filteredClaims.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-12 text-center text-slate-400 italic">
+                      No financial claims found for your account.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredClaims.map((claim) => (
+                    <tr key={claim.id} className="hover:bg-slate-50/80 transition">
+                      <td className="py-3.5 px-4 font-mono font-bold text-[#1b365d]">
+                        {claim.id}
+                        <span className="block text-[10px] font-normal text-slate-400">{claim.timestamp}</span>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="font-bold text-slate-900">{claim.requesterName}</div>
+                        <span className="text-[10px] text-slate-500">{claim.hub} Regional</span>
+                      </td>
+                      <td className="py-3.5 px-4 max-w-xs">
+                        <span className="rounded-sm bg-[#1b365d]/10 text-[#1b365d] px-1.5 py-0.5 text-[10px] font-bold">
+                          {claim.projectCode}
+                        </span>
+                        <div className="text-xs font-semibold text-slate-800 line-clamp-1 mt-0.5">
+                          {claim.expenseHead}
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4 font-mono font-bold text-slate-900">
+                        PKR {claim.requestedAmount.toLocaleString()}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span className="text-[11px] font-bold text-slate-700">{claim.approvalLevel}</span>
+                        <span className="block text-[10px] text-slate-400">{claim.currentApprover}</span>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
+                            claim.status === "Approved & Disbursed"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-amber-50 text-amber-700 border-amber-200"
+                          }`}
+                        >
+                          {claim.status}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        {claim.receiptUrl ? (
+                          <a
+                            href={claim.receiptUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 rounded-lg bg-[#1b365d] px-2.5 py-1 text-[11px] font-bold text-white shadow-xs hover:bg-[#122440]"
+                          >
+                            <Paperclip className="h-3 w-3 text-[#fad207]" />
+                            <span>View Doc</span>
+                          </a>
+                        ) : (
+                          <span className="text-[10px] text-slate-400 italic">No File</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
