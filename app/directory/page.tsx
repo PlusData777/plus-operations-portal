@@ -15,7 +15,6 @@ import {
   RefreshCw,
   Save,
   Search,
-  ShieldCheck,
   UserCheck,
   Users,
   UserX,
@@ -39,7 +38,7 @@ interface StaffDrawerProps {
   staff: StaffMember | null;
   isOpen: boolean;
   onClose: () => void;
-  canEdit?: boolean;
+  canEdit: boolean;
   allStaff?: StaffMember[];
   onSave?: (updated: StaffMember) => Promise<void> | void;
 }
@@ -48,7 +47,7 @@ function StaffDrawer({
   staff,
   isOpen,
   onClose,
-  canEdit = true,
+  canEdit,
   allStaff = [],
   onSave,
 }: StaffDrawerProps) {
@@ -329,7 +328,7 @@ function StaffDrawer({
                   onClick={onClose}
                   className="flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
                 >
-                  Close
+                  Close Profile
                 </button>
               )
             ) : (
@@ -417,6 +416,38 @@ const FALLBACK_STAFF: StaffMember[] = [
     status: "Active",
   },
   {
+    email: "kamanger110@gmail.com",
+    name: "Kamanger",
+    designation: "Team Member",
+    role: "GENERAL_STAFF",
+    department: "Operations",
+    status: "Active",
+  },
+  {
+    email: "advazizullahazizullah@gmail.com",
+    name: "Adv Azizullah",
+    designation: "Legal Associate",
+    role: "LEGAL_STAFF",
+    department: "Legal Aid",
+    status: "Active",
+  },
+  {
+    email: "faizthecoach@gmail.com",
+    name: "Faiz",
+    designation: "Field Coordinator",
+    role: "GENERAL_STAFF",
+    department: "Field Ops",
+    status: "Active",
+  },
+  {
+    email: "saifrehman.kaloi@gmail.com",
+    name: "Saif Rehman",
+    designation: "Field Coordinator",
+    role: "GENERAL_STAFF",
+    department: "Field Ops",
+    status: "Active",
+  },
+  {
     email: "salaudinlarik1@gmail.com",
     name: "Salaudin Larik",
     designation: "Team Member",
@@ -446,14 +477,6 @@ const FALLBACK_STAFF: StaffMember[] = [
     designation: "Team Member",
     role: "GENERAL_STAFF",
     department: "Operations",
-    status: "Active",
-  },
-  {
-    email: "faizthecoach@gmail.com",
-    name: "Faiz",
-    designation: "Field Coordinator",
-    role: "GENERAL_STAFF",
-    department: "Field Ops",
     status: "Active",
   },
   {
@@ -489,14 +512,6 @@ const FALLBACK_STAFF: StaffMember[] = [
     status: "Active",
   },
   {
-    email: "kamanger110@gmail.com",
-    name: "Kamanger",
-    designation: "Team Member",
-    role: "GENERAL_STAFF",
-    department: "Operations",
-    status: "Active",
-  },
-  {
     email: "aneesabro98@gmail.com",
     name: "Anees Ahmed",
     designation: "Team Member",
@@ -510,22 +525,6 @@ const FALLBACK_STAFF: StaffMember[] = [
     designation: "Team Member",
     role: "GENERAL_STAFF",
     department: "Operations",
-    status: "Active",
-  },
-  {
-    email: "advazizullahazizullah@gmail.com",
-    name: "Adv Azizullah",
-    designation: "Legal Associate",
-    role: "LEGAL_STAFF",
-    department: "Legal Aid",
-    status: "Active",
-  },
-  {
-    email: "saifrehman.kaloi@gmail.com",
-    name: "Saif Rehman",
-    designation: "Field Coordinator",
-    role: "GENERAL_STAFF",
-    department: "Field Ops",
     status: "Active",
   },
   {
@@ -553,7 +552,9 @@ export default function StaffDirectoryPage() {
   const [selectedDept, setSelectedDept] = useState("ALL");
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [canEditGovernance, setCanEditGovernance] = useState(true);
+  
+  // Strictly defaults to false to prevent privilege leakage
+  const [canEditGovernance, setCanEditGovernance] = useState(false);
 
   useEffect(() => {
     try {
@@ -563,7 +564,7 @@ export default function StaffDirectoryPage() {
         const email = (sessionUser.email || "").toLowerCase().trim();
         const role = (sessionUser.role || "").toUpperCase();
 
-        const adminEmails = [
+        const authorizedAdmins = [
           "dataplus.org@gmail.com",
           "altafkhoso.adv@gmail.com",
           "rizwanapatel.plus@gmail.com",
@@ -571,12 +572,18 @@ export default function StaffDirectoryPage() {
           "japheth.wilson123@gmail.com",
         ];
 
-        if (role === "ADMIN" || role === "EXECUTIVE" || adminEmails.includes(email)) {
+        // Explicitly check role & email
+        if (role === "ADMIN" || role === "EXECUTIVE" || authorizedAdmins.includes(email)) {
           setCanEditGovernance(true);
+        } else {
+          setCanEditGovernance(false);
         }
+      } else {
+        setCanEditGovernance(false);
       }
     } catch (e) {
-      console.warn("Could not check user permissions:", e);
+      console.warn("Permission check error:", e);
+      setCanEditGovernance(false);
     }
   }, []);
 
@@ -763,7 +770,7 @@ export default function StaffDirectoryPage() {
           </div>
         )}
 
-        {/* Slide-out Governance Drawer */}
+        {/* Drawer */}
         <StaffDrawer
           staff={selectedStaff}
           isOpen={isDrawerOpen}
