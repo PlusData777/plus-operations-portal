@@ -333,7 +333,7 @@ export function StaffPortal({ user }: { user: StaffProfile }) {
               </div>
             )}
 
-            {/* Procurement / Logistics Fields */}
+            {/* Procurement Fields */}
             {String(form.category) === "PROCUREMENT" && (
               <div className="space-y-3 rounded-lg border border-slate-100 bg-slate-50/50 p-3">
                 <div>
@@ -454,7 +454,7 @@ export function StaffPortal({ user }: { user: StaffProfile }) {
                   <div className="flex items-start justify-between">
                     <div>
                       <h4 className="font-semibold text-sm text-slate-900">
-                        {req.title || req.summary || `${REQUEST_CATEGORY_LABELS[req.category] || "Request"}`}
+                        {req.summary || `${REQUEST_CATEGORY_LABELS[req.category] || "Request"}`}
                       </h4>
                       <p className="text-xs text-slate-500 mt-0.5">
                         {req.trackingId ? `ID: ${req.trackingId} · ` : ""}
