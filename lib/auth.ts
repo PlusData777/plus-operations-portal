@@ -47,37 +47,29 @@ export const authOptions: NextAuthOptions = {
     error: "/",
   },
   callbacks: {
-    async signIn({ user, profile }) {
-      const email = (profile?.email || user?.email || "").toLowerCase().trim();
-      if (!email) return false;
-
-      const adminList = (process.env.ADMIN_EMAILS || "dataplus.org@gmail.com,kamanger110@gmail.com")
-        .toLowerCase()
-        .split(",")
-        .map((e) => e.trim());
-
-      // 1. Direct admin access
-      if (adminList.includes(email)) {
-        return true;
+    async signIn({ user, profile, account }) {
+      // Allow all valid Google authentications through
+      return true;
+    },
+    async redirect({ url, baseUrl }) {
+      // Always route successfully authenticated users to the cockpit
+      return `${baseUrl}/cockpit`;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.email = user.email;
+        token.name = user.name;
       }
-
-      // 2. Fetch and check roster
-      try {
-        const roster = await listRoster();
-        console.log(`[AUTH] Checking login for: ${email}. Roster length: ${roster?.length || 0}`);
-        
-        const member = findRosterMember(roster, email);
-        if (member) {
-          return true;
-        }
-
-        console.warn(`[AUTH] Email ${email} not found in active roster list.`);
-        // Fallback: If roster check returns 0 items (script issue), allow entry as general staff
-        if (!roster || roster.length === 0) {
-          console.warn("[AUTH] Roster empty or unreachable, permitting general access fallback.");
-          return true;
-        }
-
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.email = token.email as string;
+        session.user.name = token.name as string;
+      }
+      return session;
+    },
+  },
         return false;
       } catch (error) {
         console.error("[AUTH] Error verifying roster during sign-in:", error);
