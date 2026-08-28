@@ -8,22 +8,21 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
-  FileSpreadsheet,
   FileText,
-  Filter,
-  Layers,
+  KeyRound,
   LayoutDashboard,
+  LogIn,
   LogOut,
+  Mail,
   MapPin,
   Phone,
-  Plus,
   RefreshCw,
   Search,
   Shield,
   ShieldAlert,
   ShieldCheck,
   TrendingUp,
-  UserCheck,
+  User,
   Users,
   XCircle,
 } from "lucide-react";
@@ -47,24 +46,179 @@ interface RequestItem {
   tier2Approved?: boolean;
 }
 
-interface LeaveBalance {
-  casualTotal: number;
-  casualUsed: number;
-  annualTotal: number;
-  annualUsed: number;
-  medicalTotal: number;
-  medicalUsed: number;
+interface StaffProfile {
+  name: string;
+  email: string;
+  role: string;
+  designation: string;
+  department: string;
 }
 
-const OFFICIAL_LOGO_URL = "https://grassrootsjusticenetwork.org/wp-content/uploads/2023/12/PLUS-logo-1-768x593.png";
+const OFFICIAL_ROSTER: StaffProfile[] = [
+  {
+    email: "dataplus.org@gmail.com",
+    name: "Atif Ali",
+    designation: "Administrator",
+    role: "ADMIN",
+    department: "IT / Systems",
+  },
+  {
+    email: "altafkhoso.adv@gmail.com",
+    name: "Altaf Khoso",
+    designation: "CEO",
+    role: "EXECUTIVE",
+    department: "Executive Board",
+  },
+  {
+    email: "rizwanapatel.plus@gmail.com",
+    name: "Rizwana Patel",
+    designation: "Chairperson",
+    role: "EXECUTIVE",
+    department: "Executive Board",
+  },
+  {
+    email: "ishfaque.mojai@gmail.com",
+    name: "Ashfaq Ali",
+    designation: "HR & Admin Lead",
+    role: "HR_ADMIN",
+    department: "HR & Operations",
+  },
+  {
+    email: "japheth.wilson123@gmail.com",
+    name: "Japheth Wilson",
+    designation: "Finance Manager",
+    role: "FINANCE_MGR",
+    department: "Finance",
+  },
+  {
+    email: "salmahabibbhutto88@gmail.com",
+    name: "Salma Habib Bhutto",
+    designation: "Program Manager",
+    role: "PROGRAM_MGR",
+    department: "Programs",
+  },
+  {
+    email: "kamanger110@gmail.com",
+    name: "Kamanger",
+    designation: "Team Member",
+    role: "GENERAL_STAFF",
+    department: "Operations",
+  },
+  {
+    email: "faizthecoach@gmail.com",
+    name: "Faiz",
+    designation: "Field Coordinator",
+    role: "GENERAL_STAFF",
+    department: "Field Ops",
+  },
+  {
+    email: "advazizullahazizullah@gmail.com",
+    name: "Adv Azizullah",
+    designation: "Legal Associate",
+    role: "LEGAL_STAFF",
+    department: "Legal Aid",
+  },
+  {
+    email: "saifrehman.kaloi@gmail.com",
+    name: "Saif Rehman",
+    designation: "Field Coordinator",
+    role: "GENERAL_STAFF",
+    department: "Field Ops",
+  },
+  {
+    email: "salaudinlarik1@gmail.com",
+    name: "Salaudin Larik",
+    designation: "Team Member",
+    role: "GENERAL_STAFF",
+    department: "Operations",
+  },
+  {
+    email: "imrankhanchang555@gmail.com",
+    name: "Imran Khan Chang",
+    designation: "IT / Program Support",
+    role: "GENERAL_STAFF",
+    department: "Programs",
+  },
+  {
+    email: "imranalimallah128@gmail.com",
+    name: "Imran Ali",
+    designation: "Team Member",
+    role: "GENERAL_STAFF",
+    department: "Operations",
+  },
+  {
+    email: "sadiqimransoomro@gmail.com",
+    name: "Imran Sadiq",
+    designation: "Team Member",
+    role: "GENERAL_STAFF",
+    department: "Operations",
+  },
+  {
+    email: "sajjadkhoso0011@gmail.com",
+    name: "Sajjad Khoso",
+    designation: "Team Member",
+    role: "GENERAL_STAFF",
+    department: "Operations",
+  },
+  {
+    email: "safiart998@gmail.com",
+    name: "Safiullah (TukTuk Art)",
+    designation: "Media Support",
+    role: "GENERAL_STAFF",
+    department: "Communications",
+  },
+  {
+    email: "waseelaqasim60@gmail.com",
+    name: "Waseela Qasim",
+    designation: "Associate",
+    role: "GENERAL_STAFF",
+    department: "Programs",
+  },
+  {
+    email: "muskandinochanna@gmail.com",
+    name: "Muskan Channa",
+    designation: "Associate",
+    role: "GENERAL_STAFF",
+    department: "Programs",
+  },
+  {
+    email: "aneesabro98@gmail.com",
+    name: "Anees Ahmed",
+    designation: "Team Member",
+    role: "GENERAL_STAFF",
+    department: "Operations",
+  },
+  {
+    email: "aakashali414@gmail.com",
+    name: "Aakash Bhurgri",
+    designation: "Team Member",
+    role: "GENERAL_STAFF",
+    department: "Operations",
+  },
+  {
+    email: "kashee742@gmail.com",
+    name: "Kashif",
+    designation: "Team Member",
+    role: "GENERAL_STAFF",
+    department: "Operations",
+  },
+  {
+    email: "arkkaloi1@gmail.com",
+    name: "A.R. Kaloi",
+    designation: "Team Member",
+    role: "GENERAL_STAFF",
+    department: "Operations",
+  },
+];
+
+const OFFICIAL_LOGO_URL =
+  "https://grassrootsjusticenetwork.org/wp-content/uploads/2023/12/PLUS-logo-1-768x593.png";
 
 export default function WorkspacePage() {
-  const [user, setUser] = useState({
-    name: "Data Plus",
-    email: "dataplus.org@gmail.com",
-    role: "ADMIN",
-    designation: "Administrator",
-  });
+  const [currentUser, setCurrentUser] = useState<StaffProfile | null>(null);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [loginEmailInput, setLoginEmailInput] = useState("");
+  const [authError, setAuthError] = useState("");
 
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -72,33 +226,76 @@ export default function WorkspacePage() {
   const [activeTab, setActiveTab] = useState<"ALL" | "LEAVE" | "EXPENSE">("ALL");
   const [processingId, setProcessingId] = useState<string | null>(null);
 
-  const [leaveBalances, setLeaveBalances] = useState<LeaveBalance>({
-    casualTotal: 5,
-    casualUsed: 0,
-    annualTotal: 5,
-    annualUsed: 0,
-    medicalTotal: 2,
-    medicalUsed: 0,
-  });
-
+  // Initialize and check local storage session
   useEffect(() => {
     try {
       const stored = localStorage.getItem("plus_user");
       if (stored) {
         const u = JSON.parse(stored);
-        setUser({
-          name: u.name || "Data Plus",
-          email: (u.email || "dataplus.org@gmail.com").toLowerCase().trim(),
-          role: (u.role || "ADMIN").toUpperCase(),
-          designation: u.designation || "Administrator",
-        });
+        const email = (u.email || "").toLowerCase().trim();
+        const matched = OFFICIAL_ROSTER.find(
+          (s) => s.email.toLowerCase().trim() === email
+        );
+
+        if (matched) {
+          setCurrentUser(matched);
+        } else {
+          setCurrentUser({
+            name: u.name || "Staff Member",
+            email: email,
+            role: (u.role || "GENERAL_STAFF").toUpperCase(),
+            designation: u.designation || "Operations Staff",
+            department: u.department || "Operations",
+          });
+        }
       }
     } catch (e) {
-      console.warn("Could not parse user session:", e);
+      console.warn("Session check failed:", e);
+    } finally {
+      setIsAuthChecking(false);
     }
   }, []);
 
+  const handleLogin = (emailToLogin: string) => {
+    const cleanEmail = emailToLogin.toLowerCase().trim();
+    if (!cleanEmail) {
+      setAuthError("Please enter your registered email address.");
+      return;
+    }
+
+    const matched = OFFICIAL_ROSTER.find(
+      (s) => s.email.toLowerCase().trim() === cleanEmail
+    );
+
+    if (matched) {
+      localStorage.setItem("plus_user", JSON.stringify(matched));
+      setCurrentUser(matched);
+      setAuthError("");
+    } else {
+      // Allow general login
+      const guestProfile: StaffProfile = {
+        name: cleanEmail.split("@")[0],
+        email: cleanEmail,
+        role: "GENERAL_STAFF",
+        designation: "Field / General Staff",
+        department: "Operations",
+      };
+      localStorage.setItem("plus_user", JSON.stringify(guestProfile));
+      setCurrentUser(guestProfile);
+      setAuthError("");
+    }
+  };
+
+  const handleSignOut = () => {
+    localStorage.removeItem("plus_user");
+    sessionStorage.clear();
+    setCurrentUser(null);
+    setLoginEmailInput("");
+  };
+
+  // Determine true administrative privileges
   const isAdminOrExec = useMemo(() => {
+    if (!currentUser) return false;
     const adminEmails = [
       "dataplus.org@gmail.com",
       "altafkhoso.adv@gmail.com",
@@ -107,11 +304,11 @@ export default function WorkspacePage() {
       "japheth.wilson123@gmail.com",
     ];
     return (
-      user.role === "ADMIN" ||
-      user.role === "EXECUTIVE" ||
-      adminEmails.includes(user.email.toLowerCase().trim())
+      currentUser.role === "ADMIN" ||
+      currentUser.role === "EXECUTIVE" ||
+      adminEmails.includes(currentUser.email.toLowerCase().trim())
     );
-  }, [user.role, user.email]);
+  }, [currentUser]);
 
   async function fetchLiveRequests() {
     setLoading(true);
@@ -131,10 +328,13 @@ export default function WorkspacePage() {
   }
 
   useEffect(() => {
-    fetchLiveRequests();
-  }, []);
+    if (currentUser) {
+      fetchLiveRequests();
+    }
+  }, [currentUser]);
 
   const handleAction = async (requestId: string, action: "APPROVE" | "REJECT") => {
+    if (!currentUser) return;
     setProcessingId(requestId);
     try {
       const res = await fetch("/api/requests", {
@@ -144,7 +344,7 @@ export default function WorkspacePage() {
           action: "UPDATE_STATUS",
           requestId,
           status: action === "APPROVE" ? "Approved" : "Rejected",
-          reviewerEmail: user.email,
+          reviewerEmail: currentUser.email,
         }),
       });
 
@@ -165,6 +365,10 @@ export default function WorkspacePage() {
   };
 
   const stats = useMemo(() => {
+    if (!currentUser) {
+      return { totalCount: 0, pendingCount: 0, approvedPkrVolume: 0, actionList: [] };
+    }
+
     const totalCount = requests.length;
     const pendingCount = requests.filter(
       (r) =>
@@ -183,7 +387,7 @@ export default function WorkspacePage() {
 
     const actionList = requests.filter((r) => {
       const pendingTo = (r.currentApproverEmail || "").toLowerCase().trim();
-      const myEmail = user.email.toLowerCase().trim();
+      const myEmail = currentUser.email.toLowerCase().trim();
       const st = (r.status || "").toLowerCase();
       const isPending = !st.includes("approved") && !st.includes("rejected");
       return (isAdminOrExec || pendingTo === myEmail) && isPending;
@@ -195,9 +399,9 @@ export default function WorkspacePage() {
       approvedPkrVolume,
       actionList,
     };
-  }, [requests, user.email, isAdminOrExec]);
+  }, [requests, currentUser, isAdminOrExec]);
 
-  // Working Quick Filter Logic
+  // Quick Filters
   const filteredRequests = useMemo(() => {
     return requests.filter((req) => {
       const q = searchQuery.toLowerCase().trim();
@@ -223,9 +427,124 @@ export default function WorkspacePage() {
     });
   }, [requests, searchQuery, activeTab]);
 
+  // Loading state
+  if (isAuthChecking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#f8fafc]">
+        <div className="flex flex-col items-center gap-3">
+          <img src={OFFICIAL_LOGO_URL} alt="PLUS Logo" className="h-16 w-auto animate-pulse" />
+          <p className="text-xs font-bold text-[#1b365d]">Initializing PLUS Workspace...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If No Active Session: Show Dedicated Portal Login
+  if (!currentUser) {
+    return (
+      <div className="flex min-h-screen flex-col justify-between bg-[#f8fafc] text-slate-900">
+        <div className="flex flex-1 items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-xl">
+            <div className="flex flex-col items-center text-center">
+              <div className="flex items-center justify-center rounded-2xl bg-[#1b365d] p-3 shadow-md">
+                <img src={OFFICIAL_LOGO_URL} alt="PLUS Logo" className="h-14 w-auto object-contain" />
+              </div>
+              <h2 className="mt-4 text-xl font-bold tracking-tight text-[#1b365d]">
+                Pakistan Legal United Society
+              </h2>
+              <p className="text-xs font-bold text-[#c65a28] font-serif">انصاف سب کا حق ہے</p>
+              <p className="mt-1 text-xs text-slate-500">
+                Operations, Governance & Multi-Tier Approval Workspace
+              </p>
+            </div>
+
+            <div className="mt-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+                  Quick Select Verified Staff Account
+                </label>
+                <select
+                  onChange={(e) => {
+                    if (e.target.value) handleLogin(e.target.value);
+                  }}
+                  defaultValue=""
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-medium text-slate-800 focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                >
+                  <option value="" disabled>
+                    -- Choose Your Account --
+                  </option>
+                  <optgroup label="Governance & Admin">
+                    <option value="dataplus.org@gmail.com">Atif Ali (Admin · IT / Systems)</option>
+                    <option value="altafkhoso.adv@gmail.com">Altaf Khoso (CEO · Executive Board)</option>
+                    <option value="rizwanapatel.plus@gmail.com">Rizwana Patel (Chairperson)</option>
+                    <option value="ishfaque.mojai@gmail.com">Ashfaq Ali (HR & Admin Lead)</option>
+                    <option value="japheth.wilson123@gmail.com">Japheth Wilson (Finance Manager)</option>
+                  </optgroup>
+                  <optgroup label="Operational & Field Staff">
+                    <option value="kamanger110@gmail.com">Kamanger (Operations Team)</option>
+                    <option value="salmahabibbhutto88@gmail.com">Salma Habib Bhutto (Program Manager)</option>
+                    <option value="advazizullahazizullah@gmail.com">Adv Azizullah (Legal Associate)</option>
+                    <option value="faizthecoach@gmail.com">Faiz (Field Coordinator)</option>
+                    <option value="saifrehman.kaloi@gmail.com">Saif Rehman (Field Coordinator)</option>
+                    <option value="salaudinlarik1@gmail.com">Salaudin Larik (Operations)</option>
+                    <option value="imrankhanchang555@gmail.com">Imran Khan Chang (Programs)</option>
+                    <option value="waseelaqasim60@gmail.com">Waseela Qasim (Associate)</option>
+                    <option value="muskandinochanna@gmail.com">Muskan Channa (Associate)</option>
+                    <option value="aneesabro98@gmail.com">Anees Ahmed (Operations)</option>
+                    <option value="aakashali414@gmail.com">Aakash Bhurgri (Operations)</option>
+                    <option value="kashee742@gmail.com">Kashif (Operations)</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              <div className="relative flex items-center py-1">
+                <div className="grow border-t border-slate-200"></div>
+                <span className="mx-3 shrink text-[10px] font-bold uppercase text-slate-400">or sign in with email</span>
+                <div className="grow border-t border-slate-200"></div>
+              </div>
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleLogin(loginEmailInput);
+                }}
+                className="space-y-3"
+              >
+                <div>
+                  <input
+                    type="email"
+                    placeholder="Enter registered email address..."
+                    value={loginEmailInput}
+                    onChange={(e) => setLoginEmailInput(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                  />
+                  {authError && <p className="mt-1 text-[11px] font-semibold text-red-600">{authError}</p>}
+                </div>
+
+                <button
+                  type="submit"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1b365d] py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#122440] cursor-pointer"
+                >
+                  <LogIn className="h-4 w-4 text-[#fad207]" />
+                  Sign In to Workspace
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <footer className="border-t border-slate-200 bg-[#1b365d] py-4 text-center text-[11px] text-slate-300">
+          Pakistan Legal United Society · Operational & Approval System
+        </footer>
+      </div>
+    );
+  }
+
+  // Render Logged-in Workspace
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col justify-between">
-      {/* Top Navbar with Official PLUS Logo */}
+      {/* Top Navbar */}
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-2xs">
         <div className="container mx-auto flex max-w-7xl items-center justify-between px-4 py-2 sm:px-6">
           <div className="flex items-center gap-3.5">
@@ -253,17 +572,12 @@ export default function WorkspacePage() {
 
           <div className="flex items-center gap-3">
             <div className="hidden text-right md:block">
-              <div className="text-xs font-bold text-[#1b365d]">{user.name}</div>
-              <div className="text-[11px] font-mono text-slate-500">{user.email}</div>
+              <div className="text-xs font-bold text-[#1b365d]">{currentUser.name}</div>
+              <div className="text-[11px] font-mono text-slate-500">{currentUser.email}</div>
             </div>
             <button
-              onClick={() => {
-                if (typeof window !== "undefined") {
-                  localStorage.removeItem("plus_user");
-                  window.location.reload();
-                }
-              }}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 hover:text-[#b82626] cursor-pointer"
+              onClick={handleSignOut}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-red-50 hover:border-red-200 hover:text-[#b82626] cursor-pointer"
             >
               <LogOut className="h-3.5 w-3.5" />
               <span>Sign out</span>
@@ -272,7 +586,7 @@ export default function WorkspacePage() {
         </div>
       </header>
 
-      {/* Main Layout */}
+      {/* Main Workspace Layout */}
       <main className="container mx-auto max-w-7xl flex-1 px-4 py-8 sm:px-6">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           {/* Left Navigation Sidebar */}
@@ -310,7 +624,7 @@ export default function WorkspacePage() {
                   <span>Staff Timesheets</span>
                 </Link>
 
-                {/* Quick Filters Area */}
+                {/* Quick Filters */}
                 <div className="border-t border-slate-100 my-2 pt-2">
                   <span className="block px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     Quick Filters
@@ -341,7 +655,7 @@ export default function WorkspacePage() {
               </nav>
             </div>
 
-            {/* Leave Balances Widget */}
+            {/* Leave Balance Overview */}
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
@@ -357,33 +671,30 @@ export default function WorkspacePage() {
                 <div className="rounded-xl border border-slate-100 bg-[#f8fafc] p-2.5">
                   <span className="text-[10px] font-bold uppercase text-slate-400">Casual</span>
                   <p className="text-base font-bold text-[#1b365d]">
-                    {leaveBalances.casualTotal - leaveBalances.casualUsed}
-                    <span className="text-[10px] text-slate-400 font-normal">/{leaveBalances.casualTotal}</span>
+                    5<span className="text-[10px] text-slate-400 font-normal">/5</span>
                   </p>
                 </div>
 
                 <div className="rounded-xl border border-slate-100 bg-[#f8fafc] p-2.5">
                   <span className="text-[10px] font-bold uppercase text-slate-400">Annual</span>
                   <p className="text-base font-bold text-[#1b365d]">
-                    {leaveBalances.annualTotal - leaveBalances.annualUsed}
-                    <span className="text-[10px] text-slate-400 font-normal">/{leaveBalances.annualTotal}</span>
+                    5<span className="text-[10px] text-slate-400 font-normal">/5</span>
                   </p>
                 </div>
 
                 <div className="rounded-xl border border-slate-100 bg-[#f8fafc] p-2.5">
                   <span className="text-[10px] font-bold uppercase text-slate-400">Sick</span>
                   <p className="text-base font-bold text-[#1b365d]">
-                    {leaveBalances.medicalTotal - leaveBalances.medicalUsed}
-                    <span className="text-[10px] text-slate-400 font-normal">/{leaveBalances.medicalTotal}</span>
+                    2<span className="text-[10px] text-slate-400 font-normal">/2</span>
                   </p>
                 </div>
               </div>
             </div>
           </aside>
 
-          {/* Right Main Panel */}
+          {/* Right Workspace Main Stream */}
           <div className="lg:col-span-9 space-y-6">
-            {/* Executive & Admin Action Required Desk */}
+            {/* Executive & Admin Action Required Desk (Shown ONLY when relevant) */}
             <div className="rounded-2xl border border-[#fad207]/60 bg-[#fad207]/15 p-5 shadow-2xs">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
@@ -396,7 +707,7 @@ export default function WorkspacePage() {
                     </h3>
                     <p className="text-xs text-slate-600 mt-0.5">
                       {stats.actionList.length > 0
-                        ? `You have administrative clearance authority over ${stats.actionList.length} pending request(s).`
+                        ? `You have pending authorization authority over ${stats.actionList.length} request(s).`
                         : "No approvals are currently awaiting your action."}
                     </p>
                   </div>
@@ -458,11 +769,11 @@ export default function WorkspacePage() {
               )}
             </div>
 
-            {/* Title & Sync Header */}
+            {/* Title & Role View Header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#c65a28]">
-                  {user.role} WORKSPACE
+                  {currentUser.role} WORKSPACE · {currentUser.department}
                 </span>
                 <h2 className="text-2xl font-bold tracking-tight text-[#1b365d]">
                   {activeTab === "LEAVE"
@@ -472,7 +783,7 @@ export default function WorkspacePage() {
                     : "All Operations Requests."}
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Review requests within your verified roster scope. Decisions are synchronized to the PLUS ledger.
+                  Reviewing operational roster activities and verified sheet records.
                 </p>
               </div>
 
@@ -486,7 +797,7 @@ export default function WorkspacePage() {
               </button>
             </div>
 
-            {/* Metric KPI Cards */}
+            {/* KPI Metric Cards */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
                 <div className="flex items-center justify-between text-slate-400">
@@ -523,7 +834,7 @@ export default function WorkspacePage() {
               </div>
             </div>
 
-            {/* Search and Request Stream */}
+            {/* Search and Request Feed */}
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
@@ -542,7 +853,7 @@ export default function WorkspacePage() {
                 </div>
               ) : filteredRequests.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-slate-200 py-12 text-center text-xs text-slate-500">
-                  No active operations requests found matching your criteria.
+                  No active operations requests found matching your filter criteria.
                 </div>
               ) : (
                 <div className="space-y-3">
