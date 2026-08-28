@@ -19,10 +19,28 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
   pages: { signIn: "/", error: "/" },
   callbacks: {
-    async signIn({ profile }) {
-      if (!profile?.email) return false;
-      try { return Boolean(findRosterMember(await listRoster(), profile.email)); }
-      catch (error) { console.error("Unable to verify the active PLUS roster during sign-in", error); return false; }
+ async signIn({ profile, user }) {
+      const email = (profile?.email || user?.email || "").toLowerCase().trim();
+      if (!email) return false;
+
+      const adminList = (process.env.ADMIN_EMAILS || "dataplus.org@gmail.com,kamanger110@gmail.com")
+        .toLowerCase()
+        .split(",")
+        .map((e) => e.trim());
+
+      // 1. Direct admin bypass
+      if (adminList.includes(email)) {
+        return true;
+      }
+
+      // 2. Staff roster lookup
+      try {
+        const roster = await listRoster();
+        return Boolean(findRosterMember(roster, email));
+      } catch (error) {
+        console.error("Unable to verify the active PLUS roster during sign-in", error);
+        return false;
+      }
     },
     async redirect({ url, baseUrl }) {
       const trustedOrigin = resolveAuthOrigin() ?? baseUrl;
