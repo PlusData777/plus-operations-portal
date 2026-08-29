@@ -171,6 +171,20 @@ export default function WorkspacePage() {
   const [submittingForm, setSubmittingForm] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
+  // Task Creation Modal State (Restored for Managers & Admins)
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskCategory, setTaskCategory] = useState("Community Legal Camp");
+  const [customCategoryText, setCustomCategoryText] = useState("");
+  const [taskDate, setTaskDate] = useState(new Date().toISOString().split("T")[0]);
+  const [taskVenue, setTaskVenue] = useState("");
+  const [taskHub, setTaskHub] = useState<"Karachi" | "Hyderabad" | "Sukkur">("Sukkur");
+  const [taskUrgency, setTaskUrgency] = useState<"Standard" | "Urgent">("Standard");
+  const [taskAssigneeEmail, setTaskAssigneeEmail] = useState("");
+  const [taskAttachmentUrl, setTaskAttachmentUrl] = useState("");
+  const [submittingTask, setSubmittingTask] = useState(false);
+  const [taskFeedback, setTaskFeedback] = useState<{ status: "success" | "error"; message: string } | null>(null);
+
   useEffect(() => {
     try {
       const stored = localStorage.getItem("plus_user");
@@ -240,6 +254,16 @@ export default function WorkspacePage() {
     return currentUser.role === "EXECUTIVE" || execEmails.includes(currentUser.email.toLowerCase().trim());
   }, [currentUser]);
 
+  const isManagerOrAdmin = useMemo(() => {
+    if (!currentUser) return false;
+    return (
+      currentUser.role === "ADMIN" ||
+      currentUser.role === "EXECUTIVE" ||
+      currentUser.role === "PROGRAM_MGR" ||
+      currentUser.role === "HR_ADMIN"
+    );
+  }, [currentUser]);
+
   const isFinanceUser = useMemo(() => {
     if (!currentUser) return false;
     return currentUser.role === "FINANCE_MGR" || currentUser.email.toLowerCase().trim() === "japheth.wilson123@gmail.com";
@@ -285,6 +309,16 @@ export default function WorkspacePage() {
   const scopedTasks = useMemo(() => {
     if (!currentUser) return [];
     if (isSystemAdmin || isExecutiveUser) return tasks;
+
+    if (currentUser.role === "PROGRAM_MGR") {
+      return tasks.filter(
+        (t) =>
+          t.assigneeEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim() ||
+          t.assigneeEmail === "ALL" ||
+          t.assignedByEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim()
+      );
+    }
+
     return tasks.filter(
       (t) =>
         t.assigneeEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim() ||
@@ -317,6 +351,67 @@ export default function WorkspacePage() {
       return matchesSearch;
     });
   }, [scopedRequests, searchQuery, activeRequestFilter]);
+
+  const handleCreateTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser || !taskTitle.trim()) return;
+
+    setSubmittingTask(true);
+    setTaskFeedback(null);
+    const newId = "TSK-" + (tasks.length + 801);
+
+    let targetEmail = currentUser.email;
+    let targetName = currentUser.name;
+
+    if (isManagerOrAdmin && taskAssigneeEmail) {
+      if (taskAssigneeEmail === "ALL") {
+        targetEmail = "ALL";
+        targetName = "All Staff / Combined Team";
+      } else {
+        const found = OFFICIAL_ROSTER.find((r) => r.email === taskAssigneeEmail);
+        if (found) {
+          targetEmail = found.email;
+          targetName = found.name;
+        }
+      }
+    }
+
+    const finalCategory = taskCategory === "Other" ? customCategoryText.trim() || "Other Deliverable" : taskCategory;
+
+    const newTask: AssignedTask = {
+      id: newId,
+      title: taskTitle,
+      category: finalCategory,
+      dueDateOrHearing: taskDate,
+      venue: taskVenue || "Field Location",
+      hub: taskHub,
+      status: "Pending Action",
+      urgency: taskUrgency,
+      assigneeEmail: targetEmail,
+      assigneeName: targetName,
+      assignedByEmail: currentUser.email,
+      assignedByName: currentUser.name,
+      attachmentUrl: taskAttachmentUrl,
+    };
+
+    setTasks([newTask, ...tasks]);
+    setSubmittingTask(false);
+    setTaskFeedback({
+      status: "success",
+      message: `Task assigned successfully! Notification dispatched to ${targetName} (${targetEmail}).`,
+    });
+
+    setTimeout(() => {
+      setTaskFeedback(null);
+      setIsTaskModalOpen(false);
+      setTaskTitle("");
+      setTaskVenue("");
+      setTaskAttachmentUrl("");
+      setCustomCategoryText("");
+      setTaskCategory("Community Legal Camp");
+      setTaskAssigneeEmail("");
+    }, 2000);
+  };
 
   const handleCreateRequest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -572,7 +667,6 @@ export default function WorkspacePage() {
                   <span>Staff Directory</span>
                 </Link>
 
-                {/* STRICT ROLE CHECK: EXECUTIVE ANALYTICS ONLY VISIBLE TO ADMINS & EXECUTIVES */}
                 {(isSystemAdmin || isExecutiveUser) && (
                   <Link
                     href="/analytics"
@@ -626,14 +720,15 @@ export default function WorkspacePage() {
               </div>
 
               <div className="flex items-center gap-2">
-                {(isSystemAdmin || isExecutiveUser) && (
-                  <Link
-                    href="/analytics"
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-[#1b365d] px-3.5 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-[#122440]"
+                {/* RESTORED MANAGER TASK ASSIGNMENT BUTTON */}
+                {isManagerOrAdmin && (
+                  <button
+                    onClick={() => setIsTaskModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-[#1b365d] px-3.5 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-[#122440] cursor-pointer"
                   >
-                    <BarChart3 className="h-3.5 w-3.5 text-[#fad207]" />
-                    <span>Executive Analytics</span>
-                  </Link>
+                    <PlusCircle className="h-3.5 w-3.5 text-[#fad207]" />
+                    <span>+ Assign New Task</span>
+                  </button>
                 )}
                 <Link
                   href="/timesheets"
@@ -645,7 +740,7 @@ export default function WorkspacePage() {
               </div>
             </div>
 
-            {/* EXECUTIVE & ADMIN KPI CARDS */}
+            {/* KPI CARDS */}
             {isSystemAdmin || isExecutiveUser ? (
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
@@ -1090,6 +1185,165 @@ export default function WorkspacePage() {
           </div>
         </div>
       </main>
+
+      {/* TASK CREATION MODAL FOR MANAGERS */}
+      {isTaskModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs animate-in fade-in">
+          <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-base font-bold text-[#1b365d]">Initiate & Assign Deliverable</h3>
+                <p className="text-[11px] text-slate-500">
+                  Assigned by Manager: <strong className="text-slate-800">{currentUser.name}</strong>
+                </p>
+              </div>
+              <button onClick={() => { setIsTaskModalOpen(false); setTaskFeedback(null); }} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {taskFeedback && (
+              <div className="flex items-center gap-2 rounded-xl p-3.5 text-xs font-bold border bg-emerald-50 text-emerald-800 border-emerald-200">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                <span>{taskFeedback.message}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleCreateTask} className="space-y-3">
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                  Task Title / Deliverable
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Conduct Legal Camp at UC Qasimabad"
+                  value={taskTitle}
+                  onChange={(e) => setTaskTitle(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-[#1b365d] mb-1">
+                  Assign Task To Subordinate / Team Member
+                </label>
+                <select
+                  value={taskAssigneeEmail}
+                  onChange={(e) => setTaskAssigneeEmail(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-semibold focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                >
+                  <option value="">Select Subordinate Staff Member</option>
+                  <option value="ALL">★ All Staff / Combined Team Task</option>
+                  {OFFICIAL_ROSTER.filter((s) => s.email !== currentUser.email).map((staff) => (
+                    <option key={staff.email} value={staff.email}>
+                      {staff.name} — {staff.designation} ({staff.department})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Category</label>
+                  <select
+                    value={taskCategory}
+                    onChange={(e) => setTaskCategory(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-semibold focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                  >
+                    <option value="Community Legal Camp">Community Legal Camp</option>
+                    <option value="Prison Unit (NAVTTC)">Prison Unit (NAVTTC)</option>
+                    <option value="Legal Casework / Court">Legal Casework / Court</option>
+                    <option value="Police Training">Police Training</option>
+                    <option value="Operational / Admin Task">Operational / Admin Task</option>
+                    <option value="Other">Other (Custom Specified)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Regional Hub</label>
+                  <select
+                    value={taskHub}
+                    onChange={(e) => setTaskHub(e.target.value as "Karachi" | "Hyderabad" | "Sukkur")}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-semibold focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                  >
+                    <option value="Sukkur">Sukkur Regional</option>
+                    <option value="Hyderabad">Hyderabad Regional</option>
+                    <option value="Karachi">Karachi HO</option>
+                  </select>
+                </div>
+              </div>
+
+              {taskCategory === "Other" && (
+                <div className="animate-in fade-in">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[#c65a28] mb-1">Specify Custom Category</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Enter custom category name"
+                    value={customCategoryText}
+                    onChange={(e) => setCustomCategoryText(e.target.value)}
+                    className="w-full rounded-xl border border-orange-200 bg-orange-50/40 p-2 text-xs font-semibold text-[#1b365d] focus:border-[#c65a28] focus:bg-white focus:outline-hidden"
+                  />
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Target Due Date</label>
+                  <input
+                    type="date"
+                    required
+                    value={taskDate}
+                    onChange={(e) => setTaskDate(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Priority / Urgency</label>
+                  <select
+                    value={taskUrgency}
+                    onChange={(e) => setTaskUrgency(e.target.value as "Standard" | "Urgent")}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-semibold focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                  >
+                    <option value="Standard">Standard Priority</option>
+                    <option value="Urgent">Urgent Due Date</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Location / Venue</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Sessions Court Sukkur"
+                  value={taskVenue}
+                  onChange={(e) => setTaskVenue(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                />
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => { setIsTaskModalOpen(false); setTaskFeedback(null); }}
+                  className="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingTask}
+                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#1b365d] py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#122440] cursor-pointer disabled:opacity-50"
+                >
+                  <Send className="h-3.5 w-3.5 text-[#fad207]" />
+                  <span>{submittingTask ? "Assigning..." : "Assign & Dispatch Task"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* OPERATIONS REQUEST MODAL WITH DELEGATION OF AUTHORITY */}
       {isApplyModalOpen && (
