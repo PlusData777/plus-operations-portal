@@ -155,11 +155,13 @@ export default function WorkspacePage() {
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
   const [formType, setFormType] = useState<"Leave" | "Expense" | "Purchase" | "Asset">("Leave");
   const [formLeaveCategory, setFormLeaveCategory] = useState("Casual");
+  const [customLeaveCategory, setCustomLeaveCategory] = useState("");
   const [formStartDate, setFormStartDate] = useState(new Date().toISOString().split("T")[0]);
   const [formEndDate, setFormEndDate] = useState(new Date().toISOString().split("T")[0]);
   const [formDays, setFormDays] = useState(1);
   const [formAmount, setFormAmount] = useState<number>(0);
   const [formExpenseCategory, setFormExpenseCategory] = useState("Travel / Field Fuel & Transport");
+  const [customExpenseCategory, setCustomExpenseCategory] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formAttachmentUrl, setFormAttachmentUrl] = useState("");
   const [isUploadingFile, setIsUploadingFile] = useState(false);
@@ -363,18 +365,21 @@ export default function WorkspacePage() {
     const assignedApprover = isKamanger ? "altafkhoso.adv@gmail.com" : "ishfaque.mojai@gmail.com";
     const initialStatus = isKamanger ? "Submitted · Routed to CEO" : "Submitted · Pending Tier 1";
 
+    const finalLeaveCat = formLeaveCategory === "Other" ? customLeaveCategory.trim() || "Other Leave" : formLeaveCategory;
+    const finalExpenseCat = formExpenseCategory === "Other" ? customExpenseCategory.trim() || "Other Expense / Requisition" : formExpenseCategory;
+
     const newRequest: RequestItem = {
       id: newReqId,
       timestamp: new Date().toISOString(),
       requesterEmail: currentUser.email,
       requesterName: currentUser.name,
       requestType: formType,
-      leaveCategory: formType === "Leave" ? formLeaveCategory : undefined,
+      leaveCategory: formType === "Leave" ? finalLeaveCat : undefined,
       startDate: formType === "Leave" ? formStartDate : undefined,
       endDate: formType === "Leave" ? formEndDate : undefined,
       days: formType === "Leave" ? formDays : undefined,
       amount: formType === "Expense" || formType === "Purchase" ? formAmount : undefined,
-      expenseCategory: formType === "Expense" ? formExpenseCategory : undefined,
+      expenseCategory: formType === "Expense" || formType === "Asset" ? finalExpenseCat : undefined,
       description: formDescription,
       status: initialStatus,
       currentApproverEmail: assignedApprover,
@@ -534,7 +539,7 @@ export default function WorkspacePage() {
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#c65a28] py-3.5 px-4 text-xs font-bold text-white shadow-md transition hover:bg-[#a8491d] cursor-pointer"
             >
               <Plus className="h-4 w-4" />
-              <span>{isHrAdminUser ? "+ Submit Admin / Purchase Request" : "Apply for Leave / Expense"}</span>
+              <span>+ Submit Request / Requisition</span>
             </button>
 
             <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-xs">
@@ -638,7 +643,7 @@ export default function WorkspacePage() {
                     <span>
                       {isFinanceUser || isHrAdminUser
                         ? "All Staff Requests & Requisitions"
-                        : "My Leave & Expense Claims"}
+                        : "My Submitted Requests"}
                     </span>
                   </button>
                 </div>
@@ -659,7 +664,7 @@ export default function WorkspacePage() {
                   {isFinanceUser
                     ? "Financial master ledger, grant allocation burn rates, and expenditure audits."
                     : isHrAdminUser
-                    ? "Administrative purchases, asset management, inventory tracking, and HR approvals."
+                    ? "Managing incoming purchase requisitions, asset allocations, inventory, and staff requests."
                     : "Protected deliverable portfolio with Google Drive cloud storage and email dispatch."}
                 </p>
               </div>
@@ -718,33 +723,35 @@ export default function WorkspacePage() {
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
                   <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Active Staff</span>
-                    <Users className="h-4 w-4 text-[#1b365d]" />
-                  </div>
-                  <p className="mt-2 text-2xl font-bold text-[#1b365d]">16 Roster</p>
-                  <span className="text-[10px] text-slate-500">Sindh Hubs & HO</span>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Purchase Requests</span>
+                    <span className="text-[11px] font-bold uppercase tracking-wider">Incoming Requests</span>
                     <ShoppingCart className="h-4 w-4 text-emerald-600" />
                   </div>
                   <p className="mt-2 text-2xl font-bold text-emerald-600">
-                    {requests.filter(r => r.requestType === "Purchase").length} Open
+                    {requests.length} Total
                   </p>
-                  <span className="text-[10px] text-slate-500">Admin procurement</span>
+                  <span className="text-[10px] text-slate-500">Team requisitions queue</span>
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
                   <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Asset Allocation</span>
+                    <span className="text-[11px] font-bold uppercase tracking-wider">Purchase Queue</span>
                     <Package className="h-4 w-4 text-[#c65a28]" />
                   </div>
                   <p className="mt-2 text-2xl font-bold text-[#c65a28]">
+                    {requests.filter(r => r.requestType === "Purchase").length} Open
+                  </p>
+                  <span className="text-[10px] text-slate-500">Procurement review</span>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                  <div className="flex items-center justify-between text-slate-400">
+                    <span className="text-[11px] font-bold uppercase tracking-wider">Asset Requests</span>
+                    <Users className="h-4 w-4 text-[#1b365d]" />
+                  </div>
+                  <p className="mt-2 text-2xl font-bold text-[#1b365d]">
                     {requests.filter(r => r.requestType === "Asset").length} Pending
                   </p>
-                  <span className="text-[10px] text-slate-500">Inventory requests</span>
+                  <span className="text-[10px] text-slate-500">Inventory allocation</span>
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
@@ -791,11 +798,11 @@ export default function WorkspacePage() {
 
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
                   <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Open Claims</span>
+                    <span className="text-[11px] font-bold uppercase tracking-wider">My Requests</span>
                     <FileText className="h-4 w-4 text-emerald-600" />
                   </div>
                   <p className="mt-2 text-2xl font-bold text-emerald-600">{scopedRequests.length}</p>
-                  <span className="text-[10px] text-slate-500">Your claims queue</span>
+                  <span className="text-[10px] text-slate-500">Submitted queue</span>
                 </div>
               </div>
             )}
@@ -850,58 +857,121 @@ export default function WorkspacePage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">
-                    HR & Admin Routine Operations Desk
+                    HR & Admin Management Desk (Team Requisitions & Requests)
                   </h3>
-                  <Link href="/hr" className="text-xs font-bold text-[#1b365d] hover:underline">
-                    View Full HR Directory →
-                  </Link>
+                  <span className="text-xs text-slate-500">Reviewing all staff purchases, assets & leave</span>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-700 uppercase">Purchase Requisitions</span>
-                      <ShoppingCart className="h-4 w-4 text-emerald-600" />
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="Search team requests by staff name, purpose, or ID..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-4 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                      />
                     </div>
-                    <p className="text-sm font-bold text-slate-900">Office & Field Supplies</p>
-                    <p className="text-xs text-slate-500">Manage vendor quotes and purchase requests for Sindh hubs.</p>
-                    <button
-                      onClick={() => { setFormType("Purchase"); setIsApplyModalOpen(true); }}
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#1b365d] px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-[#122440] cursor-pointer"
-                    >
-                      <span>+ New Purchase Request</span>
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setActiveRequestFilter("ALL")}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
+                          activeRequestFilter === "ALL" ? "bg-[#1b365d] text-white" : "text-slate-600 hover:bg-slate-100"
+                        }`}
+                      >
+                        All
+                      </button>
+                      <button
+                        onClick={() => setActiveRequestFilter("PURCHASE")}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
+                          activeRequestFilter === "PURCHASE" ? "bg-[#1b365d] text-white" : "text-slate-600 hover:bg-slate-100"
+                        }`}
+                      >
+                        Purchases
+                      </button>
+                      <button
+                        onClick={() => setActiveRequestFilter("ASSET")}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
+                          activeRequestFilter === "ASSET" ? "bg-[#1b365d] text-white" : "text-slate-600 hover:bg-slate-100"
+                        }`}
+                      >
+                        Assets
+                      </button>
+                      <button
+                        onClick={() => setActiveRequestFilter("LEAVE")}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
+                          activeRequestFilter === "LEAVE" ? "bg-[#1b365d] text-white" : "text-slate-600 hover:bg-slate-100"
+                        }`}
+                      >
+                        Leave
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-700 uppercase">Asset Management</span>
-                      <Package className="h-4 w-4 text-[#c65a28]" />
+                  {filteredRequests.length === 0 ? (
+                    <div className="rounded-xl border border-dashed border-slate-200 py-12 text-center text-xs text-slate-500">
+                      No team requests or requisitions currently pending review.
                     </div>
-                    <p className="text-sm font-bold text-slate-900">Inventory & Equipment</p>
-                    <p className="text-xs text-slate-500">Track laptops, legal kits, printers, and field gear allocation.</p>
-                    <button
-                      onClick={() => { setFormType("Asset"); setIsApplyModalOpen(true); }}
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#c65a28] px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-[#a8491d] cursor-pointer"
-                    >
-                      <span>+ Request Asset Allocation</span>
-                    </button>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-700 uppercase">Leave & Attendance</span>
-                      <UserCheck className="h-4 w-4 text-[#1b365d]" />
+                  ) : (
+                    <div className="space-y-3">
+                      {filteredRequests.map((req) => (
+                        <div
+                          key={req.id}
+                          className="rounded-xl border border-slate-100 bg-[#f8fafc] p-4 transition hover:border-[#1b365d]/40 hover:bg-white hover:shadow-2xs"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-[11px] font-bold text-[#1b365d]">{req.id}</span>
+                                <span className="rounded-md bg-slate-200 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-700">
+                                  {req.requestType}
+                                </span>
+                                <span className="text-[11px] font-semibold text-slate-600">
+                                  Requested By: <strong className="text-slate-900">{req.requesterName}</strong> ({req.requesterEmail})
+                                </span>
+                              </div>
+                              <h4 className="mt-1 text-xs font-bold text-slate-900">{req.description}</h4>
+                              {req.attachmentUrl && (
+                                <div className="mt-2">
+                                  <a
+                                    href={req.attachmentUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1b365d] hover:underline"
+                                  >
+                                    <Paperclip className="h-3 w-3 text-[#c65a28]" />
+                                    <span>View Attached Document / Quotation</span>
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                            <div className="text-right shrink-0">
+                              {req.amount ? (
+                                <span className="text-sm font-bold text-[#1b365d]">PKR {Number(req.amount).toLocaleString("en-PK")}</span>
+                              ) : (
+                                <span className="text-xs font-bold text-[#1b365d]">{req.days || 1} Unit(s) / Day(s)</span>
+                              )}
+                              <div className="mt-1 flex items-center justify-end gap-2">
+                                <span className="rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[10px] font-semibold text-amber-700">
+                                  {req.status}
+                                </span>
+                                <button
+                                  onClick={() => {
+                                    setRequests(requests.map(r => r.id === req.id ? { ...r, status: "Approved & Processed by Admin" } : r));
+                                  }}
+                                  className="rounded-lg bg-emerald-600 hover:bg-emerald-700 px-2 py-1 text-[10px] font-bold text-white cursor-pointer"
+                                >
+                                  Approve
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <p className="text-sm font-bold text-slate-900">Tier 1 HR Approvals</p>
-                    <p className="text-xs text-slate-500">Audit staff timesheets and grant initial leave clearances.</p>
-                    <Link
-                      href="/hr"
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
-                    >
-                      <span>Manage HR Approvals</span>
-                    </Link>
-                  </div>
+                  )}
                 </div>
               </div>
             ) : mainViewTab === "MY_TASKS" ? (
@@ -1106,15 +1176,13 @@ export default function WorkspacePage() {
         </div>
       </main>
 
-      {/* OPERATIONS / ADMIN REQUEST MODAL */}
+      {/* OPERATIONS / ADMIN REQUEST MODAL WITH "OTHER" CATEGORY */}
       {isApplyModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <h3 className="text-base font-bold text-[#1b365d]">
-                  {isHrAdminUser ? "Administrative Requisition & Request" : "New Operations Request"}
-                </h3>
+                <h3 className="text-base font-bold text-[#1b365d]">Submit Operations / Admin Request</h3>
                 <p className="text-[11px] text-slate-500">
                   Submitting as: <strong className="text-slate-800">{currentUser.name}</strong> ({currentUser.email})
                 </p>
@@ -1178,8 +1246,25 @@ export default function WorkspacePage() {
                       <option value="Casual">Casual Leave (5 Days Quota)</option>
                       <option value="Annual">Annual Leave (5 Days Quota)</option>
                       <option value="Sick">Sick / Medical Leave (2 Days Quota)</option>
+                      <option value="Other">Other (Custom Specified)</option>
                     </select>
                   </div>
+
+                  {formLeaveCategory === "Other" && (
+                    <div className="animate-in fade-in">
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-[#c65a28] mb-1">
+                        Specify Custom Leave Category
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Enter leave type (e.g. Sabbatical / Bereavement Leave)"
+                        value={customLeaveCategory}
+                        onChange={(e) => setCustomLeaveCategory(e.target.value)}
+                        className="w-full rounded-xl border border-orange-200 bg-orange-50/40 p-2 text-xs font-semibold text-[#1b365d] focus:border-[#c65a28] focus:bg-white focus:outline-hidden"
+                      />
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -1266,8 +1351,25 @@ export default function WorkspacePage() {
                       <option value="Printer & Scanner Equipment">Printer & Scanner Equipment</option>
                       <option value="Field Furniture & Camp Gear">Field Furniture & Camp Gear</option>
                       <option value="Mobile / Communication Device">Mobile / Communication Device</option>
+                      <option value="Other">Other (Custom Specified)</option>
                     </select>
                   </div>
+
+                  {formExpenseCategory === "Other" && (
+                    <div className="animate-in fade-in">
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-[#c65a28] mb-1">
+                        Specify Custom Asset
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Enter asset name (e.g. Projector / UPS Backup Unit)"
+                        value={customExpenseCategory}
+                        onChange={(e) => setCustomExpenseCategory(e.target.value)}
+                        className="w-full rounded-xl border border-orange-200 bg-orange-50/40 p-2 text-xs font-semibold text-[#1b365d] focus:border-[#c65a28] focus:bg-white focus:outline-hidden"
+                      />
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -1282,8 +1384,25 @@ export default function WorkspacePage() {
                       <option value="Court Filing & Legal Fees">Court Filing & Legal Defense Costs</option>
                       <option value="Office Supplies & Utilities">Office Supplies & Logistics</option>
                       <option value="Community Awareness / Camp">Community Legal Awareness Camp</option>
+                      <option value="Other">Other (Custom Specified)</option>
                     </select>
                   </div>
+
+                  {formExpenseCategory === "Other" && (
+                    <div className="animate-in fade-in">
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-[#c65a28] mb-1">
+                        Specify Custom Expense Category
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Enter expense type (e.g. Emergency Relief / Venue Rental)"
+                        value={customExpenseCategory}
+                        onChange={(e) => setCustomExpenseCategory(e.target.value)}
+                        className="w-full rounded-xl border border-orange-200 bg-orange-50/40 p-2 text-xs font-semibold text-[#1b365d] focus:border-[#c65a28] focus:bg-white focus:outline-hidden"
+                      />
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Amount Requested (PKR)</label>
@@ -1316,7 +1435,7 @@ export default function WorkspacePage() {
               {submitSuccess ? (
                 <div className="flex items-center justify-center gap-2 rounded-xl bg-emerald-50 p-3 text-xs font-bold text-emerald-700 border border-emerald-200">
                   <CheckCircle2 className="h-4 w-4" />
-                  <span>Submitted Successfully & Logged in Admin Register!</span>
+                  <span>Submitted Successfully & Logged in System Register!</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-3 pt-2">
