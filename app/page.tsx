@@ -31,6 +31,7 @@ import {
   UserCheck,
   Users,
   X,
+  Banknote,
 } from "lucide-react";
 
 interface RequestItem {
@@ -641,6 +642,14 @@ export default function WorkspacePage() {
                 >
                   <CreditCard className="h-4 w-4 text-emerald-600" />
                   <span>Finance & Grants Desk</span>
+                </Link>
+
+                <Link
+                  href="/payroll"
+                  className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
+                >
+                  <Banknote className="h-4 w-4 text-[#e59a24]" />
+                  <span>Payroll & Compensation</span>
                 </Link>
 
                 <Link
