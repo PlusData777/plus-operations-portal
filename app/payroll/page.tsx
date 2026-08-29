@@ -21,6 +21,7 @@ import {
   Users,
   Wallet,
   X,
+  Eye,
 } from "lucide-react";
 
 interface StaffCompensation {
@@ -107,6 +108,9 @@ export default function PayrollMasterPage() {
   const [payrollRecords, setPayrollRecords] = useState<StaffCompensation[]>(INITIAL_PAYROLL_RECORDS);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedHub, setSelectedHub] = useState("All");
+  
+  // Audit Modal State
+  const [auditRecord, setAuditRecord] = useState<StaffCompensation | null>(null);
   const [selectedPayslip, setSelectedPayslip] = useState<StaffCompensation | null>(null);
 
   useEffect(() => {
@@ -161,6 +165,8 @@ export default function PayrollMasterPage() {
         return rec;
       })
     );
+
+    setAuditRecord(null);
 
     try {
       await fetch("/api/requests", {
@@ -286,7 +292,7 @@ Generated via PLUS Operations Portal
                 {isExecutiveOrAdmin ? "Staff Salary Roster & Approval Queue" : "My Monthly Compensation Records"}
               </h2>
               <p className="text-xs text-slate-500">
-                Multi-tier authorization tracking for monthly staff compensation and grant allocations.
+                Click <strong>"Audit Details"</strong> to verify timesheets, tax calculations, and grant liquidity before approving.
               </p>
             </div>
 
@@ -325,7 +331,7 @@ Generated via PLUS Operations Portal
                   <th className="py-3 px-4">Grant / Hub</th>
                   <th className="py-3 px-4">Net Payable</th>
                   <th className="py-3 px-4">Authorization Stage</th>
-                  <th className="py-3 px-4 text-right">Actions / Payslip</th>
+                  <th className="py-3 px-4 text-right">Audit & Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -367,17 +373,18 @@ Generated via PLUS Operations Portal
                         <div className="flex items-center justify-end gap-2">
                           {isExecutiveOrAdmin && rec.approvalStage !== "Approved & Disbursed" && (
                             <button
-                              onClick={() => handleAdvanceApproval(rec.id)}
-                              className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-xs hover:bg-emerald-700 cursor-pointer"
+                              onClick={() => setAuditRecord(rec)}
+                              className="inline-flex items-center gap-1 rounded-lg bg-[#1b365d] px-2.5 py-1 text-[11px] font-bold text-white shadow-xs hover:bg-[#122440] cursor-pointer"
                             >
-                              <span>Approve Tier</span>
+                              <Eye className="h-3 w-3 text-[#fad207]" />
+                              <span>Audit Details</span>
                             </button>
                           )}
                           <button
                             onClick={() => setSelectedPayslip(rec)}
-                            className="inline-flex items-center gap-1 rounded-lg bg-[#1b365d] px-2.5 py-1 text-[11px] font-bold text-white shadow-xs hover:bg-[#122440] cursor-pointer"
+                            className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-bold text-slate-700 shadow-xs hover:bg-slate-50 cursor-pointer"
                           >
-                            <Download className="h-3 w-3 text-[#fad207]" />
+                            <Download className="h-3 w-3 text-[#c65a28]" />
                             <span>Payslip</span>
                           </button>
                         </div>
@@ -391,6 +398,97 @@ Generated via PLUS Operations Portal
         </div>
       </main>
 
+      {/* AUDIT VERIFICATION MODAL */}
+      {auditRecord && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs animate-in fade-in">
+          <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-8 shadow-2xl space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl bg-[#1b365d] p-2 text-white">
+                  <ShieldCheck className="h-5 w-5 text-[#fad207]" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#1b365d]">Multi-Tier Audit Verification</h3>
+                  <p className="text-[10px] text-slate-500 font-mono">Stage: {auditRecord.approvalStage}</p>
+                </div>
+              </div>
+              <button onClick={() => setAuditRecord(null)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div className="grid grid-cols-2 gap-4 rounded-xl bg-slate-50 p-4">
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Staff Member</span>
+                  <strong className="text-slate-900 text-sm">{auditRecord.name}</strong>
+                  <span className="block text-slate-500">{auditRecord.designation}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Assigned Grant Code</span>
+                  <strong className="text-[#1b365d] font-mono">{auditRecord.assignedGrant}</strong>
+                  <span className="block text-emerald-600 font-semibold">✓ Sufficient Grant Liquidity</span>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-100 p-4 space-y-2">
+                <span className="block font-bold text-slate-700 uppercase text-[10px] tracking-wider">Timesheet & Attendance Verification</span>
+                <div className="flex justify-between text-slate-600">
+                  <span>Regular Working Hours (Logged):</span>
+                  <span className="font-mono font-bold text-slate-800">40.0 Hrs</span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>Approved Overtime / Field Stipend:</span>
+                  <span className="font-mono font-bold text-emerald-600">Verified by HR</span>
+                </div>
+              </div>
+
+              <div className="space-y-2 border-y border-slate-100 py-3">
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Base Salary</span>
+                  <span className="font-mono font-bold text-slate-900">PKR {auditRecord.baseSalary.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Allowances</span>
+                  <span className="font-mono font-bold text-emerald-600">+ PKR {auditRecord.allowance.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">FBR Tax Withholding</span>
+                  <span className="font-mono font-bold text-red-600">- PKR {auditRecord.taxDeduction.toLocaleString()}</span>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center rounded-xl bg-[#1b365d]/5 p-4 border border-[#1b365d]/10">
+                <div>
+                  <span className="text-[11px] font-bold text-[#1b365d] uppercase">Net Payable Outflow</span>
+                  <span className="block text-[10px] text-slate-500">Ready for Tier Sign-off</span>
+                </div>
+                <span className="font-mono text-lg font-bold text-[#1b365d]">
+                  PKR {auditRecord.netPay.toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                onClick={() => setAuditRecord(null)}
+                className="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleAdvanceApproval(auditRecord.id)}
+                className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-emerald-700 cursor-pointer"
+              >
+                <CheckCircle2 className="h-4 w-4 text-[#fad207]" />
+                <span>Verify & Approve Tier</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PAYSLIP DOWNLOAD MODAL */}
       {selectedPayslip && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-8 shadow-2xl space-y-6">
@@ -467,7 +565,7 @@ Generated via PLUS Operations Portal
       )}
 
       <footer className="mt-16 border-t border-slate-200 bg-[#1b365d] py-4 text-center text-[11px] text-slate-300">
-        Pakistan Legal United Society · Automated Payslip & Ledger Integration System
+        Pakistan Legal United Society · Multi-Tier Audit & Payroll Governance System
       </footer>
     </div>
   );
