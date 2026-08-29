@@ -8,15 +8,14 @@
     "start": "next start",
     "lint": "next lint"
   },
-  "dependencies": {
-    "@next/eslint-plugin-next": "^15.1.0",
+ "dependencies": {
     "clsx": "^2.1.0",
-    "lucide-react": "^0.468.0",
-    "next": "^15.1.0",
+    "lucide-react": "^0.300.0",
+    "next": "^14.2.0",
     "next-auth": "^4.24.11",
-    "react": "19.0.0",
-    "react-dom": "19.0.0",
-    "recharts": "^3.10.1",
-    "zod": "^3.24.1"
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "recharts": "^2.12.0",
+    "zod": "^3.23.0"
   }
 }
