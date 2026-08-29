@@ -109,7 +109,6 @@ export default function PayrollMasterPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedHub, setSelectedHub] = useState("All");
   
-  // Audit Modal State
   const [auditRecord, setAuditRecord] = useState<StaffCompensation | null>(null);
   const [selectedPayslip, setSelectedPayslip] = useState<StaffCompensation | null>(null);
 
@@ -439,7 +438,9 @@ Generated via PLUS Operations Portal
                 </div>
                 <div className="flex justify-between text-slate-600">
                   <span>Approved Overtime / Field Stipend:</span>
-                  <span className="font-mono font-bold text-emerald-600">Verified by HR</span>
+                  <span className={`font-mono font-bold ${auditRecord.approvalStage === "Pending HR Review" ? "text-amber-600" : "text-emerald-600"}`}>
+                    {auditRecord.approvalStage === "Pending HR Review" ? "Pending HR Verification" : "Verified by HR"}
+                  </span>
                 </div>
               </div>
 
