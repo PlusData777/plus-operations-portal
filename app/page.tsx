@@ -38,7 +38,6 @@ import {
   Wallet,
   Database,
   BookOpen,
-  FolderTree,
   FileCheck,
 } from "lucide-react";
 
@@ -184,6 +183,7 @@ export default function WorkspacePage() {
   const [policies] = useState<PolicyDocument[]>(INITIAL_POLICIES);
   const [searchQuery, setSearchQuery] = useState("");
   const [mainViewTab, setMainViewTab] = useState<"MY_TASKS" | "REQUESTs" | "POLICIES">("MY_TASKS");
+  const [activeRequestFilter, setActiveRequestFilter] = useState<"ALL" | "LEAVE" | "EXPENSE" | "PURCHASE" | "ASSET">("ALL");
   const [activePolicyCategory, setActivePolicyCategory] = useState<string>("ALL");
 
   // Request Form Modal State
@@ -627,7 +627,7 @@ export default function WorkspacePage() {
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#c65a28] py-3.5 px-4 text-xs font-bold text-white shadow-md transition hover:bg-[#a8491d] cursor-pointer"
             >
               <Plus className="h-4 w-4" />
-              <span>+ Submit Request / Requisition</span>
+              <span>Submit Request / Requisition</span>
             </button>
 
             <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-xs">
@@ -790,7 +790,7 @@ export default function WorkspacePage() {
               </div>
             </div>
 
-            {/* KPI CARDS (Hidden in Policies View for clean reading) */}
+            {/* KPI CARDS (Hidden in Policies View) */}
             {mainViewTab !== "POLICIES" && (
               isSystemAdmin || isExecutiveUser ? (
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -977,7 +977,7 @@ export default function WorkspacePage() {
                   </div>
                 </div>
 
-                {/* POLICY CATEGORY TABS / FOLDERS */}
+                {/* POLICY CATEGORY FOLDERS / TABS */}
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <button
                     onClick={() => setActivePolicyCategory("ALL")}
@@ -1004,7 +1004,7 @@ export default function WorkspacePage() {
                   })}
                 </div>
 
-                {/* POLICY DOCUMENTS GRID / LIST */}
+                {/* POLICY DOCUMENTS GRID */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {filteredPolicies.map((pol) => (
                     <div
