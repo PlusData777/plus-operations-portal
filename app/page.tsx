@@ -15,7 +15,8 @@ import {
   X,
   Briefcase,
   Calendar,
-  MapPin
+  MapPin,
+  FolderKanban
 } from "lucide-react";
 
 interface ProfileItem {
@@ -63,6 +64,19 @@ interface TaskItem {
   assignedByName: string;
 }
 
+interface ProgramItem {
+  id: string;
+  projectCode: string;
+  projectTitle: string;
+  donorOrPartner: string;
+  targetHub: string;
+  startDate: string;
+  endDate: string;
+  allocatedBudget: number;
+  status: string;
+  projectLeadEmail: string;
+}
+
 export default function OperationsPortal() {
   const [profiles, setProfiles] = useState<ProfileItem[]>([]);
   const [sessionUser, setSessionUser] = useState<ProfileItem | null>(null);
@@ -74,6 +88,7 @@ export default function OperationsPortal() {
 
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [tasks, setTasks] = useState<TaskItem[]>([]);
+  const [programs, setPrograms] = useState<ProgramItem[]>([]);
   const [activeTab, setActiveTab] = useState("tasks");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -164,6 +179,27 @@ export default function OperationsPortal() {
             }))
           );
         }
+
+        const progRes = await fetch(`${url}/rest/v1/programs?select=*`, {
+          headers: { apikey: key, Authorization: `Bearer ${key}` },
+        });
+        if (progRes.ok) {
+          const progData = await progRes.json();
+          setPrograms(
+            progData.map((p: any) => ({
+              id: p.id,
+              projectCode: p.project_code,
+              projectTitle: p.project_title,
+              donorOrPartner: p.donor_or_partner,
+              targetHub: p.target_hub,
+              startDate: p.start_date,
+              endDate: p.end_date,
+              allocatedBudget: p.allocated_budget,
+              status: p.status,
+              projectLeadEmail: p.project_lead_email,
+            }))
+          );
+        }
       } catch (err) {
         console.error("Fetch failed:", err);
       }
@@ -194,7 +230,7 @@ export default function OperationsPortal() {
 
     let approver = sessionUser.manager_email || "dataplus.org@gmail.com";
     if ((reqType === "Expense" || reqType === "Purchase") && amountVal >= 50000) {
-      approver = "dataplus.org@gmail.com"; // Escalation threshold routing
+      approver = "dataplus.org@gmail.com";
     }
 
     const newReq: RequestItem = {
@@ -430,6 +466,9 @@ export default function OperationsPortal() {
             <button onClick={() => setActiveTab("tasks")} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 12px", background: activeTab === "tasks" ? "#0f172a" : "transparent", color: activeTab === "tasks" ? "#ffffff" : "#334155", border: "none", borderRadius: "8px", cursor: "pointer", textAlign: "left", fontWeight: "500", fontSize: "13px" }}>
               <LayoutDashboard size={16} /> My Active Work & Tasks
             </button>
+            <button onClick={() => setActiveTab("programs")} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 12px", background: activeTab === "programs" ? "#0f172a" : "transparent", color: activeTab === "programs" ? "#ffffff" : "#334155", border: "none", borderRadius: "8px", cursor: "pointer", textAlign: "left", fontWeight: "500", fontSize: "13px" }}>
+              <FolderKanban size={16} /> Programs & Grants Desk
+            </button>
             <button onClick={() => setActiveTab("approvals")} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", background: activeTab === "approvals" ? "#0f172a" : "transparent", color: activeTab === "approvals" ? "#ffffff" : "#334155", border: "none", borderRadius: "8px", cursor: "pointer", textAlign: "left", fontWeight: "500", fontSize: "13px" }}>
               <span style={{ display: "flex", alignItems: "center", gap: "12px" }}><CheckCircle2 size={16} /> Approvals Desk</span>
               {pendingApprovalsForMe.length > 0 && <span style={{ background: "#ea580c", color: "#fff", padding: "2px 6px", borderRadius: "10px", fontSize: "10px", fontWeight: "700" }}>{pendingApprovalsForMe.length}</span>}
@@ -490,11 +529,11 @@ export default function OperationsPortal() {
 
             <div style={{ background: "#ffffff", padding: "20px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                <span style={{ fontSize: "12px", fontWeight: "600", color: "#64748b" }}>STAFF ROSTER</span>
-                <Users size={16} color="#0f172a" />
+                <span style={{ fontSize: "12px", fontWeight: "600", color: "#64748b" }}>ACTIVE PROGRAMS</span>
+                <FolderKanban size={16} color="#0f172a" />
               </div>
-              <h3 style={{ fontSize: "28px", margin: 0, color: "#0f172a", fontWeight: "700" }}>{profiles.length}</h3>
-              <span style={{ fontSize: "11px", color: "#64748b" }}>Registered personnel</span>
+              <h3 style={{ fontSize: "28px", margin: 0, color: "#0f172a", fontWeight: "700" }}>{programs.length}</h3>
+              <span style={{ fontSize: "11px", color: "#64748b" }}>Institutional grants</span>
             </div>
 
             <div style={{ background: "#ffffff", padding: "20px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
@@ -538,6 +577,36 @@ export default function OperationsPortal() {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === "programs" && (
+            <div style={{ background: "#ffffff", padding: "24px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+              <h3 style={{ margin: "0 0 16px 0", fontSize: "16px", color: "#0f172a" }}>Programs & Grants Desk</h3>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+                <thead>
+                  <tr style={{ background: "#f8fafc", textAlign: "left", borderBottom: "1px solid #e2e8f0", color: "#475569" }}>
+                    <th style={{ padding: "10px" }}>Code</th>
+                    <th style={{ padding: "10px" }}>Project Title</th>
+                    <th style={{ padding: "10px" }}>Donor / Partner</th>
+                    <th style={{ padding: "10px" }}>Target Hub</th>
+                    <th style={{ padding: "10px" }}>Budget (PKR)</th>
+                    <th style={{ padding: "10px" }}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {programs.map((p) => (
+                    <tr key={p.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                      <td style={{ padding: "10px", fontWeight: "600", color: "#0f172a" }}>{p.projectCode}</td>
+                      <td style={{ padding: "10px", color: "#1e293b", fontWeight: "600" }}>{p.projectTitle}</td>
+                      <td style={{ padding: "10px", color: "#475569" }}>{p.donorOrPartner}</td>
+                      <td style={{ padding: "10px", color: "#475569" }}>{p.targetHub}</td>
+                      <td style={{ padding: "10px", fontWeight: "600", color: "#ea580c" }}>PKR {p.allocatedBudget.toLocaleString()}</td>
+                      <td style={{ padding: "10px" }}><span style={{ padding: "2px 6px", background: "#dcfce7", color: "#166534", borderRadius: "4px", fontSize: "11px", fontWeight: "600" }}>{p.status}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
