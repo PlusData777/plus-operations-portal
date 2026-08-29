@@ -19,7 +19,14 @@ import {
   LogOut, 
   Send, 
   ShieldCheck, 
-  X 
+  X,
+  Briefcase,
+  Calendar,
+  MapPin,
+  FileCheck2,
+  Filter,
+  Layers,
+  RefreshCw
 } from "lucide-react";
 
 interface RequestItem {
@@ -58,14 +65,15 @@ interface TaskItem {
 }
 
 export default function OperationsPortal() {
-  const [sessionUser, setSessionUser] = useState<{ email: string; name: string; role: string } | null>(null);
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPin, setLoginPin] = useState("");
-  const [loginError, setLoginError] = useState("");
+  const [sessionUser, setSessionUser] = useState<{ email: string; name: string; role: string } | null>({
+    email: "kamanger110@gmail.com",
+    name: "Kamanger",
+    role: "Program Manager"
+  });
 
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [tasks, setTasks] = useState<TaskItem[]>([]);
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("tasks");
 
   // Modal states
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -85,8 +93,8 @@ export default function OperationsPortal() {
   // New Task Form State
   const [taskTitle, setTaskTitle] = useState("");
   const [taskCategory, setTaskCategory] = useState("Community Legal Camp");
-  const [taskDueDate, setTaskDueDate] = useState("");
-  const [taskVenue, setTaskVenue] = useState("");
+  const [taskDueDate, setTaskDueDate] = useState("2026-08-29");
+  const [taskVenue, setTaskVenue] = useState("Sessions Court Sukkur");
   const [taskHub, setTaskHub] = useState("Sukkur Regional");
   const [taskUrgency, setTaskUrgency] = useState("Standard Priority");
   const [assigneeEmail, setAssigneeEmail] = useState("");
@@ -160,20 +168,6 @@ export default function OperationsPortal() {
     fetchSupabaseData();
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!loginEmail) {
-      setLoginError("Please enter your email.");
-      return;
-    }
-    setSessionUser({
-      email: loginEmail,
-      name: loginEmail.split("@")[0].toUpperCase(),
-      role: loginPin === "9901" ? "Admin" : "Staff",
-    });
-    setLoginError("");
-  };
-
   const handleCreateRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!sessionUser) return;
@@ -245,7 +239,7 @@ export default function OperationsPortal() {
       dueDateOrHearing: taskDueDate,
       venue: taskVenue,
       hub: taskHub,
-      status: "Pending",
+      status: "Pending Action",
       urgency: taskUrgency,
       assigneeEmail: assigneeEmail || "subordinate@datamail.com",
       assigneeName: assigneeEmail ? assigneeEmail.split("@")[0] : "Subordinate",
@@ -290,220 +284,199 @@ export default function OperationsPortal() {
     }
   };
 
-  if (!sessionUser) {
-    return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#0f172a", fontFamily: "sans-serif" }}>
-        <div style={{ background: "#ffffff", padding: "40px", borderRadius: "16px", boxShadow: "0 10px 25px rgba(0,0,0,0.2)", width: "100%", maxWidth: "420px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
-            <div style={{ background: "#0f172a", padding: "10px", borderRadius: "10px", color: "#fff" }}>
-              <Scale size={24} />
-            </div>
-            <div>
-              <h2 style={{ margin: 0, fontSize: "18px", color: "#0f172a" }}>Pakistan Legal United Society</h2>
-              <span style={{ fontSize: "12px", color: "#64748b" }}>Operations & Governance Hub</span>
-            </div>
-          </div>
-
-          {loginError && <div style={{ color: "#ef4444", fontSize: "13px", marginBottom: "12px", padding: "8px", background: "#fef2f2", borderRadius: "6px" }}>{loginError}</div>}
-
-          <form onSubmit={handleLogin}>
-            <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px", color: "#334155" }}>Staff Email</label>
-            <input
-              type="email"
-              value={loginEmail}
-              onChange={(e) => setLoginEmail(e.target.value)}
-              placeholder="e.g. user@datamail.com"
-              style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", marginBottom: "16px", boxSizing: "border-box", fontSize: "14px" }}
-            />
-
-            <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px", color: "#334155" }}>Security PIN (Admin: 9901)</label>
-            <input
-              type="password"
-              value={loginPin}
-              onChange={(e) => setLoginPin(e.target.value)}
-              placeholder="Enter 4-digit PIN"
-              style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", marginBottom: "24px", boxSizing: "border-box", fontSize: "14px" }}
-            />
-
-            <button type="submit" style={{ width: "100%", padding: "12px", backgroundColor: "#0f172a", color: "#ffffff", fontWeight: "600", border: "none", borderRadius: "8px", cursor: "pointer", fontSize: "14px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-              <ShieldCheck size={18} /> Verify & Access Workspace
-            </button>
-          </form>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#f8fafc", fontFamily: "sans-serif", display: "flex" }}>
-      {/* Sidebar Navigation */}
-      <aside style={{ width: "260px", background: "#0f172a", color: "#ffffff", display: "flex", flexDirection: "column", padding: "24px 16px", boxSizing: "border-box" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "32px", paddingLeft: "8px" }}>
-          <Scale size={24} color="#38bdf8" />
+    <div style={{ minHeight: "100vh", backgroundColor: "#f8fafc", fontFamily: "sans-serif", display: "flex", flexDirection: "column" }}>
+      {/* Top Header Bar */}
+      <header style={{ background: "#ffffff", borderBottom: "1px solid #e2e8f0", padding: "16px 32px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{ background: "#0f172a", padding: "8px", borderRadius: "8px", color: "#fff" }}>
+            <Scale size={20} />
+          </div>
           <div>
-            <h1 style={{ fontSize: "15px", margin: 0, fontWeight: "700" }}>PLUS OPERATIONS</h1>
-            <span style={{ fontSize: "11px", color: "#94a3b8" }}>Governance & Legal Aid</span>
-          </div>
-        </div>
-
-        <nav style={{ display: "flex", flexDirection: "column", gap: "6px", flex: 1 }}>
-          <button onClick={() => setActiveTab("dashboard")} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", background: activeTab === "dashboard" ? "#1e293b" : "transparent", color: activeTab === "dashboard" ? "#38bdf8" : "#cbd5e1", border: "none", borderRadius: "8px", cursor: "pointer", textAlign: "left", fontWeight: "500", fontSize: "14px" }}>
-            <LayoutDashboard size={18} /> Dashboard
-          </button>
-          <button onClick={() => setActiveTab("tasks")} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", background: activeTab === "tasks" ? "#1e293b" : "transparent", color: activeTab === "tasks" ? "#38bdf8" : "#cbd5e1", border: "none", borderRadius: "8px", cursor: "pointer", textAlign: "left", fontWeight: "500", fontSize: "14px" }}>
-            <FileText size={18} /> Tasks & Deliverables
-          </button>
-          <button onClick={() => setActiveTab("finance")} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", background: activeTab === "finance" ? "#1e293b" : "transparent", color: activeTab === "finance" ? "#38bdf8" : "#cbd5e1", border: "none", borderRadius: "8px", cursor: "pointer", textAlign: "left", fontWeight: "500", fontSize: "14px" }}>
-            <DollarSign size={18} /> Financial Requisitions
-          </button>
-          <button onClick={() => setActiveTab("partners")} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", background: activeTab === "partners" ? "#1e293b" : "transparent", color: activeTab === "partners" ? "#38bdf8" : "#cbd5e1", border: "none", borderRadius: "8px", cursor: "pointer", textAlign: "left", fontWeight: "500", fontSize: "14px" }}>
-            <Users size={18} /> Regional Partners
-          </button>
-        </nav>
-
-        <div style={{ borderTop: "1px solid #1e293b", paddingTop: "16px", marginTop: "auto" }}>
-          <div style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "8px", paddingLeft: "8px" }}>
-            User: <strong style={{ color: "#fff" }}>{sessionUser.name}</strong> ({sessionUser.role})
-          </div>
-          <button onClick={() => setSessionUser(null)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px", background: "#1e293b", color: "#f87171", border: "none", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "600" }}>
-            <LogOut size={16} /> Sign Out
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content Pane */}
-      <main style={{ flex: 1, display: "flex", flexDirection: "column", height: "100vh", overflowY: "auto" }}>
-        <header style={{ background: "#ffffff", borderBottom: "1px solid #e2e8f0", padding: "20px 32px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <h2 style={{ margin: 0, fontSize: "20px", color: "#0f172a", textTransform: "capitalize" }}>{activeTab} Overview</h2>
-            <span style={{ fontSize: "13px", color: "#64748b" }}>Pakistan Legal United Society - Operational Hub</span>
-          </div>
-          <div style={{ display: "flex", gap: "12px" }}>
-            <button onClick={() => setShowRequestModal(true)} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "10px 16px", background: "#ea580c", color: "#ffffff", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "600", fontSize: "13px" }}>
-              <Plus size={16} /> Submit Request
-            </button>
-            <button onClick={() => setShowTaskModal(true)} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "10px 16px", background: "#0284c7", color: "#ffffff", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "600", fontSize: "13px" }}>
-              <Plus size={16} /> Assign Task
-            </button>
-          </div>
-        </header>
-
-        <div style={{ padding: "32px", boxSizing: "border-box" }}>
-          {activeTab === "dashboard" && (
-            <div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px", marginBottom: "32px" }}>
-                <div style={{ background: "#ffffff", padding: "20px", borderRadius: "12px", border: "1px solid #e2e8f0", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
-                  <span style={{ fontSize: "13px", color: "#64748b", fontWeight: "600" }}>Total Requests Logged</span>
-                  <h3 style={{ fontSize: "28px", margin: "8px 0 0 0", color: "#0f172a" }}>{requests.length}</h3>
-                </div>
-                <div style={{ background: "#ffffff", padding: "20px", borderRadius: "12px", border: "1px solid #e2e8f0", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
-                  <span style={{ fontSize: "13px", color: "#64748b", fontWeight: "600" }}>Active Tasks & Camps</span>
-                  <h3 style={{ fontSize: "28px", margin: "8px 0 0 0", color: "#0f172a" }}>{tasks.length}</h3>
-                </div>
-                <div style={{ background: "#ffffff", padding: "20px", borderRadius: "12px", border: "1px solid #e2e8f0", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
-                  <span style={{ fontSize: "13px", color: "#64748b", fontWeight: "600" }}>Cloud Sync Status</span>
-                  <h3 style={{ fontSize: "18px", margin: "12px 0 0 0", color: "#16a34a", display: "flex", alignItems: "center", gap: "6px" }}>
-                    <CheckCircle2 size={20} /> Connected (Supabase)
-                  </h3>
-                </div>
-              </div>
-
-              <div style={{ background: "#ffffff", padding: "24px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
-                <h3 style={{ marginTop: 0, color: "#0f172a", marginBottom: "16px" }}>Recent Requisitions & Requests</h3>
-                {requests.length === 0 ? (
-                  <p style={{ color: "#64748b", fontSize: "14px" }}>No requests logged yet. Use "+ Submit Request" to begin.</p>
-                ) : (
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
-                    <thead>
-                      <tr style={{ background: "#f8fafc", textAlign: "left", borderBottom: "1px solid #e2e8f0", color: "#475569" }}>
-                        <th style={{ padding: "12px" }}>ID</th>
-                        <th style={{ padding: "12px" }}>Requester</th>
-                        <th style={{ padding: "12px" }}>Type</th>
-                        <th style={{ padding: "12px" }}>Description / Justification</th>
-                        <th style={{ padding: "12px" }}>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {requests.map((r) => (
-                        <tr key={r.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                          <td style={{ padding: "12px", fontWeight: "600", color: "#0f172a" }}>{r.id}</td>
-                          <td style={{ padding: "12px", color: "#334155" }}>{r.requesterName}</td>
-                          <td style={{ padding: "12px", color: "#334155" }}>{r.requestType}</td>
-                          <td style={{ padding: "12px", color: "#64748b" }}>{r.description}</td>
-                          <td style={{ padding: "12px" }}>
-                            <span style={{ padding: "4px 8px", background: "#fef3c7", color: "#b45309", borderRadius: "4px", fontSize: "12px", fontWeight: "600" }}>
-                              {r.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <h1 style={{ fontSize: "16px", margin: 0, color: "#0f172a", fontWeight: "700" }}>Pakistan Legal United Society</h1>
+              <span style={{ fontSize: "10px", backgroundColor: "#f1f5f9", padding: "2px 6px", borderRadius: "4px", fontWeight: "600", color: "#475569" }}>PLUS OPS</span>
             </div>
-          )}
+            <span style={{ fontSize: "12px", color: "#64748b" }}>Operations, Programs & Governance Hub</span>
+          </div>
+        </div>
 
-          {activeTab === "tasks" && (
-            <div style={{ background: "#ffffff", padding: "24px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
-              <h3 style={{ marginTop: 0, color: "#0f172a", marginBottom: "16px" }}>Assigned Deliverables & Legal Camps</h3>
-              {tasks.length === 0 ? (
-                <p style={{ color: "#64748b", fontSize: "14px" }}>No tasks assigned yet. Use "+ Assign Task" to dispatch deliverables.</p>
-              ) : (
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
-                  <thead>
-                    <tr style={{ background: "#f8fafc", textAlign: "left", borderBottom: "1px solid #e2e8f0", color: "#475569" }}>
-                      <th style={{ padding: "12px" }}>ID</th>
-                      <th style={{ padding: "12px" }}>Title</th>
-                      <th style={{ padding: "12px" }}>Category</th>
-                      <th style={{ padding: "12px" }}>Assignee</th>
-                      <th style={{ padding: "12px" }}>Hub</th>
-                      <th style={{ padding: "12px" }}>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: "13px", fontWeight: "600", color: "#0f172a" }}>{sessionUser?.name}</div>
+            <div style={{ fontSize: "11px", color: "#64748b" }}>{sessionUser?.email}</div>
+          </div>
+          <button onClick={() => setSessionUser(null)} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "8px 14px", background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "500", color: "#334155" }}>
+            <LogOut size={14} /> Sign Out
+          </button>
+        </div>
+      </header>
+
+      {/* Main Body Layout with Sidebar */}
+      <div style={{ display: "flex", flex: 1 }}>
+        {/* Left Sidebar Navigation */}
+        <aside style={{ width: "260px", background: "#ffffff", borderRight: "1px solid #e2e8f0", padding: "24px 16px", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
+          <div style={{ marginBottom: "24px" }}>
+            <button onClick={() => setShowRequestModal(true)} style={{ width: "100%", padding: "12px", background: "linear-gradient(135deg, #ea580c 0%, #c2410c 100%)", color: "#ffffff", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "600", fontSize: "13px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", boxShadow: "0 4px 12px rgba(234, 88, 12, 0.2)" }}>
+              <Plus size={16} /> Submit Request / Requisition
+            </button>
+          </div>
+
+          <div style={{ fontSize: "11px", fontWeight: "700", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px", paddingLeft: "10px" }}>
+            Operational Modules
+          </div>
+
+          <nav style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+            <button onClick={() => setActiveTab("tasks")} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 12px", background: activeTab === "tasks" ? "#0f172a" : "transparent", color: activeTab === "tasks" ? "#ffffff" : "#334155", border: "none", borderRadius: "8px", cursor: "pointer", textAlign: "left", fontWeight: "500", fontSize: "13px" }}>
+              <LayoutDashboard size={16} /> My Active Work & Tasks
+            </button>
+            <button onClick={() => setActiveTab("finance")} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 12px", background: activeTab === "finance" ? "#0f172a" : "transparent", color: activeTab === "finance" ? "#ffffff" : "#334155", border: "none", borderRadius: "8px", cursor: "pointer", textAlign: "left", fontWeight: "500", fontSize: "13px" }}>
+              <CreditCard size={16} /> Finance & Grants Desk
+            </button>
+            <button onClick={() => setActiveTab("payroll")} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 12px", background: activeTab === "payroll" ? "#0f172a" : "transparent", color: activeTab === "payroll" ? "#ffffff" : "#334155", border: "none", borderRadius: "8px", cursor: "pointer", textAlign: "left", fontWeight: "500", fontSize: "13px" }}>
+              <DollarSign size={16} /> Payroll & Compensation
+            </button>
+            <button onClick={() => setActiveTab("programs")} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 12px", background: activeTab === "programs" ? "#0f172a" : "transparent", color: activeTab === "programs" ? "#ffffff" : "#334155", border: "none", borderRadius: "8px", cursor: "pointer", textAlign: "left", fontWeight: "500", fontSize: "13px" }}>
+              <HeartHandshake size={16} /> Program Operations
+            </button>
+            <button onClick={() => setActiveTab("cases")} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 12px", background: activeTab === "cases" ? "#0f172a" : "transparent", color: activeTab === "cases" ? "#ffffff" : "#334155", border: "none", borderRadius: "8px", cursor: "pointer", textAlign: "left", fontWeight: "500", fontSize: "13px" }}>
+              <Scale size={16} /> Case Load & Docket
+            </button>
+            <button onClick={() => setActiveTab("hr")} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 12px", background: activeTab === "hr" ? "#0f172a" : "transparent", color: activeTab === "hr" ? "#ffffff" : "#334155", border: "none", borderRadius: "8px", cursor: "pointer", textAlign: "left", fontWeight: "500", fontSize: "13px" }}>
+              <Users size={16} /> HR & Appraisals
+            </button>
+            <button onClick={() => setActiveTab("timesheets")} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 12px", background: activeTab === "timesheets" ? "#0f172a" : "transparent", color: activeTab === "timesheets" ? "#ffffff" : "#334155", border: "none", borderRadius: "8px", cursor: "pointer", textAlign: "left", fontWeight: "500", fontSize: "13px" }}>
+              <Clock size={16} /> Staff Timesheets
+            </button>
+            <button onClick={() => setActiveTab("staff")} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 12px", background: activeTab === "staff" ? "#0f172a" : "transparent", color: activeTab === "staff" ? "#ffffff" : "#334155", border: "none", borderRadius: "8px", cursor: "pointer", textAlign: "left", fontWeight: "500", fontSize: "13px" }}>
+              <Users size={16} /> Staff Directory
+            </button>
+            <button onClick={() => setActiveTab("policies")} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 12px", background: activeTab === "policies" ? "#0f172a" : "transparent", color: activeTab === "policies" ? "#ffffff" : "#334155", border: "none", borderRadius: "8px", cursor: "pointer", textAlign: "left", fontWeight: "500", fontSize: "13px" }}>
+              <FileText size={16} /> Institutional Policies Hub
+            </button>
+          </nav>
+        </aside>
+
+        {/* Workspace Content */}
+        <main style={{ flex: 1, padding: "32px", boxSizing: "border-box", overflowY: "auto", maxHeight: "calc(100vh - 73px)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px" }}>
+            <div>
+              <span style={{ fontSize: "11px", fontWeight: "700", color: "#ea580c", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                Program_Mgr Workspace • Programs & Operations
+              </span>
+              <h2 style={{ fontSize: "24px", margin: "4px 0 2px 0", color: "#0f172a", fontWeight: "800" }}>
+                Welcome back, {sessionUser?.name}.
+              </h2>
+              <p style={{ fontSize: "13px", color: "#64748b", margin: 0 }}>
+                Protected deliverable portfolio with Supabase real-time cloud storage and email dispatch.
+              </p>
+            </div>
+
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button onClick={() => setShowTaskModal(true)} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "10px 16px", background: "#0f172a", color: "#ffffff", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "600", fontSize: "13px" }}>
+                <Plus size={16} /> Assign New Task
+              </button>
+              <button onClick={() => alert("Timesheets sync current cycle: 37.5 hrs logged.")} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "10px 16px", background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "8px", cursor: "pointer", fontWeight: "600", fontSize: "13px", color: "#334155" }}>
+                <Clock size={16} /> Log Work Hours
+              </button>
+            </div>
+          </div>
+
+          {/* Metric KPI Cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginBottom: "32px" }}>
+            <div style={{ background: "#ffffff", padding: "20px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                <span style={{ fontSize: "12px", fontWeight: "600", color: "#64748b" }}>ACTIVE TASKS</span>
+                <Briefcase size={16} color="#0f172a" />
+              </div>
+              <h3 style={{ fontSize: "28px", margin: 0, color: "#0f172a", fontWeight: "700" }}>{tasks.length}</h3>
+              <span style={{ fontSize: "11px", color: "#64748b" }}>Visible to your role</span>
+            </div>
+
+            <div style={{ background: "#ffffff", padding: "20px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                <span style={{ fontSize: "12px", fontWeight: "600", color: "#ea580c" }}>DUE THIS WEEK</span>
+                <Calendar size={16} color="#ea580c" />
+              </div>
+              <h3 style={{ fontSize: "28px", margin: 0, color: "#ea580c", fontWeight: "700" }}>1 Urgent</h3>
+              <span style={{ fontSize: "11px", color: "#64748b" }}>Camps & hearings</span>
+            </div>
+
+            <div style={{ background: "#ffffff", padding: "20px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                <span style={{ fontSize: "12px", fontWeight: "600", color: "#64748b" }}>LOGGED HOURS</span>
+                <Clock size={16} color="#0f172a" />
+              </div>
+              <h3 style={{ fontSize: "28px", margin: 0, color: "#0f172a", fontWeight: "700" }}>37.5 hrs</h3>
+              <span style={{ fontSize: "11px", color: "#64748b" }}>Current cycle</span>
+            </div>
+
+            <div style={{ background: "#ffffff", padding: "20px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                <span style={{ fontSize: "12px", fontWeight: "600", color: "#64748b" }}>MY REQUESTS</span>
+                <FileText size={16} color="#0f172a" />
+              </div>
+              <h3 style={{ fontSize: "28px", margin: 0, color: "#0f172a", fontWeight: "700" }}>{requests.length}</h3>
+              <span style={{ fontSize: "11px", color: "#64748b" }}>Submitted queue</span>
+            </div>
+          </div>
+
+          {/* Tab Content Display */}
+          <div style={{ background: "#ffffff", padding: "24px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <h3 style={{ margin: 0, fontSize: "16px", color: "#0f172a", fontWeight: "700" }}>
+                {activeTab === "tasks" ? `My Deliverables & Assigned Operations (${tasks.length})` : `Module Records: ${activeTab.toUpperCase()}`}
+              </h3>
+              <span style={{ fontSize: "12px", color: "#16a34a", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}>
+                <CheckCircle2 size={16} /> Supabase Synchronized
+              </span>
+            </div>
+
+            {activeTab === "tasks" && (
+              <div>
+                {tasks.length === 0 ? (
+                  <p style={{ color: "#64748b", fontSize: "14px" }}>No tasks assigned yet. Click "+ Assign New Task" to create one.</p>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                     {tasks.map((t) => (
-                      <tr key={t.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                        <td style={{ padding: "12px", fontWeight: "600", color: "#0f172a" }}>{t.id}</td>
-                        <td style={{ padding: "12px", color: "#334155" }}>{t.title}</td>
-                        <td style={{ padding: "12px", color: "#334155" }}>{t.category}</td>
-                        <td style={{ padding: "12px", color: "#64748b" }}>{t.assigneeName}</td>
-                        <td style={{ padding: "12px", color: "#64748b" }}>{t.hub}</td>
-                        <td style={{ padding: "12px" }}>
-                          <span style={{ padding: "4px 8px", background: "#e0f2fe", color: "#0369a1", borderRadius: "4px", fontSize: "12px", fontWeight: "600" }}>
+                      <div key={t.id} style={{ border: "1px solid #e2e8f0", borderRadius: "8px", padding: "16px", background: "#f8fafc" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <strong style={{ color: "#0f172a", fontSize: "14px" }}>{t.id}</strong>
+                            <span style={{ fontSize: "11px", background: "#e2e8f0", padding: "2px 6px", borderRadius: "4px", color: "#334155" }}>{t.category}</span>
+                            <span style={{ fontSize: "11px", background: "#e0f2fe", padding: "2px 6px", borderRadius: "4px", color: "#0369a1" }}>{t.hub}</span>
+                          </div>
+                          <span style={{ fontSize: "11px", fontWeight: "600", background: "#fef3c7", color: "#b45309", padding: "4px 8px", borderRadius: "6px" }}>
                             {t.status}
                           </span>
-                        </td>
-                      </tr>
+                        </div>
+                        <div style={{ fontSize: "14px", fontWeight: "600", color: "#1e293b", marginBottom: "8px" }}>{t.title}</div>
+                        <div style={{ display: "flex", gap: "16px", fontSize: "12px", color: "#64748b" }}>
+                          <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><MapPin size={13} /> {t.venue}</span>
+                          <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><Calendar size={13} /> Target Date: {t.dueDateOrHearing}</span>
+                        </div>
+                      </div>
                     ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          )}
+                  </div>
+                )}
+              </div>
+            )}
 
-          {activeTab === "finance" && (
-            <div style={{ background: "#ffffff", padding: "24px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
-              <h3 style={{ marginTop: 0, color: "#0f172a" }}>Financial & Expense Requisitions</h3>
-              <p style={{ color: "#64748b", fontSize: "14px" }}>Manage procurement quotas, travel advances, and budget allocations synchronized with Supabase.</p>
-            </div>
-          )}
-
-          {activeTab === "partners" && (
-            <div style={{ background: "#ffffff", padding: "24px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
-              <h3 style={{ marginTop: 0, color: "#0f172a" }}>Regional Hubs & Partners Directory</h3>
-              <p style={{ color: "#64748b", fontSize: "14px" }}>Coordinate field plans across Sukkur, Karachi, and Sindh regional networks.</p>
-            </div>
-          )}
-        </div>
-      </main>
+            {activeTab !== "tasks" && (
+              <div>
+                <p style={{ color: "#64748b", fontSize: "14px" }}>Module workspace for <strong>{activeTab}</strong> is active and linked to institutional databases.</p>
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
 
       {/* Submit Request Modal */}
       {showRequestModal && (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
           <div style={{ background: "#ffffff", padding: "32px", borderRadius: "16px", width: "100%", maxWidth: "500px", boxShadow: "0 20px 25px rgba(0,0,0,0.15)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-              <h3 style={{ margin: 0, color: "#0f172a" }}>Submit Operations Requisition</h3>
+              <h3 style={{ margin: 0, color: "#0f172a" }}>Submit Operations / Admin Request</h3>
               <button onClick={() => setShowRequestModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#64748b" }}><X size={20} /></button>
             </div>
 
