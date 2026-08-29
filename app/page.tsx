@@ -212,9 +212,6 @@ useEffect(() => {
     async function fetchSupabaseData() {
       const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-      console.log("Supabase URL loaded:", url ? "YES (" + url.substring(0, 10) + "...)" : "NO - MISSING KEY");
-
       if (!url || !key) return;
 
       try {
@@ -226,7 +223,6 @@ useEffect(() => {
         });
         if (reqRes.ok) {
           const reqData = await reqRes.json();
-          console.log("Supabase requests fetched successfully:", reqData.length);
           if (reqData && reqData.length > 0) {
             setRequests(
               reqData.map((r: any) => ({
@@ -249,11 +245,9 @@ useEffect(() => {
               }))
             );
           }
-        } else {
-          console.error("Supabase request fetch failed with status:", reqRes.status);
         }
       } catch (err) {
-        console.error("Supabase fetch network error:", err);
+        console.error("Supabase fetch error:", err);
       }
     }
     fetchSupabaseData();
