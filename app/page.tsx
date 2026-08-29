@@ -295,6 +295,11 @@ export default function WorkspacePage() {
     return currentUser.role === "FINANCE_MGR" || currentUser.email.toLowerCase().trim() === "japheth.wilson123@gmail.com";
   }, [currentUser]);
 
+  const isHrAdminUser = useMemo(() => {
+    if (!currentUser) return false;
+    return currentUser.role === "HR_ADMIN" || currentUser.email.toLowerCase().trim() === "ishfaque.mojai@gmail.com";
+  }, [currentUser]);
+
   async function handleFileUpload(file: File): Promise<string> {
     setIsUploadingFile(true);
     return new Promise((resolve, reject) => {
@@ -349,11 +354,11 @@ export default function WorkspacePage() {
 
   const scopedRequests = useMemo(() => {
     if (!currentUser) return [];
-    if (isAdminOrExec || isFinanceUser) return requests;
+    if (isAdminOrExec || isFinanceUser || isHrAdminUser) return requests;
     return requests.filter(
       (r) => r.requesterEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim()
     );
-  }, [requests, currentUser, isAdminOrExec, isFinanceUser]);
+  }, [requests, currentUser, isAdminOrExec, isFinanceUser, isHrAdminUser]);
 
   const filteredRequests = useMemo(() => {
     return scopedRequests.filter((req) => {
@@ -640,7 +645,13 @@ export default function WorkspacePage() {
                   }`}
                 >
                   <LayoutDashboard className="h-4 w-4 text-[#fad207]" />
-                  <span>{isFinanceUser ? "Finance Dashboard" : "My Active Work & Tasks"}</span>
+                  <span>
+                    {isFinanceUser
+                      ? "Finance Dashboard"
+                      : isHrAdminUser
+                      ? "HR & Admin Dashboard"
+                      : "My Active Work & Tasks"}
+                  </span>
                 </button>
 
                 <Link
@@ -720,7 +731,11 @@ export default function WorkspacePage() {
                     }`}
                   >
                     <FileText className="h-3.5 w-3.5 text-[#fad207]" />
-                    <span>{isFinanceUser ? "All Staff Expense Claims" : "My Leave & Expense Claims"}</span>
+                    <span>
+                      {isFinanceUser || isHrAdminUser
+                        ? "All Staff Leave & Expense Claims"
+                        : "My Leave & Expense Claims"}
+                    </span>
                   </button>
                 </div>
               </nav>
@@ -766,6 +781,8 @@ export default function WorkspacePage() {
                 <p className="text-xs text-slate-500 mt-0.5">
                   {isFinanceUser
                     ? "Financial master ledger, grant allocation burn rates, and expenditure audits."
+                    : isHrAdminUser
+                    ? "HR staff directory, attendance records, leave approvals, and personnel appraisals."
                     : "Protected deliverable portfolio with Google Drive cloud storage and email dispatch."}
                 </p>
               </div>
@@ -790,6 +807,7 @@ export default function WorkspacePage() {
               </div>
             </div>
 
+            {/* ROLE-SPECIFIC KPI CARDS */}
             {isFinanceUser ? (
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
@@ -826,6 +844,44 @@ export default function WorkspacePage() {
                   </div>
                   <p className="mt-2 text-2xl font-bold text-[#1b365d]">FBR Ready</p>
                   <span className="text-[10px] text-slate-500">Withholding verified</span>
+                </div>
+              </div>
+            ) : isHrAdminUser ? (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                  <div className="flex items-center justify-between text-slate-400">
+                    <span className="text-[11px] font-bold uppercase tracking-wider">Active Staff</span>
+                    <Users className="h-4 w-4 text-[#1b365d]" />
+                  </div>
+                  <p className="mt-2 text-2xl font-bold text-[#1b365d]">16 Roster</p>
+                  <span className="text-[10px] text-slate-500">Sindh Hubs & HO</span>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                  <div className="flex items-center justify-between text-slate-400">
+                    <span className="text-[11px] font-bold uppercase tracking-wider">Pending Leave</span>
+                    <FileText className="h-4 w-4 text-amber-600" />
+                  </div>
+                  <p className="mt-2 text-2xl font-bold text-amber-600">{requests.filter(r => r.requestType === "Leave").length} Requests</p>
+                  <span className="text-[10px] text-slate-500">Tier 1 HR Review</span>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                  <div className="flex items-center justify-between text-slate-400">
+                    <span className="text-[11px] font-bold uppercase tracking-wider">Payroll Tier 1</span>
+                    <Banknote className="h-4 w-4 text-[#c65a28]" />
+                  </div>
+                  <p className="mt-2 text-2xl font-bold text-[#c65a28]">Active Queue</p>
+                  <span className="text-[10px] text-slate-500">Timesheets verified</span>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                  <div className="flex items-center justify-between text-slate-400">
+                    <span className="text-[11px] font-bold uppercase tracking-wider">HR Compliance</span>
+                    <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                  </div>
+                  <p className="mt-2 text-2xl font-bold text-emerald-600">Verified</p>
+                  <span className="text-[10px] text-slate-500">MoU & Roster OK</span>
                 </div>
               </div>
             ) : (
@@ -870,6 +926,7 @@ export default function WorkspacePage() {
               </div>
             )}
 
+            {/* ROLE-SPECIFIC MAIN PANEL CONTENT */}
             {isFinanceUser ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -911,6 +968,51 @@ export default function WorkspacePage() {
                     >
                       <CreditCard className="h-3.5 w-3.5 text-[#fad207]" />
                       <span>Review Expense Claims</span>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ) : isHrAdminUser ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">
+                    HR & Operations Management Desk (Tier 1 Review)
+                  </h3>
+                  <Link href="/hr" className="text-xs font-bold text-[#1b365d] hover:underline">
+                    View Full HR Roster →
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-700 uppercase">Leave Requests & Attendance</span>
+                      <span className="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-700">Tier 1 Review</span>
+                    </div>
+                    <p className="text-sm font-bold text-slate-900">Staff Leave & Timesheet Approvals</p>
+                    <p className="text-xs text-slate-500">Audit staff attendance logs and grant initial leave clearances.</p>
+                    <Link
+                      href="/hr"
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#1b365d] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#122440]"
+                    >
+                      <UserCheck className="h-3.5 w-3.5 text-[#fad207]" />
+                      <span>Manage HR & Leave Approvals</span>
+                    </Link>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-700 uppercase">Payroll Tier 1 Verification</span>
+                      <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-700">Active Queue</span>
+                    </div>
+                    <p className="text-sm font-bold text-slate-900">Monthly Compensation & Timesheets</p>
+                    <p className="text-xs text-slate-500">Verify staff work hours and advance payroll to Finance Audit tier.</p>
+                    <Link
+                      href="/payroll"
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#c65a28] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#a8491d]"
+                    >
+                      <Banknote className="h-3.5 w-3.5 text-[#fad207]" />
+                      <span>Review Payroll Tier 1</span>
                     </Link>
                   </div>
                 </div>
