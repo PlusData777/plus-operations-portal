@@ -12,7 +12,7 @@ import {
   ExternalLink,
   FileCheck2,
   Filter,
-  Handshake,
+  Users,
   Layers,
   Plus,
   RefreshCw,
