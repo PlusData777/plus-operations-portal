@@ -37,6 +37,7 @@ import {
   Banknote,
   Wallet,
   Database,
+  UserPlus,
 } from "lucide-react";
 
 interface RequestItem {
@@ -46,6 +47,7 @@ interface RequestItem {
   requesterName: string;
   requestType: "Leave" | "Expense" | "Purchase" | "Asset" | "General";
   leaveCategory?: string;
+  delegatedPerson?: string;
   startDate?: string;
   endDate?: string;
   days?: number;
@@ -116,6 +118,20 @@ const INITIAL_PORTFOLIO_TASKS: AssignedTask[] = [
     assignedByEmail: "altafkhoso.adv@gmail.com",
     assignedByName: "Altaf Khoso",
   },
+  {
+    id: "TSK-802",
+    title: "Inspect NAVTTC Solar PV & CIT Inmate Training Labs",
+    category: "Prison Unit (NAVTTC)",
+    dueDateOrHearing: "2026-09-05",
+    venue: "Central Prison & Correctional Facility, Sukkur",
+    hub: "Sukkur",
+    status: "Pending Action",
+    urgency: "Standard",
+    assigneeEmail: "kamanger110@gmail.com",
+    assigneeName: "Kamanger",
+    assignedByEmail: "altafkhoso.adv@gmail.com",
+    assignedByName: "Altaf Khoso",
+  },
 ];
 
 const OFFICIAL_LOGO_URL =
@@ -143,6 +159,7 @@ export default function WorkspacePage() {
   const [formType, setFormType] = useState<"Leave" | "Expense" | "Purchase" | "Asset">("Leave");
   const [formLeaveCategory, setFormLeaveCategory] = useState("Casual");
   const [customLeaveCategory, setCustomLeaveCategory] = useState("");
+  const [formDelegatedPerson, setFormDelegatedPerson] = useState("");
   const [formStartDate, setFormStartDate] = useState(new Date().toISOString().split("T")[0]);
   const [formEndDate, setFormEndDate] = useState(new Date().toISOString().split("T")[0]);
   const [formDays, setFormDays] = useState(1);
@@ -218,6 +235,12 @@ export default function WorkspacePage() {
     return currentUser.email.toLowerCase().trim() === "dataplus.org@gmail.com" || currentUser.role === "ADMIN";
   }, [currentUser]);
 
+  const isExecutiveUser = useMemo(() => {
+    if (!currentUser) return false;
+    const execEmails = ["altafkhoso.adv@gmail.com", "rizwanapatel.plus@gmail.com", "dataplus.org@gmail.com"];
+    return currentUser.role === "EXECUTIVE" || execEmails.includes(currentUser.email.toLowerCase().trim());
+  }, [currentUser]);
+
   const isFinanceUser = useMemo(() => {
     if (!currentUser) return false;
     return currentUser.role === "FINANCE_MGR" || currentUser.email.toLowerCase().trim() === "japheth.wilson123@gmail.com";
@@ -262,13 +285,13 @@ export default function WorkspacePage() {
 
   const scopedTasks = useMemo(() => {
     if (!currentUser) return [];
-    if (isSystemAdmin) return tasks;
+    if (isSystemAdmin || isExecutiveUser) return tasks;
     return tasks.filter(
       (t) =>
         t.assigneeEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim() ||
         t.assigneeEmail === "ALL"
     );
-  }, [tasks, currentUser, isSystemAdmin]);
+  }, [tasks, currentUser, isSystemAdmin, isExecutiveUser]);
 
   const filteredRequests = useMemo(() => {
     return requests.filter((req) => {
@@ -304,14 +327,15 @@ export default function WorkspacePage() {
       requesterName: currentUser.name,
       requestType: formType,
       leaveCategory: formType === "Leave" ? finalLeaveCat : undefined,
+      delegatedPerson: formType === "Leave" ? formDelegatedPerson : undefined,
       startDate: formType === "Leave" ? formStartDate : undefined,
       endDate: formType === "Leave" ? formEndDate : undefined,
       days: formType === "Leave" ? formDays : undefined,
       amount: formType === "Expense" || formType === "Purchase" ? formAmount : undefined,
       expenseCategory: formType === "Expense" || formType === "Asset" ? finalExpenseCat : undefined,
       description: formDescription,
-      status: "Submitted · System Logged",
-      currentApproverEmail: "dataplus.org@gmail.com",
+      status: "Submitted · Routed for Approval",
+      currentApproverEmail: isHrAdminUser ? "altafkhoso.adv@gmail.com" : "ishfaque.mojai@gmail.com",
       attachmentUrl: formAttachmentUrl,
     };
 
@@ -322,6 +346,7 @@ export default function WorkspacePage() {
       setIsApplyModalOpen(false);
       setFormDescription("");
       setFormAmount(0);
+      setFormDelegatedPerson("");
       setFormAttachmentUrl("");
       setSubmittingForm(false);
     }, 1500);
@@ -474,8 +499,8 @@ export default function WorkspacePage() {
                 >
                   <LayoutDashboard className="h-4 w-4 text-[#fad207]" />
                   <span>
-                    {isSystemAdmin
-                      ? "System Master Dashboard"
+                    {isSystemAdmin || isExecutiveUser
+                      ? "Executive Analytics & Dashboard"
                       : isFinanceUser
                       ? "Finance Dashboard"
                       : isHrAdminUser
@@ -545,7 +570,7 @@ export default function WorkspacePage() {
                   className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-bold text-[#1b365d] bg-[#1b365d]/5 hover:bg-[#1b365d]/10 transition"
                 >
                   <BarChart3 className="h-4 w-4 text-[#1b365d]" />
-                  <span>Executive Analytics</span>
+                  <span>Executive Analytics Suite</span>
                 </Link>
 
                 <div className="border-t border-slate-100 my-2 pt-2">
@@ -560,7 +585,7 @@ export default function WorkspacePage() {
                   >
                     <FileText className="h-3.5 w-3.5 text-[#fad207]" />
                     <span>
-                      {isSystemAdmin || isFinanceUser || isHrAdminUser
+                      {isSystemAdmin || isExecutiveUser || isFinanceUser || isHrAdminUser
                         ? "Master System Requisitions"
                         : "My Submitted Requests"}
                     </span>
@@ -580,13 +605,20 @@ export default function WorkspacePage() {
                   Welcome back, {currentUser.name}.
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  {isSystemAdmin
-                    ? "System-wide administrator controls, roster governance, and master treasury overview."
+                  {isSystemAdmin || isExecutiveUser
+                    ? "Executive governance overview, multi-hub analytics, and strategic authorization controls."
                     : "Protected deliverable portfolio with Google Drive cloud storage and email dispatch."}
                 </p>
               </div>
 
               <div className="flex items-center gap-2">
+                <Link
+                  href="/analytics"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#1b365d] px-3.5 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-[#122440]"
+                >
+                  <BarChart3 className="h-3.5 w-3.5 text-[#fad207]" />
+                  <span>Executive Analytics</span>
+                </Link>
                 <Link
                   href="/timesheets"
                   className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50"
@@ -597,8 +629,8 @@ export default function WorkspacePage() {
               </div>
             </div>
 
-            {/* SYSTEM ADMIN KPI CARDS */}
-            {isSystemAdmin ? (
+            {/* EXECUTIVE & ADMIN KPI CARDS */}
+            {isSystemAdmin || isExecutiveUser ? (
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
                   <div className="flex items-center justify-between text-slate-400">
@@ -606,30 +638,30 @@ export default function WorkspacePage() {
                     <Users className="h-4 w-4 text-[#1b365d]" />
                   </div>
                   <p className="mt-2 text-2xl font-bold text-[#1b365d]">16 Staff</p>
-                  <span className="text-[10px] text-slate-500">Active secure PINs</span>
+                  <span className="text-[10px] text-slate-500">Active secure roster</span>
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
                   <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">System Requests</span>
+                    <span className="text-[11px] font-bold uppercase tracking-wider">Master Requisitions</span>
                     <ShoppingCart className="h-4 w-4 text-emerald-600" />
                   </div>
                   <p className="mt-2 text-2xl font-bold text-emerald-600">{requests.length} Queued</p>
-                  <span className="text-[10px] text-slate-500">Global admin review</span>
+                  <span className="text-[10px] text-slate-500">Executive review queue</span>
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
                   <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Drive Sync</span>
-                    <Database className="h-4 w-4 text-[#c65a28]" />
+                    <span className="text-[11px] font-bold uppercase tracking-wider">Active Grants</span>
+                    <Wallet className="h-4 w-4 text-[#c65a28]" />
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-[#c65a28]">Connected</p>
-                  <span className="text-[10px] text-slate-500">Google Apps Script</span>
+                  <p className="mt-2 text-2xl font-bold text-[#c65a28]">3 Grants</p>
+                  <span className="text-[10px] text-slate-500">Hyd, Sukkur & Legal</span>
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
                   <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Security Gate</span>
+                    <span className="text-[11px] font-bold uppercase tracking-wider">Governance Gate</span>
                     <ShieldCheck className="h-4 w-4 text-[#1b365d]" />
                   </div>
                   <p className="mt-2 text-2xl font-bold text-[#1b365d]">Secured</p>
@@ -638,15 +670,15 @@ export default function WorkspacePage() {
               </div>
             ) : null}
 
-            {/* SYSTEM ADMIN MAIN CONTENT */}
-            {isSystemAdmin ? (
+            {/* EXECUTIVE & ADMIN MAIN CONTENT */}
+            {isSystemAdmin || isExecutiveUser ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">
-                    System Administrator Control Center & Master Requisitions
+                    Executive Control Center & Master Requisitions Queue
                   </h3>
                   <Link href="/analytics" className="text-xs font-bold text-[#1b365d] hover:underline">
-                    Executive Analytics Suite →
+                    View Full Executive Analytics Suite →
                   </Link>
                 </div>
 
@@ -656,7 +688,7 @@ export default function WorkspacePage() {
                       <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
                       <input
                         type="text"
-                        placeholder="Search all system requests by staff name, type, or ID..."
+                        placeholder="Search all institutional requests by staff name, type, or ID..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-4 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
@@ -666,7 +698,7 @@ export default function WorkspacePage() {
 
                   {filteredRequests.length === 0 ? (
                     <div className="rounded-xl border border-dashed border-slate-200 py-12 text-center text-xs text-slate-500">
-                      No system requests currently in the master queue.
+                      No institutional requests currently in the executive review queue.
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -687,6 +719,11 @@ export default function WorkspacePage() {
                                 </span>
                               </div>
                               <h4 className="mt-1 text-xs font-bold text-slate-900">{req.description}</h4>
+                              {req.delegatedPerson && (
+                                <p className="text-[11px] text-slate-500 mt-1">
+                                  Delegated Person / Acting: <strong className="text-slate-700">{req.delegatedPerson}</strong>
+                                </p>
+                              )}
                               {req.attachmentUrl && (
                                 <div className="mt-2">
                                   <a
@@ -713,7 +750,7 @@ export default function WorkspacePage() {
                                 </span>
                                 <button
                                   onClick={() => {
-                                    setRequests(requests.map(r => r.id === req.id ? { ...r, status: "Master Admin Approved" } : r));
+                                    setRequests(requests.map(r => r.id === req.id ? { ...r, status: "Executive Authorized" } : r));
                                   }}
                                   className="rounded-lg bg-emerald-600 hover:bg-emerald-700 px-2 py-1 text-[10px] font-bold text-white cursor-pointer"
                                 >
@@ -782,7 +819,7 @@ export default function WorkspacePage() {
         </div>
       </main>
 
-      {/* OPERATIONS / ADMIN REQUEST MODAL WITH "OTHER" CATEGORY */}
+      {/* OPERATIONS REQUEST MODAL WITH DELEGATION OF AUTHORITY */}
       {isApplyModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
@@ -871,6 +908,25 @@ export default function WorkspacePage() {
                       />
                     </div>
                   )}
+
+                  {/* RESTORED DELEGATION OF AUTHORITY FIELD */}
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-[#1b365d] mb-1">
+                      Delegation of Authority (Acting Person in Charge)
+                    </label>
+                    <select
+                      value={formDelegatedPerson}
+                      onChange={(e) => setFormDelegatedPerson(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-semibold focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                    >
+                      <option value="">Select Colleague for Delegation</option>
+                      {OFFICIAL_ROSTER.filter((s) => s.email !== currentUser.email).map((staff) => (
+                        <option key={staff.email} value={staff.name}>
+                          {staff.name} — {staff.designation} ({staff.department})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
