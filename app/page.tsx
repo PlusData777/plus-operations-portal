@@ -36,6 +36,9 @@ import {
   X,
   Banknote,
   Wallet,
+  Settings,
+  Database,
+  Terminal,
 } from "lucide-react";
 
 interface RequestItem {
@@ -82,7 +85,7 @@ interface StaffProfile {
 }
 
 const OFFICIAL_ROSTER: StaffProfile[] = [
-  { email: "dataplus.org@gmail.com", name: "Aatif", designation: "Administrator", role: "ADMIN", department: "IT / Systems", accessPin: "9901" },
+  { email: "dataplus.org@gmail.com", name: "Aatif", designation: "System Administrator", role: "ADMIN", department: "IT / Systems", accessPin: "9901" },
   { email: "altafkhoso.adv@gmail.com", name: "Altaf Khoso", designation: "CEO", role: "EXECUTIVE", department: "Executive Board", accessPin: "8821" },
   { email: "rizwanapatel.plus@gmail.com", name: "Rizwana Patel", designation: "Chairperson", role: "EXECUTIVE", department: "Executive Board", accessPin: "7732" },
   { email: "ishfaque.mojai@gmail.com", name: "Ashfaq Ali", designation: "HR & Admin Lead", role: "HR_ADMIN", department: "HR & Operations", accessPin: "4412" },
@@ -110,20 +113,6 @@ const INITIAL_PORTFOLIO_TASKS: AssignedTask[] = [
     hub: "Hyderabad",
     status: "In Progress",
     urgency: "Urgent",
-    assigneeEmail: "kamanger110@gmail.com",
-    assigneeName: "Kamanger",
-    assignedByEmail: "altafkhoso.adv@gmail.com",
-    assignedByName: "Altaf Khoso",
-  },
-  {
-    id: "TSK-802",
-    title: "Inspect NAVTTC Solar PV & CIT Inmate Training Labs",
-    category: "Prison Unit (NAVTTC)",
-    dueDateOrHearing: "2026-09-05",
-    venue: "Central Prison & Correctional Facility, Sukkur",
-    hub: "Sukkur",
-    status: "Pending Action",
-    urgency: "Standard",
     assigneeEmail: "kamanger110@gmail.com",
     assigneeName: "Kamanger",
     assignedByEmail: "altafkhoso.adv@gmail.com",
@@ -167,20 +156,6 @@ export default function WorkspacePage() {
   const [isUploadingFile, setIsUploadingFile] = useState(false);
   const [submittingForm, setSubmittingForm] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-
-  // Task Creation Modal State
-  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
-  const [taskTitle, setTaskTitle] = useState("");
-  const [taskCategory, setTaskCategory] = useState("Community Legal Camp");
-  const [customCategoryText, setCustomCategoryText] = useState("");
-  const [taskDate, setTaskDate] = useState(new Date().toISOString().split("T")[0]);
-  const [taskVenue, setTaskVenue] = useState("");
-  const [taskHub, setTaskHub] = useState<"Karachi" | "Hyderabad" | "Sukkur">("Sukkur");
-  const [taskUrgency, setTaskUrgency] = useState<"Standard" | "Urgent">("Standard");
-  const [taskAssigneeEmail, setTaskAssigneeEmail] = useState("");
-  const [taskAttachmentUrl, setTaskAttachmentUrl] = useState("");
-  const [submittingTask, setSubmittingTask] = useState(false);
-  const [taskFeedback, setTaskFeedback] = useState<{ status: "success" | "error"; message: string } | null>(null);
 
   useEffect(() => {
     try {
@@ -240,30 +215,9 @@ export default function WorkspacePage() {
     setAuthError("");
   };
 
-  const isManagerOrAdmin = useMemo(() => {
+  const isSystemAdmin = useMemo(() => {
     if (!currentUser) return false;
-    return (
-      currentUser.role === "ADMIN" ||
-      currentUser.role === "EXECUTIVE" ||
-      currentUser.role === "PROGRAM_MGR" ||
-      currentUser.role === "HR_ADMIN"
-    );
-  }, [currentUser]);
-
-  const isAdminOrExec = useMemo(() => {
-    if (!currentUser) return false;
-    const adminEmails = [
-      "dataplus.org@gmail.com",
-      "altafkhoso.adv@gmail.com",
-      "rizwanapatel.plus@gmail.com",
-      "ishfaque.mojai@gmail.com",
-      "japheth.wilson123@gmail.com",
-    ];
-    return (
-      currentUser.role === "ADMIN" ||
-      currentUser.role === "EXECUTIVE" ||
-      adminEmails.includes(currentUser.email.toLowerCase().trim())
-    );
+    return currentUser.email.toLowerCase().trim() === "dataplus.org@gmail.com" || currentUser.role === "ADMIN";
   }, [currentUser]);
 
   const isFinanceUser = useMemo(() => {
@@ -310,34 +264,16 @@ export default function WorkspacePage() {
 
   const scopedTasks = useMemo(() => {
     if (!currentUser) return [];
-    if (isAdminOrExec) return tasks;
-
-    if (currentUser.role === "PROGRAM_MGR") {
-      return tasks.filter(
-        (t) =>
-          t.assigneeEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim() ||
-          t.assigneeEmail === "ALL" ||
-          t.assignedByEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim()
-      );
-    }
-
+    if (isSystemAdmin) return tasks;
     return tasks.filter(
       (t) =>
         t.assigneeEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim() ||
         t.assigneeEmail === "ALL"
     );
-  }, [tasks, currentUser, isAdminOrExec]);
-
-  const scopedRequests = useMemo(() => {
-    if (!currentUser) return [];
-    if (isAdminOrExec || isFinanceUser || isHrAdminUser) return requests;
-    return requests.filter(
-      (r) => r.requesterEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim()
-    );
-  }, [requests, currentUser, isAdminOrExec, isFinanceUser, isHrAdminUser]);
+  }, [tasks, currentUser, isSystemAdmin]);
 
   const filteredRequests = useMemo(() => {
-    return scopedRequests.filter((req) => {
+    return requests.filter((req) => {
       const q = searchQuery.toLowerCase().trim();
       const matchesSearch =
         !q ||
@@ -352,7 +288,7 @@ export default function WorkspacePage() {
       if (activeRequestFilter === "ASSET") return matchesSearch && type.includes("asset");
       return matchesSearch;
     });
-  }, [scopedRequests, searchQuery, activeRequestFilter]);
+  }, [requests, searchQuery, activeRequestFilter]);
 
   const handleCreateRequest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -360,13 +296,8 @@ export default function WorkspacePage() {
 
     setSubmittingForm(true);
     const newReqId = "PLUS-" + (requests.length + 101);
-
-    const isKamanger = currentUser.email.toLowerCase().trim() === "kamanger110@gmail.com";
-    const assignedApprover = isKamanger ? "altafkhoso.adv@gmail.com" : "ishfaque.mojai@gmail.com";
-    const initialStatus = isKamanger ? "Submitted · Routed to CEO" : "Submitted · Pending Tier 1";
-
     const finalLeaveCat = formLeaveCategory === "Other" ? customLeaveCategory.trim() || "Other Leave" : formLeaveCategory;
-    const finalExpenseCat = formExpenseCategory === "Other" ? customExpenseCategory.trim() || "Other Expense / Requisition" : formExpenseCategory;
+    const finalExpenseCat = formExpenseCategory === "Other" ? customExpenseCategory.trim() || "Other Requisition" : formExpenseCategory;
 
     const newRequest: RequestItem = {
       id: newReqId,
@@ -381,20 +312,10 @@ export default function WorkspacePage() {
       amount: formType === "Expense" || formType === "Purchase" ? formAmount : undefined,
       expenseCategory: formType === "Expense" || formType === "Asset" ? finalExpenseCat : undefined,
       description: formDescription,
-      status: initialStatus,
-      currentApproverEmail: assignedApprover,
+      status: "Submitted · System Logged",
+      currentApproverEmail: "dataplus.org@gmail.com",
       attachmentUrl: formAttachmentUrl,
     };
-
-    try {
-      await fetch("/api/requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "CREATE_REQUEST", request: newRequest }),
-      });
-    } catch (err) {
-      console.warn("Request broadcast notice:", err);
-    }
 
     setRequests([newRequest, ...requests]);
     setSubmitSuccess(true);
@@ -442,7 +363,7 @@ export default function WorkspacePage() {
                   <input
                     type="email"
                     required
-                    placeholder="e.g. kamanger110@gmail.com"
+                    placeholder="e.g. dataplus.org@gmail.com"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-3 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden font-mono"
@@ -555,7 +476,9 @@ export default function WorkspacePage() {
                 >
                   <LayoutDashboard className="h-4 w-4 text-[#fad207]" />
                   <span>
-                    {isFinanceUser
+                    {isSystemAdmin
+                      ? "System Master Dashboard"
+                      : isFinanceUser
                       ? "Finance Dashboard"
                       : isHrAdminUser
                       ? "HR & Admin Dashboard"
@@ -619,19 +542,17 @@ export default function WorkspacePage() {
                   <span>Staff Directory</span>
                 </Link>
 
-                {isAdminOrExec && (
-                  <Link
-                    href="/analytics"
-                    className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-bold text-[#1b365d] bg-[#1b365d]/5 hover:bg-[#1b365d]/10 transition"
-                  >
-                    <BarChart3 className="h-4 w-4 text-[#1b365d]" />
-                    <span>Executive Analytics</span>
-                  </Link>
-                )}
+                <Link
+                  href="/analytics"
+                  className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-bold text-[#1b365d] bg-[#1b365d]/5 hover:bg-[#1b365d]/10 transition"
+                >
+                  <BarChart3 className="h-4 w-4 text-[#1b365d]" />
+                  <span>Executive Analytics</span>
+                </Link>
 
                 <div className="border-t border-slate-100 my-2 pt-2">
                   <span className="block px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Operations Claims
+                    System Control
                   </span>
                   <button
                     onClick={() => setMainViewTab("REQUESTs")}
@@ -641,8 +562,8 @@ export default function WorkspacePage() {
                   >
                     <FileText className="h-3.5 w-3.5 text-[#fad207]" />
                     <span>
-                      {isFinanceUser || isHrAdminUser
-                        ? "All Staff Requests & Requisitions"
+                      {isSystemAdmin || isFinanceUser || isHrAdminUser
+                        ? "Master System Requisitions"
                         : "My Submitted Requests"}
                     </span>
                   </button>
@@ -661,10 +582,8 @@ export default function WorkspacePage() {
                   Welcome back, {currentUser.name}.
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  {isFinanceUser
-                    ? "Financial master ledger, grant allocation burn rates, and expenditure audits."
-                    : isHrAdminUser
-                    ? "Managing incoming purchase requisitions, asset allocations, inventory, and staff requests."
+                  {isSystemAdmin
+                    ? "System-wide administrator controls, roster governance, and master treasury overview."
                     : "Protected deliverable portfolio with Google Drive cloud storage and email dispatch."}
                 </p>
               </div>
@@ -680,186 +599,57 @@ export default function WorkspacePage() {
               </div>
             </div>
 
-            {/* ROLE-SPECIFIC KPI CARDS */}
-            {isFinanceUser ? (
+            {/* SYSTEM ADMIN KPI CARDS */}
+            {isSystemAdmin ? (
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
                   <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Active Grants</span>
-                    <Wallet className="h-4 w-4 text-[#1b365d]" />
-                  </div>
-                  <p className="mt-2 text-2xl font-bold text-[#1b365d]">3 Grants</p>
-                  <span className="text-[10px] text-slate-500">Hyd, Sukkur & Legal</span>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Payroll Outflow</span>
-                    <Banknote className="h-4 w-4 text-emerald-600" />
-                  </div>
-                  <p className="mt-2 text-2xl font-bold text-emerald-600">PKR 543k</p>
-                  <span className="text-[10px] text-slate-500">August 2026 Cycle</span>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Pending Claims</span>
-                    <FileText className="h-4 w-4 text-[#c65a28]" />
-                  </div>
-                  <p className="mt-2 text-2xl font-bold text-[#c65a28]">{requests.length} Claims</p>
-                  <span className="text-[10px] text-slate-500">Awaiting finance review</span>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Audit Status</span>
-                    <ShieldCheck className="h-4 w-4 text-[#1b365d]" />
-                  </div>
-                  <p className="mt-2 text-2xl font-bold text-[#1b365d]">FBR Ready</p>
-                  <span className="text-[10px] text-slate-500">Withholding verified</span>
-                </div>
-              </div>
-            ) : isHrAdminUser ? (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Incoming Requests</span>
-                    <ShoppingCart className="h-4 w-4 text-emerald-600" />
-                  </div>
-                  <p className="mt-2 text-2xl font-bold text-emerald-600">
-                    {requests.length} Total
-                  </p>
-                  <span className="text-[10px] text-slate-500">Team requisitions queue</span>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Purchase Queue</span>
-                    <Package className="h-4 w-4 text-[#c65a28]" />
-                  </div>
-                  <p className="mt-2 text-2xl font-bold text-[#c65a28]">
-                    {requests.filter(r => r.requestType === "Purchase").length} Open
-                  </p>
-                  <span className="text-[10px] text-slate-500">Procurement review</span>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Asset Requests</span>
+                    <span className="text-[11px] font-bold uppercase tracking-wider">Total Roster</span>
                     <Users className="h-4 w-4 text-[#1b365d]" />
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-[#1b365d]">
-                    {requests.filter(r => r.requestType === "Asset").length} Pending
-                  </p>
-                  <span className="text-[10px] text-slate-500">Inventory allocation</span>
+                  <p className="mt-2 text-2xl font-bold text-[#1b365d]">16 Staff</p>
+                  <span className="text-[10px] text-slate-500">Active secure PINs</span>
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
                   <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Leave Approvals</span>
-                    <FileText className="h-4 w-4 text-amber-600" />
+                    <span className="text-[11px] font-bold uppercase tracking-wider">System Requests</span>
+                    <ShoppingCart className="h-4 w-4 text-emerald-600" />
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-amber-600">
-                    {requests.filter(r => r.requestType === "Leave").length} Pending
-                  </p>
-                  <span className="text-[10px] text-slate-500">Tier 1 HR Review</span>
+                  <p className="mt-2 text-2xl font-bold text-emerald-600">{requests.length} Queued</p>
+                  <span className="text-[10px] text-slate-500">Global admin review</span>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                  <div className="flex items-center justify-between text-slate-400">
+                    <span className="text-[11px] font-bold uppercase tracking-wider">Drive Sync</span>
+                    <Database className="h-4 w-4 text-[#c65a28]" />
+                  </div>
+                  <p className="mt-2 text-2xl font-bold text-[#c65a28]">Connected</p>
+                  <span className="text-[10px] text-slate-500">Google Apps Script</span>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                  <div className="flex items-center justify-between text-slate-400">
+                    <span className="text-[11px] font-bold uppercase tracking-wider">Security Gate</span>
+                    <ShieldCheck className="h-4 w-4 text-[#1b365d]" />
+                  </div>
+                  <p className="mt-2 text-2xl font-bold text-[#1b365d]">Secured</p>
+                  <span className="text-[10px] text-slate-500">Multi-tier active</span>
                 </div>
               </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Active Tasks</span>
-                    <Activity className="h-4 w-4 text-[#1b365d]" />
-                  </div>
-                  <p className="mt-2 text-2xl font-bold text-[#1b365d]">{scopedTasks.length}</p>
-                  <span className="text-[10px] text-slate-500">Visible to your role</span>
-                </div>
+            ) : null}
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Due This Week</span>
-                    <Calendar className="h-4 w-4 text-[#c65a28]" />
-                  </div>
-                  <p className="mt-2 text-2xl font-bold text-[#c65a28]">
-                    {scopedTasks.filter((t) => t.urgency === "Urgent").length} Urgent
-                  </p>
-                  <span className="text-[10px] text-slate-500">Camps & hearings</span>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Logged Hours</span>
-                    <Clock className="h-4 w-4 text-[#e59a24]" />
-                  </div>
-                  <p className="mt-2 text-2xl font-bold text-[#e59a24]">37.5 hrs</p>
-                  <span className="text-[10px] text-slate-500">Current cycle</span>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">My Requests</span>
-                    <FileText className="h-4 w-4 text-emerald-600" />
-                  </div>
-                  <p className="mt-2 text-2xl font-bold text-emerald-600">{scopedRequests.length}</p>
-                  <span className="text-[10px] text-slate-500">Submitted queue</span>
-                </div>
-              </div>
-            )}
-
-            {/* MAIN PANEL CONTENT */}
-            {isFinanceUser ? (
+            {/* SYSTEM ADMIN MAIN CONTENT */}
+            {isSystemAdmin ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">
-                    Finance & Grant Audit Dashboard (Pending Review)
+                    System Administrator Control Center & Master Requisitions
                   </h3>
-                  <Link href="/finance" className="text-xs font-bold text-[#1b365d] hover:underline">
-                    View Full Finance Ledger →
+                  <Link href="/analytics" className="text-xs font-bold text-[#1b365d] hover:underline">
+                    Executive Analytics Suite →
                   </Link>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-700 uppercase">Payroll Tier 2 Audit</span>
-                      <span className="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-700">Pending Audit</span>
-                    </div>
-                    <p className="text-sm font-bold text-slate-900">Monthly Staff Compensation (August 2026)</p>
-                    <p className="text-xs text-slate-500">Verify grant allocations for NAVTTC and regional legal programs.</p>
-                    <Link
-                      href="/payroll"
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#1b365d] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#122440]"
-                    >
-                      <Banknote className="h-3.5 w-3.5 text-[#fad207]" />
-                      <span>Audit Payroll & Grant Balances</span>
-                    </Link>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-700 uppercase">Expense Claims Review</span>
-                      <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-700">Active Queue</span>
-                    </div>
-                    <p className="text-sm font-bold text-slate-900">Field Fuel, Transport & Court Filing Claims</p>
-                    <p className="text-xs text-slate-500">Review receipts and reimburse field coordinators across Sindh hubs.</p>
-                    <Link
-                      href="/finance"
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#c65a28] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#a8491d]"
-                    >
-                      <CreditCard className="h-3.5 w-3.5 text-[#fad207]" />
-                      <span>Review Expense Claims</span>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ) : isHrAdminUser ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">
-                    HR & Admin Management Desk (Team Requisitions & Requests)
-                  </h3>
-                  <span className="text-xs text-slate-500">Reviewing all staff purchases, assets & leave</span>
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
@@ -868,51 +658,17 @@ export default function WorkspacePage() {
                       <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
                       <input
                         type="text"
-                        placeholder="Search team requests by staff name, purpose, or ID..."
+                        placeholder="Search all system requests by staff name, type, or ID..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-4 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
                       />
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => setActiveRequestFilter("ALL")}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
-                          activeRequestFilter === "ALL" ? "bg-[#1b365d] text-white" : "text-slate-600 hover:bg-slate-100"
-                        }`}
-                      >
-                        All
-                      </button>
-                      <button
-                        onClick={() => setActiveRequestFilter("PURCHASE")}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
-                          activeRequestFilter === "PURCHASE" ? "bg-[#1b365d] text-white" : "text-slate-600 hover:bg-slate-100"
-                        }`}
-                      >
-                        Purchases
-                      </button>
-                      <button
-                        onClick={() => setActiveRequestFilter("ASSET")}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
-                          activeRequestFilter === "ASSET" ? "bg-[#1b365d] text-white" : "text-slate-600 hover:bg-slate-100"
-                        }`}
-                      >
-                        Assets
-                      </button>
-                      <button
-                        onClick={() => setActiveRequestFilter("LEAVE")}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
-                          activeRequestFilter === "LEAVE" ? "bg-[#1b365d] text-white" : "text-slate-600 hover:bg-slate-100"
-                        }`}
-                      >
-                        Leave
-                      </button>
-                    </div>
                   </div>
 
                   {filteredRequests.length === 0 ? (
                     <div className="rounded-xl border border-dashed border-slate-200 py-12 text-center text-xs text-slate-500">
-                      No team requests or requisitions currently pending review.
+                      No system requests currently in the master queue.
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -959,11 +715,11 @@ export default function WorkspacePage() {
                                 </span>
                                 <button
                                   onClick={() => {
-                                    setRequests(requests.map(r => r.id === req.id ? { ...r, status: "Approved & Processed by Admin" } : r));
+                                    setRequests(requests.map(r => r.id === req.id ? { ...r, status: "Master Admin Approved" } : r));
                                   }}
                                   className="rounded-lg bg-emerald-600 hover:bg-emerald-700 px-2 py-1 text-[10px] font-bold text-white cursor-pointer"
                                 >
-                                  Approve
+                                  Authorize
                                 </button>
                               </div>
                             </div>
@@ -984,194 +740,46 @@ export default function WorkspacePage() {
                 </div>
 
                 <div className="space-y-3">
-                  {scopedTasks.map((task) => {
-                    const isCombined = task.assigneeEmail === "ALL";
-                    const isDelegatedByMe =
-                      task.assignedByEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim() &&
-                      task.assigneeEmail.toLowerCase().trim() !== currentUser.email.toLowerCase().trim();
-
-                    return (
-                      <div
-                        key={task.id}
-                        className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-[#1b365d] space-y-3"
-                      >
-                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-                          <div>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-mono text-xs font-bold text-[#1b365d]">{task.id}</span>
-                              <span className="rounded-md bg-[#1b365d]/10 px-2 py-0.5 text-[10px] font-bold text-[#1b365d]">
-                                {task.category}
-                              </span>
-                              <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
-                                {task.hub} Regional
-                              </span>
-                              {isCombined && (
-                                <span className="rounded-md bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 text-[10px] font-bold">
-                                  Combined Team Task
-                                </span>
-                              )}
-                              {isDelegatedByMe && (
-                                <span className="rounded-md bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-[10px] font-bold">
-                                  Assigned to: {task.assigneeName}
-                                </span>
-                              )}
-                            </div>
-                            <h4 className="mt-1 text-sm font-bold text-slate-900">{task.title}</h4>
-                          </div>
-
-                          <div className="flex items-center gap-2 shrink-0">
-                            {task.urgency === "Urgent" && (
-                              <span className="rounded-full bg-red-50 border border-red-200 px-2.5 py-0.5 text-[10px] font-bold text-[#b82626]">
-                                Urgent
-                              </span>
-                            )}
-                            <span className="rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[10px] font-bold text-amber-700">
-                              {task.status}
+                  {scopedTasks.map((task) => (
+                    <div
+                      key={task.id}
+                      className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-[#1b365d] space-y-3"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-mono text-xs font-bold text-[#1b365d]">{task.id}</span>
+                            <span className="rounded-md bg-[#1b365d]/10 px-2 py-0.5 text-[10px] font-bold text-[#1b365d]">
+                              {task.category}
+                            </span>
+                            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                              {task.hub} Regional
                             </span>
                           </div>
+                          <h4 className="mt-1 text-sm font-bold text-slate-900">{task.title}</h4>
                         </div>
-
-                        <div className="border-t border-slate-100 pt-3 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-600 gap-2">
-                          <div className="flex items-center gap-4 flex-wrap">
-                            <div className="flex items-center gap-1.5">
-                              <MapPin className="h-3.5 w-3.5 text-[#c65a28]" />
-                              <span>{task.venue}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                              <span>Target Date: <strong className="text-slate-800">{task.dueDateOrHearing}</strong></span>
-                            </div>
-                            {task.attachmentUrl && (
-                              <a
-                                href={task.attachmentUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center gap-1 text-[11px] font-bold text-[#1b365d] bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded-md"
-                              >
-                                <Paperclip className="h-3 w-3 text-[#c65a28]" />
-                                <span>Attached File</span>
-                              </a>
-                            )}
-                          </div>
-
-                          <Link
-                            href={task.category.includes("Legal") ? "/cases" : "/programs"}
-                            className="inline-flex items-center gap-1 text-xs font-bold text-[#1b365d] hover:text-[#c65a28]"
-                          >
-                            <span>Open Module & Log Output</span>
-                            <ChevronRight className="h-3.5 w-3.5" />
-                          </Link>
-                        </div>
+                        <span className="rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[10px] font-bold text-amber-700">
+                          {task.status}
+                        </span>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
-                    <input
-                      type="text"
-                      placeholder="Search requests by purpose, amount, or ID..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-4 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
-                    />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => setActiveRequestFilter("ALL")}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
-                        activeRequestFilter === "ALL" ? "bg-[#1b365d] text-white" : "text-slate-600 hover:bg-slate-100"
-                      }`}
-                    >
-                      All
-                    </button>
-                    <button
-                      onClick={() => setActiveRequestFilter("PURCHASE")}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
-                        activeRequestFilter === "PURCHASE" ? "bg-[#1b365d] text-white" : "text-slate-600 hover:bg-slate-100"
-                      }`}
-                    >
-                      Purchases
-                    </button>
-                    <button
-                      onClick={() => setActiveRequestFilter("ASSET")}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
-                        activeRequestFilter === "ASSET" ? "bg-[#1b365d] text-white" : "text-slate-600 hover:bg-slate-100"
-                      }`}
-                    >
-                      Assets
-                    </button>
-                    <button
-                      onClick={() => setActiveRequestFilter("LEAVE")}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
-                        activeRequestFilter === "LEAVE" ? "bg-[#1b365d] text-white" : "text-slate-600 hover:bg-slate-100"
-                      }`}
-                    >
-                      Leave
-                    </button>
-                  </div>
-                </div>
 
-                {filteredRequests.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-slate-200 py-12 text-center text-xs text-slate-500">
-                    No requests found in the system queue.
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {filteredRequests.map((req) => (
-                      <div
-                        key={req.id}
-                        className="rounded-xl border border-slate-100 bg-[#f8fafc] p-4 transition hover:border-[#1b365d]/40 hover:bg-white hover:shadow-2xs"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono text-[11px] font-bold text-[#1b365d]">{req.id}</span>
-                              <span className="rounded-md bg-slate-200 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-700">
-                                {req.requestType}
-                              </span>
-                              <span className="text-[11px] font-semibold text-slate-600">
-                                By: {req.requesterName} ({req.requesterEmail})
-                              </span>
-                            </div>
-                            <h4 className="mt-1 text-xs font-bold text-slate-900">{req.description}</h4>
-                            {req.attachmentUrl && (
-                              <div className="mt-2">
-                                <a
-                                  href={req.attachmentUrl}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1b365d] hover:underline"
-                                >
-                                  <Paperclip className="h-3 w-3 text-[#c65a28]" />
-                                  <span>View Uploaded Document / Quotation</span>
-                                </a>
-                              </div>
-                            )}
+                      <div className="border-t border-slate-100 pt-3 flex items-center justify-between text-xs text-slate-600">
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-1.5">
+                            <MapPin className="h-3.5 w-3.5 text-[#c65a28]" />
+                            <span>{task.venue}</span>
                           </div>
-                          <div className="text-right shrink-0">
-                            {req.amount ? (
-                              <span className="text-sm font-bold text-[#1b365d]">PKR {Number(req.amount).toLocaleString("en-PK")}</span>
-                            ) : (
-                              <span className="text-xs font-bold text-[#1b365d]">{req.days || 1} Unit(s) / Day(s)</span>
-                            )}
-                            <div className="mt-1">
-                              <span className="rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[10px] font-semibold text-amber-700">
-                                {req.status}
-                              </span>
-                            </div>
+                          <div className="flex items-center gap-1.5">
+                            <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                            <span>Target Date: <strong className="text-slate-800">{task.dueDateOrHearing}</strong></span>
                           </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
+                    </div>
+                  ))}
+                </div>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </main>
