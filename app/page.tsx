@@ -32,6 +32,8 @@ import {
   Users,
   X,
   Banknote,
+  Wallet,
+  ShieldCheck,
 } from "lucide-react";
 
 interface RequestItem {
