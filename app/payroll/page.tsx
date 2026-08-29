@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 
 interface StaffCompensation {
+  id: string;
   email: string;
   name: string;
   designation: string;
@@ -33,11 +34,15 @@ interface StaffCompensation {
   taxDeduction: number;
   netPay: number;
   assignedGrant: string;
-  status: "Draft" | "Pending HR Review" | "Approved & Disbursed";
+  approvalStage: "Pending HR Review" | "Pending Finance Audit" | "Pending CEO Approval" | "Approved & Disbursed";
+  currentApprover: string;
 }
 
-const OFFICIAL_ROSTER_COMPENSATION: StaffCompensation[] = [
+const TEST_ADMIN_EMAIL = "dataplus.org@gmail.com";
+
+const INITIAL_PAYROLL_RECORDS: StaffCompensation[] = [
   {
+    id: "PAY-901",
     email: "kamanger110@gmail.com",
     name: "Kamanger",
     designation: "Program Manager",
@@ -47,9 +52,11 @@ const OFFICIAL_ROSTER_COMPENSATION: StaffCompensation[] = [
     taxDeduction: 6000,
     netPay: 129000,
     assignedGrant: "PLUS-COMM-HYD",
-    status: "Pending HR Review",
+    approvalStage: "Pending HR Review",
+    currentApprover: TEST_ADMIN_EMAIL,
   },
   {
+    id: "PAY-902",
     email: "advazizullahazizullah@gmail.com",
     name: "Adv Azizullah",
     designation: "Legal Associate",
@@ -59,9 +66,11 @@ const OFFICIAL_ROSTER_COMPENSATION: StaffCompensation[] = [
     taxDeduction: 4000,
     netPay: 101000,
     assignedGrant: "PLUS-LEGAL-2026",
-    status: "Approved & Disbursed",
+    approvalStage: "Approved & Disbursed",
+    currentApprover: TEST_ADMIN_EMAIL,
   },
   {
+    id: "PAY-903",
     email: "ishfaque.mojai@gmail.com",
     name: "Ashfaq Ali",
     designation: "HR & Admin Lead",
@@ -71,9 +80,11 @@ const OFFICIAL_ROSTER_COMPENSATION: StaffCompensation[] = [
     taxDeduction: 8000,
     netPay: 152000,
     assignedGrant: "PLUS-LEGAL-2026",
-    status: "Approved & Disbursed",
+    approvalStage: "Approved & Disbursed",
+    currentApprover: TEST_ADMIN_EMAIL,
   },
   {
+    id: "PAY-904",
     email: "japheth.wilson123@gmail.com",
     name: "Japheth Wilson",
     designation: "Finance Manager",
@@ -83,7 +94,8 @@ const OFFICIAL_ROSTER_COMPENSATION: StaffCompensation[] = [
     taxDeduction: 9000,
     netPay: 161000,
     assignedGrant: "PLUS-NAVTTC-2026",
-    status: "Approved & Disbursed",
+    approvalStage: "Pending Finance Audit",
+    currentApprover: TEST_ADMIN_EMAIL,
   },
 ];
 
@@ -92,7 +104,7 @@ const OFFICIAL_LOGO_URL =
 
 export default function PayrollMasterPage() {
   const [currentUser, setCurrentUser] = useState<any | null>(null);
-  const [payrollRecords, setPayrollRecords] = useState<StaffCompensation[]>(OFFICIAL_ROSTER_COMPENSATION);
+  const [payrollRecords, setPayrollRecords] = useState<StaffCompensation[]>(INITIAL_PAYROLL_RECORDS);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedHub, setSelectedHub] = useState("All");
 
@@ -109,21 +121,46 @@ export default function PayrollMasterPage() {
 
   const isExecutiveOrAdmin = useMemo(() => {
     if (!currentUser) return false;
-    const adminExecEmails = [
-      "dataplus.org@gmail.com",
-      "altafkhoso.adv@gmail.com",
-      "rizwanapatel.plus@gmail.com",
-      "ishfaque.mojai@gmail.com",
-      "japheth.wilson123@gmail.com",
-    ];
+    const email = currentUser.email.toLowerCase().trim();
     return (
       currentUser.role === "ADMIN" ||
       currentUser.role === "EXECUTIVE" ||
       currentUser.role === "HR_ADMIN" ||
       currentUser.role === "FINANCE_MGR" ||
-      adminExecEmails.includes(currentUser.email.toLowerCase().trim())
+      email === TEST_ADMIN_EMAIL
     );
   }, [currentUser]);
+
+  const handleAdvanceApproval = (id: string) => {
+    setPayrollRecords((prev) =>
+      prev.map((rec) => {
+        if (rec.id !== id) return rec;
+
+        if (rec.approvalStage === "Pending HR Review") {
+          return {
+            ...rec,
+            approvalStage: "Pending Finance Audit",
+            currentApprover: TEST_ADMIN_EMAIL,
+          };
+        }
+        if (rec.approvalStage === "Pending Finance Audit") {
+          return {
+            ...rec,
+            approvalStage: "Pending CEO Approval",
+            currentApprover: TEST_ADMIN_EMAIL,
+          };
+        }
+        if (rec.approvalStage === "Pending CEO Approval") {
+          return {
+            ...rec,
+            approvalStage: "Approved & Disbursed",
+            currentApprover: "Disbursed via Bank Roster",
+          };
+        }
+        return rec;
+      })
+    );
+  };
 
   const filteredPayroll = useMemo(() => {
     return payrollRecords.filter((rec) => {
@@ -133,7 +170,7 @@ export default function PayrollMasterPage() {
         rec.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         rec.designation.toLowerCase().includes(searchQuery.toLowerCase()) ||
         rec.assignedGrant.toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       if (!isExecutiveOrAdmin) {
         return matchHub && matchSearch && rec.email.toLowerCase().trim() === currentUser?.email?.toLowerCase().trim();
       }
@@ -158,7 +195,7 @@ export default function PayrollMasterPage() {
                 <img src={OFFICIAL_LOGO_URL} alt="PLUS Logo" className="h-8 w-auto object-contain" />
               </div>
               <h1 className="text-sm font-bold tracking-tight text-[#1b365d] sm:text-base">
-                {isExecutiveOrAdmin ? "Payroll & Compensation Governance Suite" : "My Payslips & Salary Statements"}
+                {isExecutiveOrAdmin ? "Testing Environment: Multi-Tier Payroll Governance" : "My Payslips & Salary Statements"}
               </h1>
             </div>
           </div>
@@ -166,6 +203,13 @@ export default function PayrollMasterPage() {
       </header>
 
       <main className="container mx-auto max-w-7xl flex-1 px-4 py-8 sm:px-6 space-y-8">
+        {isExecutiveOrAdmin && (
+          <div className="rounded-2xl border border-blue-200 bg-blue-50/60 p-4 text-xs text-[#1b365d] flex items-center justify-between">
+            <span>⚙️ <strong>Testing Mode Active:</strong> All departmental & executive sign-offs route to <strong>{TEST_ADMIN_EMAIL}</strong>.</span>
+            <span className="font-mono bg-blue-100 px-2 py-0.5 rounded text-[11px] font-bold">Universal Testing Roster</span>
+          </div>
+        )}
+
         {isExecutiveOrAdmin && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
@@ -181,20 +225,20 @@ export default function PayrollMasterPage() {
 
             <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
               <div className="flex items-center justify-between text-slate-400">
-                <span className="text-[11px] font-bold uppercase tracking-wider">Disbursement Status</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider">Testing Approver</span>
                 <ShieldCheck className="h-4 w-4 text-emerald-600" />
               </div>
-              <p className="mt-2 text-2xl font-bold text-emerald-600">Verified</p>
-              <span className="text-[10px] font-semibold text-slate-500">Tier 3 Executive Authorization Ready</span>
+              <p className="mt-2 text-sm font-mono font-bold text-slate-800">{TEST_ADMIN_EMAIL}</p>
+              <span className="text-[10px] font-semibold text-slate-500">HR, Finance & CEO Unified</span>
             </div>
 
             <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
               <div className="flex items-center justify-between text-slate-400">
-                <span className="text-[11px] font-bold uppercase tracking-wider">Tax Deductions</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider">Tax Withholdings</span>
                 <Receipt className="h-4 w-4 text-[#c65a28]" />
               </div>
               <p className="mt-2 text-2xl font-bold text-[#c65a28]">PKR 27,000</p>
-              <span className="text-[10px] font-semibold text-slate-500">FBR withholding automated</span>
+              <span className="text-[10px] font-semibold text-slate-500">FBR compliant brackets</span>
             </div>
           </div>
         )}
@@ -203,10 +247,10 @@ export default function PayrollMasterPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-base font-bold text-[#1b365d]">
-                {isExecutiveOrAdmin ? "Staff Salary Roster & Grant Allocations" : "My Monthly Compensation Records"}
+                {isExecutiveOrAdmin ? "Staff Salary Roster & Approval Queue" : "My Monthly Compensation Records"}
               </h2>
               <p className="text-xs text-slate-500">
-                Automated salary computation synced with regional hubs and donor grant codes.
+                Multi-tier authorization tracking for monthly staff compensation and grant allocations.
               </p>
             </div>
 
@@ -242,24 +286,22 @@ export default function PayrollMasterPage() {
               <thead className="bg-[#f8fafc] text-[10px] font-bold uppercase tracking-wider text-slate-400 border-y border-slate-100">
                 <tr>
                   <th className="py-3 px-4">Staff Member</th>
-                  <th className="py-3 px-4">Hub & Grant</th>
-                  <th className="py-3 px-4">Base Salary</th>
-                  <th className="py-3 px-4">Allowances</th>
-                  <th className="py-3 px-4">Tax Ded.</th>
+                  <th className="py-3 px-4">Grant / Hub</th>
                   <th className="py-3 px-4">Net Payable</th>
-                  <th className="py-3 px-4 text-right">Status / Payslip</th>
+                  <th className="py-3 px-4">Authorization Stage</th>
+                  <th className="py-3 px-4 text-right">Actions / Payslip</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredPayroll.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-slate-400 italic">
+                    <td colSpan={5} className="py-12 text-center text-slate-400 italic">
                       No payroll records found for your account.
                     </td>
                   </tr>
                 ) : (
                   filteredPayroll.map((rec) => (
-                    <tr key={rec.email} className="hover:bg-slate-50/80 transition">
+                    <tr key={rec.id} className="hover:bg-slate-50/80 transition">
                       <td className="py-3.5 px-4 font-bold text-slate-900">
                         {rec.name}
                         <span className="block text-[10px] font-normal text-slate-500">{rec.designation}</span>
@@ -270,17 +312,31 @@ export default function PayrollMasterPage() {
                         </span>
                         <span className="block text-[10px] text-slate-500 mt-0.5">{rec.hub} Regional</span>
                       </td>
-                      <td className="py-3.5 px-4 font-mono">PKR {rec.baseSalary.toLocaleString()}</td>
-                      <td className="py-3.5 px-4 font-mono text-emerald-600">+ PKR {rec.allowance.toLocaleString()}</td>
-                      <td className="py-3.5 px-4 font-mono text-red-600">- PKR {rec.taxDeduction.toLocaleString()}</td>
                       <td className="py-3.5 px-4 font-mono font-bold text-[#1b365d] text-sm">
                         PKR {rec.netPay.toLocaleString()}
                       </td>
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
+                            rec.approvalStage === "Approved & Disbursed"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-amber-50 text-amber-700 border-amber-200"
+                          }`}
+                        >
+                          {rec.approvalStage}
+                        </span>
+                        <span className="block text-[10px] text-slate-400 mt-0.5 font-mono">Approver: {rec.currentApprover}</span>
+                      </td>
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
-                            {rec.status}
-                          </span>
+                          {isExecutiveOrAdmin && rec.approvalStage !== "Approved & Disbursed" && (
+                            <button
+                              onClick={() => handleAdvanceApproval(rec.id)}
+                              className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-xs hover:bg-emerald-700 cursor-pointer"
+                            >
+                              <span>Approve Tier</span>
+                            </button>
+                          )}
                           <button
                             onClick={() => alert(`Generating official PDF Payslip for ${rec.name}...`)}
                             className="inline-flex items-center gap-1 rounded-lg bg-[#1b365d] px-2.5 py-1 text-[11px] font-bold text-white shadow-xs hover:bg-[#122440] cursor-pointer"
@@ -300,7 +356,7 @@ export default function PayrollMasterPage() {
       </main>
 
       <footer className="mt-16 border-t border-slate-200 bg-[#1b365d] py-4 text-center text-[11px] text-slate-300">
-        Pakistan Legal United Society · Automated Payroll & Compensation System
+        Pakistan Legal United Society · Multi-Tier Testing Payroll System
       </footer>
     </div>
   );
