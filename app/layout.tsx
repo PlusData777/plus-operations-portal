@@ -1,7 +1,20 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import { Providers } from "@/components/providers";
-import { isAuthConfigured } from "@/lib/auth";
+import React from "react";
 
-export const metadata: Metadata = { title: "PLUS Operations & Approval Portal", description: "Secure internal request submission and executive approval workflow for Pakistan Legal United Society." };
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) { return <html lang="en"><body><Providers authEnabled={isAuthConfigured()}>{children}</Providers></body></html>; }
+export const metadata = {
+  title: "Pakistan Legal United Society - Operations Hub",
+  description: "Operations, Programs & Governance Portal",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body style={{ margin: 0, padding: 0, backgroundColor: "#f8fafc" }}>
+        {children}
+      </body>
+    </html>
+  );
+}
