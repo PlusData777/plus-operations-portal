@@ -200,7 +200,7 @@ export default function PartnersPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <Handshake className="h-6 w-6 text-[#1b365d]" />
+              <Users className="h-6 w-6 text-[#1b365d]" />
               <h1 className="text-2xl font-bold text-[#1b365d]">Institutional Partners & Grant Matrix</h1>
             </div>
             <p className="mt-1 text-xs text-slate-500">
