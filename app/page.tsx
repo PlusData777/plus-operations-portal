@@ -40,7 +40,6 @@ import {
   BookOpen,
   FileCheck,
 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
 
 interface RequestItem {
   id: string;
@@ -208,7 +207,7 @@ export default function WorkspacePage() {
     }
   }, []);
 
-  // Fetch live data via REST fetch to Supabase (Zero external packages required)
+  // Fetch live data via REST fetch to Supabase
   useEffect(() => {
     async function fetchSupabaseData() {
       try {
@@ -485,7 +484,6 @@ export default function WorkspacePage() {
       attachmentUrl: taskAttachmentUrl,
     };
 
-    // Save to Supabase using REST API
     try {
       const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -566,7 +564,6 @@ export default function WorkspacePage() {
       attachmentUrl: formAttachmentUrl,
     };
 
-    // Save to Supabase using REST API
     try {
       const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -636,7 +633,6 @@ export default function WorkspacePage() {
               <h2 className="mt-4 text-xl font-bold tracking-tight text-[#1b365d]">
                 Pakistan Legal United Society
               </h2>
-              <p className="text-xs font-bold text-[#c65a28] font-serif">انصاف سب کا حق ہے</p>
               <p className="mt-1 text-xs text-slate-500">Authorized Personnel Authentication Gate</p>
             </div>
 
@@ -773,62 +769,6 @@ export default function WorkspacePage() {
                   </span>
                 </button>
 
-                <Link
-                  href="/finance"
-                  className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
-                >
-                  <CreditCard className="h-4 w-4 text-emerald-600" />
-                  <span>Finance & Grants Desk</span>
-                </Link>
-
-                <Link
-                  href="/payroll"
-                  className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
-                >
-                  <Banknote className="h-4 w-4 text-[#e59a24]" />
-                  <span>Payroll & Compensation</span>
-                </Link>
-
-                <Link
-                  href="/programs"
-                  className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
-                >
-                  <HeartHandshake className="h-4 w-4 text-[#c65a28]" />
-                  <span>Program Operations</span>
-                </Link>
-
-                <Link
-                  href="/cases"
-                  className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
-                >
-                  <Scale className="h-4 w-4 text-[#1b365d]" />
-                  <span>Case Load & Docket</span>
-                </Link>
-
-                <Link
-                  href="/hr"
-                  className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
-                >
-                  <UserCheck className="h-4 w-4 text-[#1b365d]" />
-                  <span>HR & Appraisals</span>
-                </Link>
-
-                <Link
-                  href="/timesheets"
-                  className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
-                >
-                  <Clock className="h-4 w-4 text-[#e59a24]" />
-                  <span>Staff Timesheets</span>
-                </Link>
-
-                <Link
-                  href="/directory"
-                  className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
-                >
-                  <Users className="h-4 w-4 text-slate-500" />
-                  <span>Staff Directory</span>
-                </Link>
-
                 <button
                   onClick={() => setMainViewTab("POLICIES")}
                   className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-bold transition text-left cursor-pointer ${
@@ -838,16 +778,6 @@ export default function WorkspacePage() {
                   <BookOpen className="h-4 w-4 text-[#c65a28]" />
                   <span>Institutional Policies Hub</span>
                 </button>
-
-                {(isSystemAdmin || isExecutiveUser) && (
-                  <Link
-                    href="/analytics"
-                    className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-bold text-[#1b365d] bg-[#1b365d]/5 hover:bg-[#1b365d]/10 transition"
-                  >
-                    <BarChart3 className="h-4 w-4 text-[#1b365d]" />
-                    <span>Executive Analytics Suite</span>
-                  </Link>
-                )}
 
                 <div className="border-t border-slate-100 my-2 pt-2">
                   <span className="block px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -883,8 +813,6 @@ export default function WorkspacePage() {
                 <p className="text-xs text-slate-500 mt-0.5">
                   {mainViewTab === "POLICIES"
                     ? "Centralized compliance repository organized by HR, Finance, Safeguarding, MEAL, and Admin policies."
-                    : isSystemAdmin || isExecutiveUser
-                    ? "Executive governance overview, multi-hub analytics, and strategic authorization controls."
                     : "Protected deliverable portfolio with Supabase database cloud storage and real-time sync."}
                 </p>
               </div>
@@ -899,180 +827,8 @@ export default function WorkspacePage() {
                     <span>+ Assign New Task</span>
                   </button>
                 )}
-                <Link
-                  href="/timesheets"
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50"
-                >
-                  <Clock className="h-3.5 w-3.5 text-[#e59a24]" />
-                  <span>Log Work Hours</span>
-                </Link>
               </div>
             </div>
-
-            {/* KPI CARDS (Hidden in Policies View) */}
-            {mainViewTab !== "POLICIES" && (
-              isSystemAdmin || isExecutiveUser ? (
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span className="text-[11px] font-bold uppercase tracking-wider">Total Roster</span>
-                      <Users className="h-4 w-4 text-[#1b365d]" />
-                    </div>
-                    <p className="mt-2 text-2xl font-bold text-[#1b365d]">16 Staff</p>
-                    <span className="text-[10px] text-slate-500">Active secure roster</span>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span className="text-[11px] font-bold uppercase tracking-wider">Master Requisitions</span>
-                      <ShoppingCart className="h-4 w-4 text-emerald-600" />
-                    </div>
-                    <p className="mt-2 text-2xl font-bold text-emerald-600">{requests.length} Queued</p>
-                    <span className="text-[10px] text-slate-500">Supabase live queue</span>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span className="text-[11px] font-bold uppercase tracking-wider">Active Grants</span>
-                      <Wallet className="h-4 w-4 text-[#c65a28]" />
-                    </div>
-                    <p className="mt-2 text-2xl font-bold text-[#c65a28]">3 Grants</p>
-                    <span className="text-[10px] text-slate-500">Hyd, Sukkur & Legal</span>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span className="text-[11px] font-bold uppercase tracking-wider">Database Status</span>
-                      <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                    </div>
-                    <p className="mt-2 text-2xl font-bold text-emerald-600">Connected</p>
-                    <span className="text-[10px] text-slate-500">PostgreSQL active</span>
-                  </div>
-                </div>
-              ) : isFinanceUser ? (
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span className="text-[11px] font-bold uppercase tracking-wider">Active Grants</span>
-                      <Wallet className="h-4 w-4 text-[#1b365d]" />
-                    </div>
-                    <p className="mt-2 text-2xl font-bold text-[#1b365d]">3 Grants</p>
-                    <span className="text-[10px] text-slate-500">Hyd, Sukkur & Legal</span>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span className="text-[11px] font-bold uppercase tracking-wider">Payroll Outflow</span>
-                      <Banknote className="h-4 w-4 text-emerald-600" />
-                    </div>
-                    <p className="mt-2 text-2xl font-bold text-emerald-600">PKR 543k</p>
-                    <span className="text-[10px] text-slate-500">August 2026 Cycle</span>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span className="text-[11px] font-bold uppercase tracking-wider">Pending Claims</span>
-                      <FileText className="h-4 w-4 text-[#c65a28]" />
-                    </div>
-                    <p className="mt-2 text-2xl font-bold text-[#c65a28]">{requests.length} Claims</p>
-                    <span className="text-[10px] text-slate-500">Supabase synchronized</span>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span className="text-[11px] font-bold uppercase tracking-wider">Audit Status</span>
-                      <ShieldCheck className="h-4 w-4 text-[#1b365d]" />
-                    </div>
-                    <p className="mt-2 text-2xl font-bold text-[#1b365d]">FBR Ready</p>
-                    <span className="text-[10px] text-slate-500">Withholding verified</span>
-                  </div>
-                </div>
-              ) : isHrAdminUser ? (
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span className="text-[11px] font-bold uppercase tracking-wider">Incoming Requests</span>
-                      <ShoppingCart className="h-4 w-4 text-emerald-600" />
-                    </div>
-                    <p className="mt-2 text-2xl font-bold text-emerald-600">{requests.length} Total</p>
-                    <span className="text-[10px] text-slate-500">Team queue</span>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span className="text-[11px] font-bold uppercase tracking-wider">Purchase Queue</span>
-                      <Package className="h-4 w-4 text-[#c65a28]" />
-                    </div>
-                    <p className="mt-2 text-2xl font-bold text-[#c65a28]">
-                      {requests.filter(r => r.requestType === "Purchase").length} Open
-                    </p>
-                    <span className="text-[10px] text-slate-500">Procurement review</span>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span className="text-[11px] font-bold uppercase tracking-wider">Asset Requests</span>
-                      <Users className="h-4 w-4 text-[#1b365d]" />
-                    </div>
-                    <p className="mt-2 text-2xl font-bold text-[#1b365d]">
-                      {requests.filter(r => r.requestType === "Asset").length} Pending
-                    </p>
-                    <span className="text-[10px] text-slate-500">Inventory allocation</span>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span className="text-[11px] font-bold uppercase tracking-wider">Leave Approvals</span>
-                      <FileText className="h-4 w-4 text-amber-600" />
-                    </div>
-                    <p className="mt-2 text-2xl font-bold text-amber-600">
-                      {requests.filter(r => r.requestType === "Leave").length} Pending
-                    </p>
-                    <span className="text-[10px] text-slate-500">Tier 1 HR Review</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span className="text-[11px] font-bold uppercase tracking-wider">Active Tasks</span>
-                      <Activity className="h-4 w-4 text-[#1b365d]" />
-                    </div>
-                    <p className="mt-2 text-2xl font-bold text-[#1b365d]">{scopedTasks.length}</p>
-                    <span className="text-[10px] text-slate-500">Visible to your role</span>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span className="text-[11px] font-bold uppercase tracking-wider">Due This Week</span>
-                      <Calendar className="h-4 w-4 text-[#c65a28]" />
-                    </div>
-                    <p className="mt-2 text-2xl font-bold text-[#c65a28]">
-                      {scopedTasks.filter((t) => t.urgency === "Urgent").length} Urgent
-                    </p>
-                    <span className="text-[10px] text-slate-500">Camps & hearings</span>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span className="text-[11px] font-bold uppercase tracking-wider">Logged Hours</span>
-                      <Clock className="h-4 w-4 text-[#e59a24]" />
-                    </div>
-                    <p className="mt-2 text-2xl font-bold text-[#e59a24]">37.5 hrs</p>
-                    <span className="text-[10px] text-slate-500">Current cycle</span>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span className="text-[11px] font-bold uppercase tracking-wider">My Requests</span>
-                      <FileText className="h-4 w-4 text-emerald-600" />
-                    </div>
-                    <p className="mt-2 text-2xl font-bold text-emerald-600">{scopedRequests.length}</p>
-                    <span className="text-[10px] text-slate-500">Submitted queue</span>
-                  </div>
-                </div>
-              )
-            )}
 
             {/* MAIN CONTENT AREA */}
             {mainViewTab === "POLICIES" ? (
@@ -1153,265 +909,13 @@ export default function WorkspacePage() {
                   ))}
                 </div>
               </div>
-            ) : isSystemAdmin || isExecutiveUser ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">
-                    Executive Control Center & Supabase Database Queue
-                  </h3>
-                  <Link href="/analytics" className="text-xs font-bold text-[#1b365d] hover:underline">
-                    View Full Executive Analytics Suite →
-                  </Link>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
-                      <input
-                        type="text"
-                        placeholder="Search all institutional requests by staff name, type, or ID..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-4 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
-                      />
-                    </div>
-                  </div>
-
-                  {filteredRequests.length === 0 ? (
-                    <div className="rounded-xl border border-dashed border-slate-200 py-12 text-center text-xs text-slate-500">
-                      No institutional requests currently in the executive review queue.
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {filteredRequests.map((req) => (
-                        <div
-                          key={req.id}
-                          className="rounded-xl border border-slate-100 bg-[#f8fafc] p-4 transition hover:border-[#1b365d]/40 hover:bg-white hover:shadow-2xs"
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-mono text-[11px] font-bold text-[#1b365d]">{req.id}</span>
-                                <span className="rounded-md bg-slate-200 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-700">
-                                  {req.requestType}
-                                </span>
-                                <span className="text-[11px] font-semibold text-slate-600">
-                                  Requested By: <strong className="text-slate-900">{req.requesterName}</strong> ({req.requesterEmail})
-                                </span>
-                              </div>
-                              <h4 className="mt-1 text-xs font-bold text-slate-900">{req.description}</h4>
-                              {req.delegatedPerson && (
-                                <p className="text-[11px] text-slate-500 mt-1">
-                                  Delegated Person / Acting: <strong className="text-slate-700">{req.delegatedPerson}</strong>
-                                </p>
-                              )}
-                              {req.attachmentUrl && (
-                                <div className="mt-2">
-                                  <a
-                                    href={req.attachmentUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1b365d] hover:underline"
-                                  >
-                                    <Paperclip className="h-3 w-3 text-[#c65a28]" />
-                                    <span>View Attached Document / Quotation</span>
-                                  </a>
-                                </div>
-                              )}
-                            </div>
-                            <div className="text-right shrink-0">
-                              {req.amount ? (
-                                <span className="text-sm font-bold text-[#1b365d]">PKR {Number(req.amount).toLocaleString("en-PK")}</span>
-                              ) : (
-                                <span className="text-xs font-bold text-[#1b365d]">{req.days || 1} Unit(s) / Day(s)</span>
-                              )}
-                              <div className="mt-1 flex items-center justify-end gap-2">
-                                <span className="rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[10px] font-semibold text-amber-700">
-                                  {req.status}
-                                </span>
-                                <button
-                                  onClick={async () => {
-                                    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-                                    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-                                    if (url && key) {
-                                      await fetch(`${url}/rest/v1/requests?id=eq.${req.id}`, {
-                                        method: "PATCH",
-                                        headers: {
-                                          apikey: key,
-                                          Authorization: `Bearer ${key}`,
-                                          "Content-Type": "application/json",
-                                        },
-                                        body: JSON.stringify({ status: "Executive Authorized" }),
-                                      });
-                                    }
-                                    setRequests(requests.map(r => r.id === req.id ? { ...r, status: "Executive Authorized" } : r));
-                                  }}
-                                  className="rounded-lg bg-emerald-600 hover:bg-emerald-700 px-2 py-1 text-[10px] font-bold text-white cursor-pointer"
-                                >
-                                  Authorize
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : isFinanceUser ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">
-                    Finance & Grant Audit Dashboard (Pending Review)
-                  </h3>
-                  <Link href="/finance" className="text-xs font-bold text-[#1b365d] hover:underline">
-                    View Full Finance Ledger →
-                  </Link>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-700 uppercase">Payroll Tier 2 Audit</span>
-                      <span className="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-700">Pending Audit</span>
-                    </div>
-                    <p className="text-sm font-bold text-slate-900">Monthly Staff Compensation (August 2026)</p>
-                    <p className="text-xs text-slate-500">Verify grant allocations for NAVTTC and regional legal programs.</p>
-                    <Link
-                      href="/payroll"
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#1b365d] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#122440]"
-                    >
-                      <Banknote className="h-3.5 w-3.5 text-[#fad207]" />
-                      <span>Audit Payroll & Grant Balances</span>
-                    </Link>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-700 uppercase">Expense Claims Review</span>
-                      <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-700">Active Queue</span>
-                    </div>
-                    <p className="text-sm font-bold text-slate-900">Field Fuel, Transport & Court Filing Claims</p>
-                    <p className="text-xs text-slate-500">Review receipts and reimburse field coordinators across Sindh hubs.</p>
-                    <Link
-                      href="/finance"
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#c65a28] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#a8491d]"
-                    >
-                      <CreditCard className="h-3.5 w-3.5 text-[#fad207]" />
-                      <span>Review Expense Claims</span>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ) : isHrAdminUser ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">
-                    HR & Admin Management Desk (Team Requisitions & Requests)
-                  </h3>
-                  <span className="text-xs text-slate-500">Reviewing all staff purchases, assets & leave</span>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
-                      <input
-                        type="text"
-                        placeholder="Search team requests by staff name, purpose, or ID..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-4 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
-                      />
-                    </div>
-                  </div>
-
-                  {filteredRequests.length === 0 ? (
-                    <div className="rounded-xl border border-dashed border-slate-200 py-12 text-center text-xs text-slate-500">
-                      No team requests or requisitions currently pending review.
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {filteredRequests.map((req) => (
-                        <div
-                          key={req.id}
-                          className="rounded-xl border border-slate-100 bg-[#f8fafc] p-4 transition hover:border-[#1b365d]/40 hover:bg-white hover:shadow-2xs"
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-mono text-[11px] font-bold text-[#1b365d]">{req.id}</span>
-                                <span className="rounded-md bg-slate-200 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-700">
-                                  {req.requestType}
-                                </span>
-                                <span className="text-[11px] font-semibold text-slate-600">
-                                  Requested By: <strong className="text-slate-900">{req.requesterName}</strong> ({req.requesterEmail})
-                                </span>
-                              </div>
-                              <h4 className="mt-1 text-xs font-bold text-slate-900">{req.description}</h4>
-                              {req.attachmentUrl && (
-                                <div className="mt-2">
-                                  <a
-                                    href={req.attachmentUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1b365d] hover:underline"
-                                  >
-                                    <Paperclip className="h-3 w-3 text-[#c65a28]" />
-                                    <span>View Attached Document / Quotation</span>
-                                  </a>
-                                </div>
-                              )}
-                            </div>
-                            <div className="text-right shrink-0">
-                              {req.amount ? (
-                                <span className="text-sm font-bold text-[#1b365d]">PKR {Number(req.amount).toLocaleString("en-PK")}</span>
-                              ) : (
-                                <span className="text-xs font-bold text-[#1b365d]">{req.days || 1} Unit(s) / Day(s)</span>
-                              )}
-                              <div className="mt-1 flex items-center justify-end gap-2">
-                                <span className="rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[10px] font-semibold text-amber-700">
-                                  {req.status}
-                                </span>
-                                <button
-                                  onClick={async () => {
-                                    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-                                    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-                                    if (url && key) {
-                                      await fetch(`${url}/rest/v1/requests?id=eq.${req.id}`, {
-                                        method: "PATCH",
-                                        headers: {
-                                          apikey: key,
-                                          Authorization: `Bearer ${key}`,
-                                          "Content-Type": "application/json",
-                                        },
-                                        body: JSON.stringify({ status: "Approved & Processed by Admin" }),
-                                      });
-                                    }
-                                    setRequests(requests.map(r => r.id === req.id ? { ...r, status: "Approved & Processed by Admin" } : r));
-                                  }}
-                                  className="rounded-lg bg-emerald-600 hover:bg-emerald-700 px-2 py-1 text-[10px] font-bold text-white cursor-pointer"
-                                >
-                                  Approve
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
             ) : mainViewTab === "MY_TASKS" ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">
                     My Deliverables & Assigned Operations ({scopedTasks.length})
                   </h3>
-                  <span className="text-xs text-slate-500">Protected view with Supabase database sync</span>
+                  <span className="text-xs text-slate-500">Supabase Cloud Synchronized</span>
                 </div>
 
                 <div className="space-y-3">
@@ -1454,22 +958,71 @@ export default function WorkspacePage() {
                   ))}
                 </div>
               </div>
-            ) : null}
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">
+                    Master Requisitions Queue
+                  </h3>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+                  <div className="relative">
+                    <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Search requisitions..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-4 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    {filteredRequests.map((req) => (
+                      <div key={req.id} className="rounded-xl border border-slate-100 bg-[#f8fafc] p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-[11px] font-bold text-[#1b365d]">{req.id}</span>
+                              <span className="rounded-md bg-slate-200 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-700">
+                                {req.requestType}
+                              </span>
+                              <span className="text-[11px] font-semibold text-slate-600">
+                                By: <strong className="text-slate-900">{req.requesterName}</strong>
+                              </span>
+                            </div>
+                            <h4 className="mt-1 text-xs font-bold text-slate-900">{req.description}</h4>
+                          </div>
+                          <div className="text-right shrink-0">
+                            {req.amount ? (
+                              <span className="text-sm font-bold text-[#1b365d]">PKR {Number(req.amount).toLocaleString("en-PK")}</span>
+                            ) : (
+                              <span className="text-xs font-bold text-[#1b365d]">{req.days || 1} Day(s)</span>
+                            )}
+                            <div className="mt-1">
+                              <span className="rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[10px] font-semibold text-amber-700">
+                                {req.status}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>
 
-      {/* TASK CREATION MODAL FOR MANAGERS */}
+      {/* TASK MODAL */}
       {isTaskModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs animate-in fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
           <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="text-base font-bold text-[#1b365d]">Initiate & Assign Deliverable</h3>
-                <p className="text-[11px] text-slate-500">
-                  Assigned by Manager: <strong className="text-slate-800">{currentUser.name}</strong>
-                </p>
-              </div>
+              <h3 className="text-base font-bold text-[#1b365d]">Initiate & Assign Deliverable</h3>
               <button onClick={() => { setIsTaskModalOpen(false); setTaskFeedback(null); }} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
                 <X className="h-5 w-5" />
               </button>
@@ -1484,13 +1037,11 @@ export default function WorkspacePage() {
 
             <form onSubmit={handleCreateTask} className="space-y-3">
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
-                  Task Title / Deliverable
-                </label>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Task Title</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Conduct Legal Camp at UC Qasimabad"
+                  placeholder="e.g. Conduct Legal Camp"
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
@@ -1498,9 +1049,7 @@ export default function WorkspacePage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-[#1b365d] mb-1">
-                  Assign Task To Subordinate / Team Member
-                </label>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-[#1b365d] mb-1">Assign To Subordinate</label>
                 <select
                   value={taskAssigneeEmail}
                   onChange={(e) => setTaskAssigneeEmail(e.target.value)}
@@ -1525,45 +1074,28 @@ export default function WorkspacePage() {
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-semibold focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
                   >
                     <option value="Community Legal Camp">Community Legal Camp</option>
-                    <option value="Prison Unit (NAVTTC)">Prison Unit (NAVTTC)</option>
-                    <option value="Legal Casework / Court">Legal Casework / Court</option>
-                    <option value="Police Training">Police Training</option>
-                    <option value="Operational / Admin Task">Operational / Admin Task</option>
-                    <option value="Other">Other (Custom Specified)</option>
+                    <option value="Prison Unit">Prison Unit</option>
+                    <option value="Legal Casework">Legal Casework</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
-
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Regional Hub</label>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Hub</label>
                   <select
                     value={taskHub}
                     onChange={(e) => setTaskHub(e.target.value as "Karachi" | "Hyderabad" | "Sukkur")}
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-semibold focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
                   >
-                    <option value="Sukkur">Sukkur Regional</option>
-                    <option value="Hyderabad">Hyderabad Regional</option>
-                    <option value="Karachi">Karachi HO</option>
+                    <option value="Sukkur">Sukkur</option>
+                    <option value="Hyderabad">Hyderabad</option>
+                    <option value="Karachi">Karachi</option>
                   </select>
                 </div>
               </div>
 
-              {taskCategory === "Other" && (
-                <div className="animate-in fade-in">
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[#c65a28] mb-1">Specify Custom Category</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Enter custom category name"
-                    value={customCategoryText}
-                    onChange={(e) => setCustomCategoryText(e.target.value)}
-                    className="w-full rounded-xl border border-orange-200 bg-orange-50/40 p-2 text-xs font-semibold text-[#1b365d] focus:border-[#c65a28] focus:bg-white focus:outline-hidden"
-                  />
-                </div>
-              )}
-
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Target Due Date</label>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Due Date</label>
                   <input
                     type="date"
                     required
@@ -1573,62 +1105,47 @@ export default function WorkspacePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Priority / Urgency</label>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Urgency</label>
                   <select
                     value={taskUrgency}
                     onChange={(e) => setTaskUrgency(e.target.value as "Standard" | "Urgent")}
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-semibold focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
                   >
-                    <option value="Standard">Standard Priority</option>
-                    <option value="Urgent">Urgent Due Date</option>
+                    <option value="Standard">Standard</option>
+                    <option value="Urgent">Urgent</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Location / Venue</label>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Venue</label>
                 <input
                   type="text"
-                  placeholder="e.g. Sessions Court Sukkur"
+                  placeholder="e.g. Court / Camp Location"
                   value={taskVenue}
                   onChange={(e) => setTaskVenue(e.target.value)}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
                 />
               </div>
 
-              <div className="flex items-center gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => { setIsTaskModalOpen(false); setTaskFeedback(null); }}
-                  className="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submittingTask}
-                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#1b365d] py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#122440] cursor-pointer disabled:opacity-50"
-                >
-                  <Send className="h-3.5 w-3.5 text-[#fad207]" />
-                  <span>{submittingTask ? "Assigning..." : "Assign & Dispatch Task"}</span>
-                </button>
-              </div>
+              <button
+                type="submit"
+                disabled={submittingTask}
+                className="w-full rounded-xl bg-[#1b365d] py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#122440] cursor-pointer"
+              >
+                {submittingTask ? "Assigning..." : "Assign & Dispatch Task"}
+              </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* OPERATIONS REQUEST MODAL */}
+      {/* REQUEST MODAL */}
       {isApplyModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs animate-in fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
           <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="text-base font-bold text-[#1b365d]">Submit Operations / Admin Request</h3>
-                <p className="text-[11px] text-slate-500">
-                  Submitting as: <strong className="text-slate-800">{currentUser.name}</strong> ({currentUser.email})
-                </p>
-              </div>
+              <h3 className="text-base font-bold text-[#1b365d]">Submit Operations Request</h3>
               <button onClick={() => setIsApplyModalOpen(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
                 <X className="h-5 w-5" />
               </button>
@@ -1636,91 +1153,48 @@ export default function WorkspacePage() {
 
             <form onSubmit={handleCreateRequest} className="space-y-4">
               <div className="grid grid-cols-4 gap-1.5 rounded-xl bg-slate-100 p-1">
-                <button
-                  type="button"
-                  onClick={() => setFormType("Leave")}
-                  className={`rounded-lg py-2 text-[11px] font-bold transition cursor-pointer ${
-                    formType === "Leave" ? "bg-white text-[#1b365d] shadow-2xs" : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  Leave
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormType("Expense")}
-                  className={`rounded-lg py-2 text-[11px] font-bold transition cursor-pointer ${
-                    formType === "Expense" ? "bg-white text-[#1b365d] shadow-2xs" : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  Expense
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormType("Purchase")}
-                  className={`rounded-lg py-2 text-[11px] font-bold transition cursor-pointer ${
-                    formType === "Purchase" ? "bg-white text-[#1b365d] shadow-2xs" : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  Purchase
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormType("Asset")}
-                  className={`rounded-lg py-2 text-[11px] font-bold transition cursor-pointer ${
-                    formType === "Asset" ? "bg-white text-[#1b365d] shadow-2xs" : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  Asset
-                </button>
+                {(["Leave", "Expense", "Purchase", "Asset"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setFormType(t)}
+                    className={`rounded-lg py-2 text-[11px] font-bold transition cursor-pointer ${
+                      formType === t ? "bg-white text-[#1b365d] shadow-2xs" : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    {t}
+                  </button>
+                ))}
               </div>
 
-              {formType === "Leave" ? (
+              {formType === "Leave" && (
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
-                      Leave Category
-                    </label>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Leave Category</label>
                     <select
                       value={formLeaveCategory}
                       onChange={(e) => setFormLeaveCategory(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-medium text-slate-800 focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs"
                     >
-                      <option value="Casual">Casual Leave (5 Days Quota)</option>
-                      <option value="Annual">Annual Leave (5 Days Quota)</option>
-                      <option value="Sick">Sick / Medical Leave (2 Days Quota)</option>
-                      <option value="Other">Other (Custom Specified)</option>
+                      <option value="Casual">Casual Leave</option>
+                      <option value="Annual">Annual Leave</option>
+                      <option value="Sick">Sick / Medical Leave</option>
                     </select>
                   </div>
 
-                  {formLeaveCategory === "Other" && (
-                    <div className="animate-in fade-in">
-                      <label className="block text-[11px] font-bold uppercase tracking-wider text-[#c65a28] mb-1">
-                        Specify Custom Leave Category
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="Enter leave type (e.g. Sabbatical / Bereavement Leave)"
-                        value={customLeaveCategory}
-                        onChange={(e) => setCustomLeaveCategory(e.target.value)}
-                        className="w-full rounded-xl border border-orange-200 bg-orange-50/40 p-2 text-xs font-semibold text-[#1b365d] focus:border-[#c65a28] focus:bg-white focus:outline-hidden"
-                      />
-                    </div>
-                  )}
-
                   <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-[#1b365d] mb-1">
-                      Delegation of Authority (Acting Person in Charge)
+                      Delegation of Authority (Acting Person)
                     </label>
                     <select
                       value={formDelegatedPerson}
                       onChange={(e) => setFormDelegatedPerson(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-semibold focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-semibold"
                     >
                       <option value="">Select Colleague for Delegation</option>
                       {OFFICIAL_ROSTER.filter((s) => s.email !== currentUser.email).map((staff) => (
                         <option key={staff.email} value={staff.name}>
-                          {staff.name} — {staff.designation} ({staff.department})
+                          {staff.name} — {staff.designation}
                         </option>
                       ))}
                     </select>
@@ -1733,8 +1207,7 @@ export default function WorkspacePage() {
                         type="date"
                         value={formStartDate}
                         onChange={(e) => setFormStartDate(e.target.value)}
-                        required
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs"
                       />
                     </div>
                     <div>
@@ -1743,139 +1216,9 @@ export default function WorkspacePage() {
                         type="date"
                         value={formEndDate}
                         onChange={(e) => setFormEndDate(e.target.value)}
-                        required
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs"
                       />
                     </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Total Days</label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="30"
-                      value={formDays}
-                      onChange={(e) => setFormDays(parseInt(e.target.value) || 1)}
-                      required
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
-                    />
-                  </div>
-                </div>
-              ) : formType === "Purchase" ? (
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Estimated Budget (PKR)</label>
-                    <input
-                      type="number"
-                      min="500"
-                      step="100"
-                      placeholder="e.g. 25000"
-                      value={formAmount || ""}
-                      onChange={(e) => setFormAmount(parseFloat(e.target.value) || 0)}
-                      required
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-bold text-[#1b365d] focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
-                      Attach Vendor Quotation / Specs (PDF / JPG)
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const url = await handleFileUpload(file);
-                          setFormAttachmentUrl(url);
-                        }
-                      }}
-                      className="w-full text-xs text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#1b365d] file:text-white hover:file:bg-[#122440] cursor-pointer"
-                    />
-                    {isUploadingFile && <span className="text-[10px] text-[#c65a28] font-semibold mt-1 block">Processing attachment...</span>}
-                    {formAttachmentUrl && <span className="text-[10px] text-emerald-600 font-semibold mt-1 block">✓ Attachment ready!</span>}
-                  </div>
-                </div>
-              ) : formType === "Asset" ? (
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Asset Category / Item</label>
-                    <select
-                      value={formExpenseCategory}
-                      onChange={(e) => setFormExpenseCategory(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-medium text-slate-800 focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
-                    >
-                      <option value="Laptop / Computer Hardware">Laptop / Computer Hardware</option>
-                      <option value="Printer & Scanner Equipment">Printer & Scanner Equipment</option>
-                      <option value="Field Furniture & Camp Gear">Field Furniture & Camp Gear</option>
-                      <option value="Mobile / Communication Device">Mobile / Communication Device</option>
-                      <option value="Other">Other (Custom Specified)</option>
-                    </select>
-                  </div>
-
-                  {formExpenseCategory === "Other" && (
-                    <div className="animate-in fade-in">
-                      <label className="block text-[11px] font-bold uppercase tracking-wider text-[#c65a28] mb-1">
-                        Specify Custom Asset
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="Enter asset name (e.g. Projector / UPS Backup Unit)"
-                        value={customExpenseCategory}
-                        onChange={(e) => setCustomExpenseCategory(e.target.value)}
-                        className="w-full rounded-xl border border-orange-200 bg-orange-50/40 p-2 text-xs font-semibold text-[#1b365d] focus:border-[#c65a28] focus:bg-white focus:outline-hidden"
-                      />
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Expense Category</label>
-                    <select
-                      value={formExpenseCategory}
-                      onChange={(e) => setFormExpenseCategory(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-medium text-slate-800 focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
-                    >
-                      <option value="Travel / Field Fuel & Transport">Travel / Field Fuel & Transport</option>
-                      <option value="Court Filing & Legal Fees">Court Filing & Legal Defense Costs</option>
-                      <option value="Office Supplies & Utilities">Office Supplies & Logistics</option>
-                      <option value="Community Awareness / Camp">Community Legal Awareness Camp</option>
-                      <option value="Other">Other (Custom Specified)</option>
-                    </select>
-                  </div>
-
-                  {formExpenseCategory === "Other" && (
-                    <div className="animate-in fade-in">
-                      <label className="block text-[11px] font-bold uppercase tracking-wider text-[#c65a28] mb-1">
-                        Specify Custom Expense Category
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="Enter expense type (e.g. Emergency Relief / Venue Rental)"
-                        value={customExpenseCategory}
-                        onChange={(e) => setCustomExpenseCategory(e.target.value)}
-                        className="w-full rounded-xl border border-orange-200 bg-orange-50/40 p-2 text-xs font-semibold text-[#1b365d] focus:border-[#c65a28] focus:bg-white focus:outline-hidden"
-                      />
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Amount Requested (PKR)</label>
-                    <input
-                      type="number"
-                      min="100"
-                      step="50"
-                      placeholder="e.g. 7500"
-                      value={formAmount || ""}
-                      onChange={(e) => setFormAmount(parseFloat(e.target.value) || 0)}
-                      required
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-bold text-[#1b365d] focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
-                    />
                   </div>
                 </div>
               )}
@@ -1885,36 +1228,26 @@ export default function WorkspacePage() {
                 <textarea
                   rows={3}
                   required
-                  placeholder="Detail the requirement, purchase justification, or asset allocation purpose..."
+                  placeholder="Detail the requirement or leave purpose..."
                   value={formDescription}
                   onChange={(e) => setFormDescription(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden resize-none"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs resize-none"
                 />
               </div>
 
               {submitSuccess ? (
                 <div className="flex items-center justify-center gap-2 rounded-xl bg-emerald-50 p-3 text-xs font-bold text-emerald-700 border border-emerald-200">
                   <CheckCircle2 className="h-4 w-4" />
-                  <span>Submitted & Stored in Supabase Database!</span>
+                  <span>Submitted & Synced to Supabase!</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsApplyModalOpen(false)}
-                    className="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={submittingForm || isUploadingFile}
-                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#c65a28] py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#a8491d] disabled:opacity-50 cursor-pointer"
-                  >
-                    <Send className="h-3.5 w-3.5 text-[#fad207]" />
-                    <span>{submittingForm ? "Submitting..." : "Submit Requisition"}</span>
-                  </button>
-                </div>
+                <button
+                  type="submit"
+                  disabled={submittingForm}
+                  className="w-full rounded-xl bg-[#c65a28] py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#a8491d] cursor-pointer"
+                >
+                  {submittingForm ? "Submitting..." : "Submit Requisition"}
+                </button>
               )}
             </form>
           </div>
@@ -1923,88 +1256,8 @@ export default function WorkspacePage() {
 
       {/* FOOTER */}
       <footer className="mt-16 border-t border-slate-200 bg-[#1b365d] text-white">
-        <div className="border-b border-white/10 bg-[#122440] py-4 px-4 sm:px-6">
-          <div className="container mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <span className="flex h-2.5 w-2.5 rounded-full bg-[#fad207]" />
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-200">
-                Pakistan Legal United Society · Operations & Legal Aid Hub
-              </span>
-            </div>
-            <div>
-              <span className="rounded-lg bg-[#c65a28] px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
-                Supabase Cloud Connected
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="container mx-auto max-w-7xl px-4 py-10 sm:px-6">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
-            <div className="space-y-4 md:col-span-4">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center rounded-xl p-2 bg-white">
-                  <img src={OFFICIAL_LOGO_URL} alt="PLUS Logo" className="h-12 w-auto object-contain" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold tracking-tight text-white">Pakistan Legal United Society</h3>
-                  <p className="text-[12px] font-bold text-[#fad207]">انصاف سب کا حق ہے</p>
-                </div>
-              </div>
-              <p className="text-xs text-slate-300 leading-relaxed max-w-sm">
-                Committed to human rights protection, public interest legal aid, and operational transparency across Sindh and Pakistan.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 md:col-span-8">
-              <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-xs">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-[#fad207] mb-1.5">
-                  <MapPin className="h-3.5 w-3.5" />
-                  <span>Head Office (Karachi)</span>
-                </div>
-                <p className="text-[11px] text-slate-300 leading-normal">
-                  Plot 213, St 4, New Bakhtawar Goth, Block-09, Gulistan-e-Johar
-                </p>
-                <div className="mt-2.5 flex items-center gap-1 text-[11px] font-mono text-slate-200">
-                  <Phone className="h-3.5 w-3.5 text-[#fad207]" />
-                  <span>021-34011698</span>
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-xs">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-[#fad207] mb-1.5">
-                  <MapPin className="h-3.5 w-3.5" />
-                  <span>Regional (Hyderabad)</span>
-                </div>
-                <p className="text-[11px] text-slate-300 leading-normal">
-                  House B/7 Ground Floor, Street 1, Sunny Bungalows, Qasimabad
-                </p>
-                <div className="mt-2.5 flex items-center gap-1 text-[11px] font-mono text-slate-200">
-                  <Phone className="h-3.5 w-3.5 text-[#fad207]" />
-                  <span>071-5824119</span>
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-xs">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-[#fad207] mb-1.5">
-                  <MapPin className="h-3.5 w-3.5" />
-                  <span>Regional (Sukkur)</span>
-                </div>
-                <p className="text-[11px] text-slate-300 leading-normal">
-                  Women Development Complex, near SRSO, Shikarpur Rd
-                </p>
-                <div className="mt-2.5 flex items-center gap-1 text-[11px] font-mono text-slate-200">
-                  <Phone className="h-3.5 w-3.5 text-[#fad207]" />
-                  <span>071-5824119</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 border-t border-white/10 pt-4 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400">
-            <span>PLUS Governance & Operations Management System</span>
-            <span className="font-mono text-[#fad207]">dataplus.org@gmail.com</span>
-          </div>
+        <div className="container mx-auto max-w-7xl px-4 py-8 text-center text-xs text-slate-300">
+          Pakistan Legal United Society · Operations & Legal Aid Hub · Supabase Cloud Connected
         </div>
       </footer>
     </div>
