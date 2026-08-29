@@ -37,6 +37,9 @@ import {
   Banknote,
   Wallet,
   Database,
+  BookOpen,
+  FolderTree,
+  FileCheck,
 } from "lucide-react";
 
 interface RequestItem {
@@ -133,6 +136,35 @@ const INITIAL_PORTFOLIO_TASKS: AssignedTask[] = [
   },
 ];
 
+interface PolicyDocument {
+  id: string;
+  title: string;
+  category: "HR Policies" | "Finance Policies" | "Safeguarding Policies" | "MEAL Policies" | "Admin Policies" | "SOPs" | "Code of Conduct";
+  lastUpdated: string;
+  version: string;
+  description: string;
+}
+
+const POLICY_CATEGORIES = [
+  "HR Policies",
+  "Finance Policies",
+  "Safeguarding Policies",
+  "MEAL Policies",
+  "Admin Policies",
+  "SOPs",
+  "Code of Conduct",
+] as const;
+
+const INITIAL_POLICIES: PolicyDocument[] = [
+  { id: "POL-01", title: "PLUS Staff Handbook & Leave Regulations", category: "HR Policies", lastUpdated: "2026-01-15", version: "v3.2", description: "Comprehensive guidelines regarding staff attendance, leave quotas, and appraisals." },
+  { id: "POL-02", title: "Institutional Financial & Procurement Manual", category: "Finance Policies", lastUpdated: "2026-02-10", version: "v2.0", description: "Standard operating procedures for grant allocations, expense claims, and vendor bidding." },
+  { id: "POL-03", title: "Child & Vulnerable Inmate Safeguarding Policy", category: "Safeguarding Policies", lastUpdated: "2026-03-01", version: "v1.5", description: "Mandatory protection protocols for community legal clinics and prison training hubs." },
+  { id: "POL-04", title: "Monitoring, Evaluation & Learning (MEAL) Framework", category: "MEAL Policies", lastUpdated: "2026-01-20", version: "v2.1", description: "Guidelines for recording hospital visits, community camps, and legal aid case dockets." },
+  { id: "POL-05", title: "Asset Management & Office Logistics SOP", category: "Admin Policies", lastUpdated: "2026-04-12", version: "v1.8", description: "Protocols for equipment allocation, inventory tracking across Karachi, Sukkur & Hyderabad." },
+  { id: "POL-06", title: "Field Legal Aid Clinic Operations SOP", category: "SOPs", lastUpdated: "2026-02-28", version: "v3.0", description: "Step-by-step procedures for conducting mobile legal camps and distributing rights booklets." },
+  { id: "POL-07", title: "PLUS Ethical Code of Conduct & Anti-Fraud Policy", category: "Code of Conduct", lastUpdated: "2026-01-10", version: "v4.0", description: "Core ethical standards and whistleblower protections for all PLUS staff and partners." },
+];
+
 const OFFICIAL_LOGO_URL =
   "https://grassrootsjusticenetwork.org/wp-content/uploads/2023/12/PLUS-logo-1-768x593.png";
 
@@ -149,9 +181,10 @@ export default function WorkspacePage() {
   // App State
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [tasks, setTasks] = useState<AssignedTask[]>(INITIAL_PORTFOLIO_TASKS);
+  const [policies] = useState<PolicyDocument[]>(INITIAL_POLICIES);
   const [searchQuery, setSearchQuery] = useState("");
-  const [mainViewTab, setMainViewTab] = useState<"MY_TASKS" | "REQUESTs">("MY_TASKS");
-  const [activeRequestFilter, setActiveRequestFilter] = useState<"ALL" | "LEAVE" | "EXPENSE" | "PURCHASE" | "ASSET">("ALL");
+  const [mainViewTab, setMainViewTab] = useState<"MY_TASKS" | "REQUESTs" | "POLICIES">("MY_TASKS");
+  const [activePolicyCategory, setActivePolicyCategory] = useState<string>("ALL");
 
   // Request Form Modal State
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
@@ -171,7 +204,7 @@ export default function WorkspacePage() {
   const [submittingForm, setSubmittingForm] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  // Task Creation Modal State (Restored for Managers & Admins)
+  // Task Creation Modal State
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [taskTitle, setTaskTitle] = useState("");
   const [taskCategory, setTaskCategory] = useState("Community Legal Camp");
@@ -351,6 +384,15 @@ export default function WorkspacePage() {
       return matchesSearch;
     });
   }, [scopedRequests, searchQuery, activeRequestFilter]);
+
+  const filteredPolicies = useMemo(() => {
+    return policies.filter((pol) => {
+      const q = searchQuery.toLowerCase().trim();
+      const matchesSearch = !q || pol.title.toLowerCase().includes(q) || pol.description.toLowerCase().includes(q);
+      const matchesCategory = activePolicyCategory === "ALL" || pol.category === activePolicyCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [policies, searchQuery, activePolicyCategory]);
 
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -667,6 +709,17 @@ export default function WorkspacePage() {
                   <span>Staff Directory</span>
                 </Link>
 
+                {/* POLICIES HUB IN SIDEBAR NAV FOR EVERY USER */}
+                <button
+                  onClick={() => setMainViewTab("POLICIES")}
+                  className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-bold transition text-left cursor-pointer ${
+                    mainViewTab === "POLICIES" ? "bg-[#1b365d] text-white shadow-xs" : "text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  <BookOpen className="h-4 w-4 text-[#c65a28]" />
+                  <span>Institutional Policies Hub</span>
+                </button>
+
                 {(isSystemAdmin || isExecutiveUser) && (
                   <Link
                     href="/analytics"
@@ -709,19 +762,16 @@ export default function WorkspacePage() {
                   Welcome back, {currentUser.name}.
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  {isSystemAdmin || isExecutiveUser
+                  {mainViewTab === "POLICIES"
+                    ? "Centralized compliance repository organized by HR, Finance, Safeguarding, MEAL, and Admin policies."
+                    : isSystemAdmin || isExecutiveUser
                     ? "Executive governance overview, multi-hub analytics, and strategic authorization controls."
-                    : isFinanceUser
-                    ? "Financial master ledger, grant allocation burn rates, and expenditure audits."
-                    : isHrAdminUser
-                    ? "Managing incoming purchase requisitions, asset allocations, inventory, and staff requests."
                     : "Protected deliverable portfolio with Google Drive cloud storage and email dispatch."}
                 </p>
               </div>
 
               <div className="flex items-center gap-2">
-                {/* RESTORED MANAGER TASK ASSIGNMENT BUTTON */}
-                {isManagerOrAdmin && (
+                {isManagerOrAdmin && mainViewTab !== "POLICIES" && (
                   <button
                     onClick={() => setIsTaskModalOpen(true)}
                     className="inline-flex items-center gap-1.5 rounded-xl bg-[#1b365d] px-3.5 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-[#122440] cursor-pointer"
@@ -740,173 +790,255 @@ export default function WorkspacePage() {
               </div>
             </div>
 
-            {/* KPI CARDS */}
-            {isSystemAdmin || isExecutiveUser ? (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Total Roster</span>
-                    <Users className="h-4 w-4 text-[#1b365d]" />
+            {/* KPI CARDS (Hidden in Policies View for clean reading) */}
+            {mainViewTab !== "POLICIES" && (
+              isSystemAdmin || isExecutiveUser ? (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span className="text-[11px] font-bold uppercase tracking-wider">Total Roster</span>
+                      <Users className="h-4 w-4 text-[#1b365d]" />
+                    </div>
+                    <p className="mt-2 text-2xl font-bold text-[#1b365d]">16 Staff</p>
+                    <span className="text-[10px] text-slate-500">Active secure roster</span>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-[#1b365d]">16 Staff</p>
-                  <span className="text-[10px] text-slate-500">Active secure roster</span>
-                </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Master Requisitions</span>
-                    <ShoppingCart className="h-4 w-4 text-emerald-600" />
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span className="text-[11px] font-bold uppercase tracking-wider">Master Requisitions</span>
+                      <ShoppingCart className="h-4 w-4 text-emerald-600" />
+                    </div>
+                    <p className="mt-2 text-2xl font-bold text-emerald-600">{requests.length} Queued</p>
+                    <span className="text-[10px] text-slate-500">Executive review queue</span>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-emerald-600">{requests.length} Queued</p>
-                  <span className="text-[10px] text-slate-500">Executive review queue</span>
-                </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Active Grants</span>
-                    <Wallet className="h-4 w-4 text-[#c65a28]" />
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span className="text-[11px] font-bold uppercase tracking-wider">Active Grants</span>
+                      <Wallet className="h-4 w-4 text-[#c65a28]" />
+                    </div>
+                    <p className="mt-2 text-2xl font-bold text-[#c65a28]">3 Grants</p>
+                    <span className="text-[10px] text-slate-500">Hyd, Sukkur & Legal</span>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-[#c65a28]">3 Grants</p>
-                  <span className="text-[10px] text-slate-500">Hyd, Sukkur & Legal</span>
-                </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Governance Gate</span>
-                    <ShieldCheck className="h-4 w-4 text-[#1b365d]" />
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span className="text-[11px] font-bold uppercase tracking-wider">Governance Gate</span>
+                      <ShieldCheck className="h-4 w-4 text-[#1b365d]" />
+                    </div>
+                    <p className="mt-2 text-2xl font-bold text-[#1b365d]">Secured</p>
+                    <span className="text-[10px] text-slate-500">Multi-tier active</span>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-[#1b365d]">Secured</p>
-                  <span className="text-[10px] text-slate-500">Multi-tier active</span>
                 </div>
-              </div>
-            ) : isFinanceUser ? (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Active Grants</span>
-                    <Wallet className="h-4 w-4 text-[#1b365d]" />
+              ) : isFinanceUser ? (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span className="text-[11px] font-bold uppercase tracking-wider">Active Grants</span>
+                      <Wallet className="h-4 w-4 text-[#1b365d]" />
+                    </div>
+                    <p className="mt-2 text-2xl font-bold text-[#1b365d]">3 Grants</p>
+                    <span className="text-[10px] text-slate-500">Hyd, Sukkur & Legal</span>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-[#1b365d]">3 Grants</p>
-                  <span className="text-[10px] text-slate-500">Hyd, Sukkur & Legal</span>
-                </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Payroll Outflow</span>
-                    <Banknote className="h-4 w-4 text-emerald-600" />
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span className="text-[11px] font-bold uppercase tracking-wider">Payroll Outflow</span>
+                      <Banknote className="h-4 w-4 text-emerald-600" />
+                    </div>
+                    <p className="mt-2 text-2xl font-bold text-emerald-600">PKR 543k</p>
+                    <span className="text-[10px] text-slate-500">August 2026 Cycle</span>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-emerald-600">PKR 543k</p>
-                  <span className="text-[10px] text-slate-500">August 2026 Cycle</span>
-                </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Pending Claims</span>
-                    <FileText className="h-4 w-4 text-[#c65a28]" />
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span className="text-[11px] font-bold uppercase tracking-wider">Pending Claims</span>
+                      <FileText className="h-4 w-4 text-[#c65a28]" />
+                    </div>
+                    <p className="mt-2 text-2xl font-bold text-[#c65a28]">{requests.length} Claims</p>
+                    <span className="text-[10px] text-slate-500">Awaiting finance review</span>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-[#c65a28]">{requests.length} Claims</p>
-                  <span className="text-[10px] text-slate-500">Awaiting finance review</span>
-                </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Audit Status</span>
-                    <ShieldCheck className="h-4 w-4 text-[#1b365d]" />
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span className="text-[11px] font-bold uppercase tracking-wider">Audit Status</span>
+                      <ShieldCheck className="h-4 w-4 text-[#1b365d]" />
+                    </div>
+                    <p className="mt-2 text-2xl font-bold text-[#1b365d]">FBR Ready</p>
+                    <span className="text-[10px] text-slate-500">Withholding verified</span>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-[#1b365d]">FBR Ready</p>
-                  <span className="text-[10px] text-slate-500">Withholding verified</span>
                 </div>
-              </div>
-            ) : isHrAdminUser ? (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Incoming Requests</span>
-                    <ShoppingCart className="h-4 w-4 text-emerald-600" />
+              ) : isHrAdminUser ? (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span className="text-[11px] font-bold uppercase tracking-wider">Incoming Requests</span>
+                      <ShoppingCart className="h-4 w-4 text-emerald-600" />
+                    </div>
+                    <p className="mt-2 text-2xl font-bold text-emerald-600">
+                      {requests.length} Total
+                    </p>
+                    <span className="text-[10px] text-slate-500">Team requisitions queue</span>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-emerald-600">
-                    {requests.length} Total
-                  </p>
-                  <span className="text-[10px] text-slate-500">Team requisitions queue</span>
-                </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Purchase Queue</span>
-                    <Package className="h-4 w-4 text-[#c65a28]" />
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span className="text-[11px] font-bold uppercase tracking-wider">Purchase Queue</span>
+                      <Package className="h-4 w-4 text-[#c65a28]" />
+                    </div>
+                    <p className="mt-2 text-2xl font-bold text-[#c65a28]">
+                      {requests.filter(r => r.requestType === "Purchase").length} Open
+                    </p>
+                    <span className="text-[10px] text-slate-500">Procurement review</span>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-[#c65a28]">
-                    {requests.filter(r => r.requestType === "Purchase").length} Open
-                  </p>
-                  <span className="text-[10px] text-slate-500">Procurement review</span>
-                </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Asset Requests</span>
-                    <Users className="h-4 w-4 text-[#1b365d]" />
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span className="text-[11px] font-bold uppercase tracking-wider">Asset Requests</span>
+                      <Users className="h-4 w-4 text-[#1b365d]" />
+                    </div>
+                    <p className="mt-2 text-2xl font-bold text-[#1b365d]">
+                      {requests.filter(r => r.requestType === "Asset").length} Pending
+                    </p>
+                    <span className="text-[10px] text-slate-500">Inventory allocation</span>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-[#1b365d]">
-                    {requests.filter(r => r.requestType === "Asset").length} Pending
-                  </p>
-                  <span className="text-[10px] text-slate-500">Inventory allocation</span>
-                </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Leave Approvals</span>
-                    <FileText className="h-4 w-4 text-amber-600" />
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span className="text-[11px] font-bold uppercase tracking-wider">Leave Approvals</span>
+                      <FileText className="h-4 w-4 text-amber-600" />
+                    </div>
+                    <p className="mt-2 text-2xl font-bold text-amber-600">
+                      {requests.filter(r => r.requestType === "Leave").length} Pending
+                    </p>
+                    <span className="text-[10px] text-slate-500">Tier 1 HR Review</span>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-amber-600">
-                    {requests.filter(r => r.requestType === "Leave").length} Pending
-                  </p>
-                  <span className="text-[10px] text-slate-500">Tier 1 HR Review</span>
                 </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Active Tasks</span>
-                    <Activity className="h-4 w-4 text-[#1b365d]" />
+              ) : (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span className="text-[11px] font-bold uppercase tracking-wider">Active Tasks</span>
+                      <Activity className="h-4 w-4 text-[#1b365d]" />
+                    </div>
+                    <p className="mt-2 text-2xl font-bold text-[#1b365d]">{scopedTasks.length}</p>
+                    <span className="text-[10px] text-slate-500">Visible to your role</span>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-[#1b365d]">{scopedTasks.length}</p>
-                  <span className="text-[10px] text-slate-500">Visible to your role</span>
-                </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Due This Week</span>
-                    <Calendar className="h-4 w-4 text-[#c65a28]" />
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span className="text-[11px] font-bold uppercase tracking-wider">Due This Week</span>
+                      <Calendar className="h-4 w-4 text-[#c65a28]" />
+                    </div>
+                    <p className="mt-2 text-2xl font-bold text-[#c65a28]">
+                      {scopedTasks.filter((t) => t.urgency === "Urgent").length} Urgent
+                    </p>
+                    <span className="text-[10px] text-slate-500">Camps & hearings</span>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-[#c65a28]">
-                    {scopedTasks.filter((t) => t.urgency === "Urgent").length} Urgent
-                  </p>
-                  <span className="text-[10px] text-slate-500">Camps & hearings</span>
-                </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Logged Hours</span>
-                    <Clock className="h-4 w-4 text-[#e59a24]" />
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span className="text-[11px] font-bold uppercase tracking-wider">Logged Hours</span>
+                      <Clock className="h-4 w-4 text-[#e59a24]" />
+                    </div>
+                    <p className="mt-2 text-2xl font-bold text-[#e59a24]">37.5 hrs</p>
+                    <span className="text-[10px] text-slate-500">Current cycle</span>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-[#e59a24]">37.5 hrs</p>
-                  <span className="text-[10px] text-slate-500">Current cycle</span>
-                </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">My Requests</span>
-                    <FileText className="h-4 w-4 text-emerald-600" />
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span className="text-[11px] font-bold uppercase tracking-wider">My Requests</span>
+                      <FileText className="h-4 w-4 text-emerald-600" />
+                    </div>
+                    <p className="mt-2 text-2xl font-bold text-emerald-600">{scopedRequests.length}</p>
+                    <span className="text-[10px] text-slate-500">Submitted queue</span>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-emerald-600">{scopedRequests.length}</p>
-                  <span className="text-[10px] text-slate-500">Submitted queue</span>
                 </div>
-              </div>
+              )
             )}
 
             {/* MAIN CONTENT AREA */}
-            {isSystemAdmin || isExecutiveUser ? (
+            {mainViewTab === "POLICIES" ? (
+              <div className="space-y-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-4">
+                  <div>
+                    <h3 className="text-base font-bold text-[#1b365d]">Institutional Policies & SOPs Repository</h3>
+                    <p className="text-xs text-slate-500">Browse official guidelines categorized by department and operational framework.</p>
+                  </div>
+                  <div className="relative w-full sm:w-72">
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Search policies or SOPs..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-xs focus:border-[#1b365d] focus:outline-hidden"
+                    />
+                  </div>
+                </div>
+
+                {/* POLICY CATEGORY TABS / FOLDERS */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <button
+                    onClick={() => setActivePolicyCategory("ALL")}
+                    className={`rounded-xl px-3.5 py-2 text-xs font-bold transition cursor-pointer ${
+                      activePolicyCategory === "ALL" ? "bg-[#1b365d] text-white shadow-2xs" : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    All Categories ({policies.length})
+                  </button>
+                  {POLICY_CATEGORIES.map((cat) => {
+                    const count = policies.filter(p => p.category === cat).length;
+                    return (
+                      <button
+                        key={cat}
+                        onClick={() => setActivePolicyCategory(cat)}
+                        className={`rounded-xl px-3.5 py-2 text-xs font-bold transition cursor-pointer ${
+                          activePolicyCategory === cat ? "bg-[#1b365d] text-white shadow-2xs" : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        <span>{cat}</span>
+                        <span className="ml-1.5 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-600">{count}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* POLICY DOCUMENTS GRID / LIST */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {filteredPolicies.map((pol) => (
+                    <div
+                      key={pol.id}
+                      className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3 transition hover:border-[#1b365d]"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="rounded-md bg-[#1b365d]/10 px-2.5 py-1 text-[10px] font-bold text-[#1b365d]">
+                          {pol.category}
+                        </span>
+                        <span className="font-mono text-[10px] font-bold text-slate-400">
+                          {pol.version} · Updated: {pol.lastUpdated}
+                        </span>
+                      </div>
+                      <h4 className="text-sm font-bold text-slate-900">{pol.title}</h4>
+                      <p className="text-xs text-slate-600 leading-relaxed">{pol.description}</p>
+                      <div className="border-t border-slate-100 pt-3 flex items-center justify-between text-xs">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
+                          <FileCheck className="h-3.5 w-3.5 text-emerald-600" />
+                          <span>Approved & Verified</span>
+                        </span>
+                        <button
+                          onClick={() => alert(`Opening document viewer for: ${pol.title}`)}
+                          className="inline-flex items-center gap-1 font-bold text-[#1b365d] hover:text-[#c65a28] cursor-pointer"
+                        >
+                          <span>Read Document</span>
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : isSystemAdmin || isExecutiveUser ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">
@@ -1435,7 +1567,7 @@ export default function WorkspacePage() {
                     </div>
                   )}
 
-                  {/* RESTORED DELEGATION OF AUTHORITY FIELD */}
+                  {/* DELEGATION OF AUTHORITY FIELD */}
                   <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-[#1b365d] mb-1">
                       Delegation of Authority (Acting Person in Charge)
@@ -1694,7 +1826,7 @@ export default function WorkspacePage() {
                   Plot 213, St 4, New Bakhtawar Goth, Block-09, Gulistan-e-Johar
                 </p>
                 <div className="mt-2.5 flex items-center gap-1 text-[11px] font-mono text-slate-200">
-                  <Phone className="h-3 w-3 text-[#fad207]" />
+                  <Phone className="h-3.5 w-3.5 text-[#fad207]" />
                   <span>021-34011698</span>
                 </div>
               </div>
@@ -1708,7 +1840,7 @@ export default function WorkspacePage() {
                   House B/7 Ground Floor, Street 1, Sunny Bungalows, Qasimabad
                 </p>
                 <div className="mt-2.5 flex items-center gap-1 text-[11px] font-mono text-slate-200">
-                  <Phone className="h-3 w-3 text-[#fad207]" />
+                  <Phone className="h-3.5 w-3.5 text-[#fad207]" />
                   <span>071-5824119</span>
                 </div>
               </div>
@@ -1722,7 +1854,7 @@ export default function WorkspacePage() {
                   Women Development Complex, near SRSO, Shikarpur Rd
                 </p>
                 <div className="mt-2.5 flex items-center gap-1 text-[11px] font-mono text-slate-200">
-                  <Phone className="h-3 w-3 text-[#fad207]" />
+                  <Phone className="h-3.5 w-3.5 text-[#fad207]" />
                   <span>071-5824119</span>
                 </div>
               </div>
