@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   LayoutDashboard, 
   CreditCard, 
-  DollarSign, 
   Scale, 
   Users, 
   FileText, 
@@ -88,7 +87,7 @@ export default function OperationsPortal() {
   const [endDate, setEndDate] = useState("");
   const [daysCount, setDaysCount] = useState<number>(1);
   const [amountVal, setAmountVal] = useState<number>(0);
-  const [expenseCat, setExpenseCat] = useState("Travel");
+  const [expenseCat, setExpenseCat] = useState("Travel & Per Diem");
   const [description, setDescription] = useState("");
 
   const [taskTitle, setTaskTitle] = useState("");
@@ -194,8 +193,8 @@ export default function OperationsPortal() {
     if (!sessionUser) return;
 
     let approver = sessionUser.manager_email || "dataplus.org@gmail.com";
-    if (reqType === "Expense" && amountVal >= 50000) {
-      approver = "dataplus.org@gmail.com";
+    if ((reqType === "Expense" || reqType === "Purchase") && amountVal >= 50000) {
+      approver = "dataplus.org@gmail.com"; // Escalation threshold routing
     }
 
     const newReq: RequestItem = {
@@ -209,8 +208,8 @@ export default function OperationsPortal() {
       startDate: reqType === "Leave" ? startDate : undefined,
       endDate: reqType === "Leave" ? endDate : undefined,
       days: reqType === "Leave" ? Number(daysCount) : undefined,
-      amount: reqType === "Purchase" || reqType === "Expense" ? Number(amountVal) : undefined,
-      expenseCategory: reqType === "Expense" ? expenseCat : undefined,
+      amount: reqType === "Expense" || reqType === "Purchase" || reqType === "Asset" ? Number(amountVal) : undefined,
+      expenseCategory: reqType === "Expense" || reqType === "Purchase" ? expenseCat : undefined,
       description: description,
       status: "Pending Approval",
       currentApproverEmail: approver,
@@ -219,6 +218,7 @@ export default function OperationsPortal() {
     setRequests([newReq, ...requests]);
     setShowRequestModal(false);
     setDescription("");
+    setAmountVal(0);
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -553,6 +553,7 @@ export default function OperationsPortal() {
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <div>
                           <strong>{r.id}</strong> — <span style={{ color: "#0284c7", fontWeight: "600" }}>{r.requestType}</span> by <strong>{r.requesterName}</strong>
+                          {r.amount && <div style={{ fontSize: "13px", fontWeight: "600", color: "#ea580c" }}>Amount: PKR {r.amount.toLocaleString()}</div>}
                           <div style={{ fontSize: "13px", color: "#475569", marginTop: "4px" }}>{r.description}</div>
                         </div>
                         <div style={{ display: "flex", gap: "8px" }}>
@@ -715,7 +716,7 @@ export default function OperationsPortal() {
                 </>
               )}
 
-              {(reqType === "Expense" || reqType === "Purchase") && (
+              {(reqType === "Expense" || reqType === "Purchase" || reqType === "Asset") && (
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
                   <div>
                     <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px", color: "#334155" }}>Expense / Grant Category</label>
