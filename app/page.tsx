@@ -36,9 +36,7 @@ import {
   X,
   Banknote,
   Wallet,
-  Settings,
   Database,
-  Terminal,
 } from "lucide-react";
 
 interface RequestItem {
@@ -343,7 +341,7 @@ export default function WorkspacePage() {
         <div className="flex flex-1 items-center justify-center p-4">
           <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-xl">
             <div className="flex flex-col items-center text-center">
-              <div className="flex items-center justify-center rounded-2xl bg-[#1b365d] p-3 shadow-md">
+              <div className="flex items-center justify-center rounded-2xl p-2 bg-white">
                 <img src={OFFICIAL_LOGO_URL} alt="PLUS Logo" className="h-14 w-auto object-contain" />
               </div>
               <h2 className="mt-4 text-xl font-bold tracking-tight text-[#1b365d]">
@@ -416,10 +414,10 @@ export default function WorkspacePage() {
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col justify-between">
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-2xs">
-        <div className="container mx-auto flex max-w-7xl items-center justify-between px-4 py-2 sm:px-6">
+        <div className="container mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-6">
           <div className="flex items-center gap-3.5">
-            <div className="flex items-center rounded-xl bg-[#1b365d] p-1.5 shadow-xs">
-              <img src={OFFICIAL_LOGO_URL} alt="PLUS Logo" className="h-10 w-auto object-contain" />
+            <div className="flex items-center shrink-0">
+              <img src={OFFICIAL_LOGO_URL} alt="PLUS Logo" className="h-11 w-11 object-contain drop-shadow-xs" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -1091,7 +1089,7 @@ export default function WorkspacePage() {
           <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
             <div className="space-y-4 md:col-span-4">
               <div className="flex items-center gap-3">
-                <div className="rounded-xl bg-[#1b365d] p-1.5 border border-white/10 shadow-md inline-block">
+                <div className="flex items-center rounded-xl p-2 bg-white">
                   <img src={OFFICIAL_LOGO_URL} alt="PLUS Logo" className="h-12 w-auto object-contain" />
                 </div>
                 <div>
