@@ -22,6 +22,7 @@ import {
   Wallet,
   X,
   Eye,
+  AlertCircle,
 } from "lucide-react";
 
 interface StaffCompensation {
@@ -39,7 +40,19 @@ interface StaffCompensation {
   currentApprover: string;
 }
 
+interface GrantBudgetSummary {
+  grantCode: string;
+  allocatedAmount: number;
+  spentAmount: number;
+}
+
 const TEST_ADMIN_EMAIL = "dataplus.org@gmail.com";
+
+const INITIAL_GRANT_BUDGETS: GrantBudgetSummary[] = [
+  { grantCode: "PLUS-COMM-HYD", allocatedAmount: 1200000, spentAmount: 430000 },
+  { grantCode: "PLUS-LEGAL-2026", allocatedAmount: 3500000, spentAmount: 1420000 },
+  { grantCode: "PLUS-NAVTTC-2026", allocatedAmount: 2200000, spentAmount: 890000 },
+];
 
 const INITIAL_PAYROLL_RECORDS: StaffCompensation[] = [
   {
@@ -106,6 +119,7 @@ const OFFICIAL_LOGO_URL =
 export default function PayrollMasterPage() {
   const [currentUser, setCurrentUser] = useState<any | null>(null);
   const [payrollRecords, setPayrollRecords] = useState<StaffCompensation[]>(INITIAL_PAYROLL_RECORDS);
+  const [grantBudgets, setGrantBudgets] = useState<GrantBudgetSummary[]>(INITIAL_GRANT_BUDGETS);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedHub, setSelectedHub] = useState("All");
   
@@ -135,7 +149,37 @@ export default function PayrollMasterPage() {
     );
   }, [currentUser]);
 
+  // Compute live liquidity for the audited grant
+  const auditedGrantData = useMemo(() => {
+    if (!auditRecord) return null;
+    const grant = grantBudgets.find((b) => b.grantCode === auditRecord.assignedGrant);
+    if (!grant) return { allocated: 0, spent: 0, remaining: 0, sufficient: false };
+    const remaining = grant.allocatedAmount - grant.spentAmount;
+    const sufficient = remaining >= auditRecord.netPay;
+    return { allocated: grant.allocatedAmount, spent: grant.spentAmount, remaining, sufficient };
+  }, [auditRecord, grantBudgets]);
+
   const handleAdvanceApproval = async (id: string) => {
+    const targetRecord = payrollRecords.find((r) => r.id === id);
+    if (!targetRecord) return;
+
+    // Verify liquidity check before proceeding
+    const grant = grantBudgets.find((b) => b.grantCode === targetRecord.assignedGrant);
+    if (grant && grant.allocatedAmount - grant.spentAmount < targetRecord.netPay) {
+      alert("Error: Insufficient grant liquidity to approve this payroll disbursement.");
+      return;
+    }
+
+    // Deduct from grant spent amount upon final approval or tier progress
+    setGrantBudgets((prev) =>
+      prev.map((g) => {
+        if (g.grantCode === targetRecord.assignedGrant) {
+          return { ...g, spentAmount: g.spentAmount + targetRecord.netPay };
+        }
+        return g;
+      })
+    );
+
     setPayrollRecords((prev) =>
       prev.map((rec) => {
         if (rec.id !== id) return rec;
@@ -291,7 +335,7 @@ Generated via PLUS Operations Portal
                 {isExecutiveOrAdmin ? "Staff Salary Roster & Approval Queue" : "My Monthly Compensation Records"}
               </h2>
               <p className="text-xs text-slate-500">
-                Click <strong>"Audit Details"</strong> to verify timesheets, tax calculations, and grant liquidity before approving.
+                Click <strong>"Audit Details"</strong> to verify live grant balances and budget liquidity before approving.
               </p>
             </div>
 
@@ -397,8 +441,8 @@ Generated via PLUS Operations Portal
         </div>
       </main>
 
-      {/* AUDIT VERIFICATION MODAL */}
-      {auditRecord && (
+      {/* AUDIT & LIQUIDITY VERIFICATION MODAL */}
+      {auditRecord && auditedGrantData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-8 shadow-2xl space-y-6">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
@@ -407,7 +451,7 @@ Generated via PLUS Operations Portal
                   <ShieldCheck className="h-5 w-5 text-[#fad207]" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-[#1b365d]">Multi-Tier Audit Verification</h3>
+                  <h3 className="text-sm font-bold text-[#1b365d]">Grant Liquidity & Audit Verification</h3>
                   <p className="text-[10px] text-slate-500 font-mono">Stage: {auditRecord.approvalStage}</p>
                 </div>
               </div>
@@ -424,23 +468,32 @@ Generated via PLUS Operations Portal
                   <span className="block text-slate-500">{auditRecord.designation}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Assigned Grant Code</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Grant Budget Check</span>
                   <strong className="text-[#1b365d] font-mono">{auditRecord.assignedGrant}</strong>
-                  <span className="block text-emerald-600 font-semibold">✓ Sufficient Grant Liquidity</span>
+                  <span className={`block font-semibold mt-0.5 ${auditedGrantData.sufficient ? "text-emerald-600" : "text-red-600"}`}>
+                    {auditedGrantData.sufficient ? "✓ Sufficient Grant Liquidity" : "✕ Insufficient Grant Balance"}
+                  </span>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-slate-100 p-4 space-y-2">
-                <span className="block font-bold text-slate-700 uppercase text-[10px] tracking-wider">Timesheet & Attendance Verification</span>
+              {/* LIVE GRANT BALANCE BREAKDOWN */}
+              <div className="rounded-xl border border-slate-100 p-4 space-y-2 bg-[#f8fafc]">
+                <span className="block font-bold text-slate-700 uppercase text-[10px] tracking-wider">Live Donor Grant Ledger Check</span>
                 <div className="flex justify-between text-slate-600">
-                  <span>Regular Working Hours (Logged):</span>
-                  <span className="font-mono font-bold text-slate-800">40.0 Hrs</span>
+                  <span>Total Grant Allocation:</span>
+                  <span className="font-mono font-bold text-slate-800">PKR {auditedGrantData.allocated.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
-                  <span>Approved Overtime / Field Stipend:</span>
-                  <span className={`font-mono font-bold ${auditRecord.approvalStage === "Pending HR Review" ? "text-amber-600" : "text-emerald-600"}`}>
-                    {auditRecord.approvalStage === "Pending HR Review" ? "Pending HR Verification" : "Verified by HR"}
-                  </span>
+                  <span>Already Spent / Committed:</span>
+                  <span className="font-mono font-bold text-slate-800">PKR {auditedGrantData.spent.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-slate-600 border-t border-slate-200 pt-1.5">
+                  <span>Available Remaining Balance:</span>
+                  <span className="font-mono font-bold text-[#1b365d]">PKR {auditedGrantData.remaining.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>This Payroll Outflow:</span>
+                  <span className="font-mono font-bold text-amber-600">- PKR {auditRecord.netPay.toLocaleString()}</span>
                 </div>
               </div>
 
@@ -462,7 +515,7 @@ Generated via PLUS Operations Portal
               <div className="flex justify-between items-center rounded-xl bg-[#1b365d]/5 p-4 border border-[#1b365d]/10">
                 <div>
                   <span className="text-[11px] font-bold text-[#1b365d] uppercase">Net Payable Outflow</span>
-                  <span className="block text-[10px] text-slate-500">Ready for Tier Sign-off</span>
+                  <span className="block text-[10px] text-slate-500">Verified against donor budget</span>
                 </div>
                 <span className="font-mono text-lg font-bold text-[#1b365d]">
                   PKR {auditRecord.netPay.toLocaleString()}
@@ -479,7 +532,8 @@ Generated via PLUS Operations Portal
               </button>
               <button
                 onClick={() => handleAdvanceApproval(auditRecord.id)}
-                className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-emerald-700 cursor-pointer"
+                disabled={!auditedGrantData.sufficient}
+                className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-emerald-700 disabled:opacity-50 cursor-pointer"
               >
                 <CheckCircle2 className="h-4 w-4 text-[#fad207]" />
                 <span>Verify & Approve Tier</span>
