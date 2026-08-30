@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { Building, Lock, User } from 'lucide-react';
+import { Lock, User } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 export default function LoginPage() {
@@ -15,7 +15,6 @@ export default function LoginPage() {
     setErrorMsg('');
 
     try {
-      // Query the profiles table for matching username and 4-digit PIN
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
@@ -27,7 +26,6 @@ export default function LoginPage() {
         setErrorMsg('Invalid username or 4-digit PIN code.');
         setLoading(false);
       } else {
-        // Cache user session profile locally
         localStorage.setItem('plus_user', JSON.stringify(profile));
         window.location.href = '/';
       }
@@ -40,12 +38,18 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 font-sans">
       <div className="w-full max-w-md bg-white rounded-3xl p-8 shadow-2xl space-y-6">
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 bg-[#0052CC] text-white rounded-2xl mx-auto flex items-center justify-center shadow-lg">
-            <Building className="w-6 h-6" />
+        <div className="text-center space-y-3">
+          <div className="w-16 h-16 bg-blue-50 rounded-2xl mx-auto flex items-center justify-center shadow-md border border-blue-100 overflow-hidden p-1.5">
+            <img 
+              src="https://grassrootsjusticenetwork.org/wp-content/uploads/2023/12/PLUS-logo-1.png" 
+              alt="PLUS Logo" 
+              className="w-full h-full object-contain"
+            />
           </div>
-          <h1 className="text-xl font-bold text-slate-900">PLUS OPS Portal</h1>
-          <p className="text-xs text-slate-500">Pakistan Legal United Society • PIN Authentication</p>
+          <div>
+            <h1 className="text-xl font-bold text-slate-900">PLUS OPS Portal</h1>
+            <p className="text-xs text-slate-500 mt-0.5">Pakistan Legal United Society • Secure Login</p>
+          </div>
         </div>
 
         {errorMsg && (
