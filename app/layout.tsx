@@ -1,8 +1,9 @@
-import React from "react";
+import type { Metadata } from "next";
+import "./globals.css"; // CRUCIAL: This line tells Next.js to inject Tailwind into the DOM
 
-export const metadata = {
-  title: "Pakistan Legal United Society - Operations Hub",
-  description: "Operations, Programs & Governance Portal",
+export const metadata: Metadata = {
+  title: "PLUS OPS Portal",
+  description: "Pakistan Legal United Society Operations Portal",
 };
 
 export default function RootLayout({
@@ -12,7 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, padding: 0, backgroundColor: "#f8fafc" }}>
+      <body className="antialiased bg-slate-50 text-slate-900">
         {children}
       </body>
     </html>
