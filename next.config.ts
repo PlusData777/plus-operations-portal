@@ -1,13 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   typescript: {
-    // Allows production builds to successfully complete even with type warnings
     ignoreBuildErrors: true,
   },
   eslint: {
-    // Allows production builds to successfully complete even with lint warnings
     ignoreDuringBuilds: true,
   },
 };
 
-export default nextConfig;
+export default final nextConfig; // or export default nextConfig;
