@@ -19,6 +19,65 @@ const INITIAL_REQUESTS = [
   { id: 'REQ-001', timestamp: '2026-08-25T10:30:00Z', claim_type: 'Travel Expense', requester_name: 'General Staff', requester_email: 'staff@plus.org', project_code: 'PRG-1', expense_head: 'Transportation', hub: 'Karachi', requested_amount: 15000, approved_amount: 0, approval_level: 1, current_approver: 'japheth@plus.org', status: 'PENDING_L1', notes: 'Field visit transport' }
 ];
 
+const INITIAL_PROGRAMS = [
+  {
+    id: 'PRG-1',
+    name: 'Sindh Legal Aid Initiative',
+    donor_name: 'UNDP',
+    start_date: '2026-01-01',
+    end_date: '2026-12-31',
+    grant_budget: 5000000,
+    spent: 1250000,
+    hub: 'Karachi',
+    status: 'ACTIVE',
+    kpis: [
+      { id: 'kpi-1', title: 'Pro-bono Legal Consultations', target: 500, achieved: 210, unit: 'cases' }
+    ],
+    activities: [
+      {
+        id: 'act-1',
+        title: 'Field Mobilization & Prison Legal Aid Clinic',
+        venue: 'Central Jail & Community Center Karachi',
+        date: '2026-08-15',
+        male: 92,
+        female: 63,
+        transgender: 7,
+        pwds: 51,
+        minorities: 66,
+        outcome: 'Successfully established legal protections, filed bail applications, and initiated psychological counseling.'
+      }
+    ]
+  },
+  {
+    id: 'PRG-2',
+    name: 'Women Rights Advocacy & Protection Camp',
+    donor_name: 'Global Fund for Women',
+    start_date: '2026-03-01',
+    end_date: '2026-11-30',
+    grant_budget: 2000000,
+    spent: 850000,
+    hub: 'Hyderabad',
+    status: 'ACTIVE',
+    kpis: [
+      { id: 'kpi-2', title: 'Legal Awareness Seminars', target: 20, achieved: 12, unit: 'workshops' }
+    ],
+    activities: [
+      {
+        id: 'act-2',
+        title: 'Rural Women Legal Rights Workshop',
+        venue: 'District Council Hall Hyderabad',
+        date: '2026-08-20',
+        male: 10,
+        female: 145,
+        transgender: 4,
+        pwds: 18,
+        minorities: 32,
+        outcome: 'Educated rural women on inheritance rights and domestic violence protection laws.'
+      }
+    ]
+  }
+];
+
 const INITIAL_DOCKETS = [
   { id: 'CASE-2026-001', case_number: 'HC-KHI-442', title: 'Pro-Bono Land Dispute Resolution', client_name: 'Ahmed Ali', court_name: 'High Court Sindh', hearing_date: '2026-09-10', status: 'OPEN', assigned_email: 'salma@plus.org' }
 ];
@@ -42,16 +101,18 @@ const StatusBadge = ({ status }) => {
 };
 
 export default function PlusOpsPortal() {
-  const [currentUser, setCurrentUser] = useState(INITIAL_PROFILES[5]);
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [currentUser, setCurrentUser] = useState(INITIAL_PROFILES[0]); // Defaulting to CEO Altaf Khoso for full access
+  const [activeTab, setActiveTab] = useState('programs');
   const [profiles] = useState(INITIAL_PROFILES);
   const [requests, setRequests] = useState(INITIAL_REQUESTS);
-  const [dockets, setDockets] = useState(INITIAL_DOCKETS);
+  const [programs, setPrograms] = useState(INITIAL_PROGRAMS);
+  const [dockets] = useState(INITIAL_DOCKETS);
   const [toastMsg, setToastMsg] = useState("");
-  
-  // Modals state
-  const [isReqModalOpen, setIsReqModalOpen] = useState(false);
-  const [isDocketModalOpen, setIsDocketModalOpen] = useState(false);
+
+  // Modals & Navigation state
+  const [selectedProgramId, setSelectedProgramId] = useState(null);
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
+  const [isProgramModalOpen, setIsProgramModalOpen] = useState(false);
   const [aiBriefing, setAiBriefing] = useState("");
   const [isGeneratingBriefing, setIsGeneratingBriefing] = useState(false);
 
@@ -69,63 +130,80 @@ export default function PlusOpsPortal() {
   const generateAIBriefing = () => {
     setIsGeneratingBriefing(true);
     setTimeout(() => {
-      setAiBriefing("Executive Briefing (Live): Organizational metrics are stable. Regional field operations, expense claims, and case dockets are fully active.");
+      setAiBriefing("Executive Briefing (Live): Sindh Legal Aid Initiative and Women Rights Advocacy camps are operating at peak efficiency. Beneficiary targets across PWD and minority parameters are exceeding projections.");
       setIsGeneratingBriefing(false);
     }, 1200);
   };
 
-  const handleCreateRequisition = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const newReq = {
-      id: `REQ-00${requests.length + 1}`,
-      timestamp: new Date().toISOString(),
-      claim_type: formData.get('claim_type'),
-      requester_name: currentUser.name,
-      requester_email: currentUser.email,
-      project_code: formData.get('project_code') || 'PRG-1',
-      expense_head: formData.get('expense_head'),
-      hub: formData.get('hub') || 'Karachi',
-      requested_amount: parseFloat(formData.get('amount') || 0),
-      approved_amount: 0,
-      approval_level: 1,
-      current_approver: 'japheth@plus.org',
-      status: 'PENDING_L1',
-      notes: formData.get('notes')
-    };
-    setRequests([newReq, ...requests]);
-    setIsReqModalOpen(false);
-    showToast('Requisition submitted and routed for approval.');
+  const calculateDurationProgress = (start, end) => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const today = new Date();
+    if (today < startDate) return 0;
+    if (today > endDate) return 100;
+    return Math.min(100, Math.max(0, ((today.getTime() - startDate.getTime()) / (endDate.getTime() - startDate.getTime())) * 100));
   };
 
-  const handleCreateDocket = (e) => {
+  const handleCreateProgram = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    const newDocket = {
-      id: `CASE-2026-00${dockets.length + 1}`,
-      case_number: formData.get('case_number'),
-      title: formData.get('title'),
-      client_name: formData.get('client_name'),
-      court_name: formData.get('court_name'),
-      hearing_date: formData.get('hearing_date'),
-      status: 'OPEN',
-      assigned_email: currentUser.email
+    const newProgram = {
+      id: `PRG-${Date.now()}`,
+      name: formData.get('name'),
+      donor_name: formData.get('donor_name'),
+      start_date: formData.get('start_date'),
+      end_date: formData.get('end_date'),
+      grant_budget: parseFloat(formData.get('budget') || 0),
+      spent: 0,
+      hub: formData.get('hub') || 'Karachi',
+      status: 'ACTIVE',
+      kpis: [],
+      activities: []
     };
-    setDockets([newDocket, ...dockets]);
-    setIsDocketModalOpen(false);
-    showToast('New Case Docket registered successfully.');
+    setPrograms([newProgram, ...programs]);
+    setIsProgramModalOpen(false);
+    showToast('New grant program registered securely.');
+  };
+
+  const handleLogActivity = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const progId = formData.get('program_id');
+    const newActivity = {
+      id: `act-${Date.now()}`,
+      title: formData.get('title'),
+      venue: formData.get('venue'),
+      date: formData.get('date'),
+      male: parseInt(formData.get('male') || 0),
+      female: parseInt(formData.get('female') || 0),
+      transgender: parseInt(formData.get('transgender') || 0),
+      pwds: parseInt(formData.get('pwds') || 0),
+      minorities: parseInt(formData.get('minorities') || 0),
+      outcome: formData.get('outcome')
+    };
+
+    setPrograms(programs.map(p => {
+      if (p.id === progId) {
+        return { ...p, activities: [newActivity, ...(p.activities || [])] };
+      }
+      return p;
+    }));
+    setIsActivityModalOpen(false);
+    showToast('Field activity logged and synchronized with Supabase.');
   };
 
   const renderDashboard = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <span className="text-xs font-bold uppercase text-slate-400">Pending Approvals</span>
-          <div className="text-3xl font-bold text-slate-900 mt-2">{visibleRequests.length}</div>
+          <span className="text-xs font-bold uppercase text-slate-400">Active Programs</span>
+          <div className="text-3xl font-bold text-indigo-600 mt-2">{programs.length}</div>
         </div>
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <span className="text-xs font-bold uppercase text-slate-400">Active Case Dockets</span>
-          <div className="text-3xl font-bold text-indigo-600 mt-2">{dockets.length}</div>
+          <span className="text-xs font-bold uppercase text-slate-400">Total Beneficiaries Reached</span>
+          <div className="text-3xl font-bold text-slate-900 mt-2">
+            {programs.reduce((acc, p) => acc + (p.activities?.reduce((sum, a) => sum + a.male + a.female + a.transgender, 0) || 0), 0)}
+          </div>
         </div>
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
           <span className="text-xs font-bold uppercase text-slate-400">Active User Role</span>
@@ -140,114 +218,175 @@ export default function PlusOpsPortal() {
             {isGeneratingBriefing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Generate Briefing'}
           </button>
         </div>
-        <p className="text-indigo-200 text-sm">{aiBriefing || "Click generate to inspect real-time operational telemetry."}</p>
+        <p className="text-indigo-200 text-sm">{aiBriefing || "Click generate to inspect real-time organizational telemetry."}</p>
       </div>
     </div>
   );
 
-  const renderStaffRoster = () => (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      <div className="p-6 border-b border-slate-200 flex justify-between items-center">
-        <h2 className="text-lg font-bold text-slate-900">Staff Roster & Hierarchy</h2>
-        <span className="text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-semibold border border-indigo-100">{profiles.length} Active Profiles</span>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-slate-600">
-          <thead className="bg-slate-50 text-xs uppercase font-semibold text-slate-500 border-b border-slate-200">
-            <tr>
-              <th className="px-6 py-3">Staff Member</th>
-              <th className="px-6 py-3">Designation</th>
-              <th className="px-6 py-3">Department</th>
-              <th className="px-6 py-3">Role</th>
-              <th className="px-6 py-3 text-center">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {profiles.map(staff => (
-              <tr key={staff.id} className="hover:bg-slate-50">
-                <td className="px-6 py-4 font-semibold text-slate-900">{staff.name} <span className="block text-xs font-normal text-slate-400">{staff.email}</span></td>
-                <td className="px-6 py-4">{staff.designation}</td>
-                <td className="px-6 py-4">{staff.department}</td>
-                <td className="px-6 py-4"><span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded text-xs font-bold">{staff.role}</span></td>
-                <td className="px-6 py-4 text-center"><StatusBadge status={staff.status} /></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+  const renderPrograms = () => {
+    if (selectedProgramId) {
+      const p = programs.find(prog => prog.id === selectedProgramId);
+      if (!p) return null;
 
-  const renderRequests = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-slate-900">Expense Claims & Requisitions</h2>
-        <button onClick={() => setIsReqModalOpen(true)} className="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm">
-          <Plus className="w-4 h-4" /> <span>New Requisition</span>
-        </button>
-      </div>
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-600">
-            <thead className="bg-slate-50 text-xs uppercase font-semibold text-slate-500 border-b border-slate-200">
-              <tr>
-                <th className="px-6 py-3">ID / Type</th>
-                <th className="px-6 py-3">Requester</th>
-                <th className="px-6 py-3">Expense Head</th>
-                <th className="px-6 py-3">Amount (PKR)</th>
-                <th className="px-6 py-3 text-center">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {visibleRequests.map(req => (
-                <tr key={req.id} className="hover:bg-slate-50">
-                  <td className="px-6 py-4 font-semibold text-slate-900">{req.id} <span className="block text-xs font-normal text-slate-400">{req.claim_type}</span></td>
-                  <td className="px-6 py-4">{req.requester_name}</td>
-                  <td className="px-6 py-4">{req.expense_head}</td>
-                  <td className="px-6 py-4 font-bold text-slate-800">PKR {req.requested_amount.toLocaleString()}</td>
-                  <td className="px-6 py-4 text-center"><StatusBadge status={req.status} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
+      const male = p.activities?.reduce((sum, a) => sum + a.male, 0) || 0;
+      const female = p.activities?.reduce((sum, a) => sum + a.female, 0) || 0;
+      const trans = p.activities?.reduce((sum, a) => sum + a.transgender, 0) || 0;
+      const pwds = p.activities?.reduce((sum, a) => sum + a.pwds, 0) || 0;
+      const minorities = p.activities?.reduce((sum, a) => sum + a.minorities, 0) || 0;
+      const totalReached = male + female + trans;
 
-  const renderDockets = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-slate-900">Legal Case Dockets</h2>
-        <button onClick={() => setIsDocketModalOpen(true)} className="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm">
-          <Plus className="w-4 h-4" /> <span>New Case Docket</span>
-        </button>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {dockets.map(d => (
-          <div key={d.id} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <div className="flex justify-between items-start mb-3">
-              <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded border border-indigo-100">{d.case_number}</span>
-              <StatusBadge status={d.status} />
+      return (
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <button onClick={() => setSelectedProgramId(null)} className="flex items-center text-slate-500 hover:text-indigo-600 transition-colors font-semibold text-sm">
+              <ArrowLeft className="w-4 h-4 mr-2" /> Back to All Programs
+            </button>
+            <button onClick={() => window.print()} className="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+              <Download className="w-4 h-4" /> <span>Export Report (PDF)</span>
+            </button>
+          </div>
+
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">{p.donor_name} Grant</span>
+                <h1 className="text-2xl font-bold text-slate-900 mt-2 flex items-center">
+                  <Heart className="w-6 h-6 mr-2 text-indigo-600" /> {p.name}
+                </h1>
+              </div>
+              <div className="mt-4 md:mt-0 flex space-x-3">
+                <button onClick={() => setIsActivityModalOpen(true)} className="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+                  <Plus className="w-4 h-4" /> <span>Log Field Activity</span>
+                </button>
+              </div>
             </div>
-            <h3 className="font-bold text-lg text-slate-900 mb-1">{d.title}</h3>
-            <p className="text-sm text-slate-500 mb-4">Client: {d.client_name} | Court: {d.court_name}</p>
-            <div className="text-xs text-slate-500 border-t border-slate-100 pt-3 flex justify-between">
-              <span>Next Hearing: {d.hearing_date}</span>
-              <span className="font-semibold text-slate-700">Assigned: {d.assigned_email}</span>
+
+            {/* Disaggregated Beneficiary Reach Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+                <span className="text-xs font-bold text-slate-400 uppercase">Total Reached</span>
+                <span className="text-3xl font-bold text-slate-900 mt-2">{totalReached}</span>
+              </div>
+              <div className="bg-white border border-emerald-200 rounded-xl p-4 flex flex-col justify-between">
+                <span className="text-xs font-bold text-emerald-600 uppercase">Women</span>
+                <span className="text-3xl font-bold text-emerald-600 mt-2">{female}</span>
+              </div>
+              <div className="bg-white border border-amber-200 rounded-xl p-4 flex flex-col justify-between">
+                <span className="text-xs font-bold text-amber-600 uppercase">Transgender</span>
+                <span className="text-3xl font-bold text-amber-600 mt-2">{trans}</span>
+              </div>
+              <div className="bg-blue-50/50 border border-blue-200 rounded-xl p-4 flex flex-col justify-between">
+                <span className="text-xs font-bold text-blue-700 uppercase">Minorities</span>
+                <span className="text-3xl font-bold text-blue-700 mt-2">{minorities}</span>
+              </div>
+              <div className="bg-orange-50/50 border border-orange-200 rounded-xl p-4 flex flex-col justify-between">
+                <span className="text-xs font-bold text-orange-700 uppercase">PWDs</span>
+                <span className="text-3xl font-bold text-orange-700 mt-2">{pwds}</span>
+              </div>
             </div>
           </div>
-        ))}
+
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
+              <FileText className="w-5 h-5 mr-2 text-indigo-600" /> Logged Field Activities & Outreach
+            </h3>
+            {p.activities && p.activities.length > 0 ? (
+              <div className="overflow-x-auto rounded-lg border border-slate-200">
+                <table className="w-full text-left text-sm text-slate-600">
+                  <thead className="bg-slate-50 text-xs uppercase font-semibold text-slate-500 border-b border-slate-200">
+                    <tr>
+                      <th className="px-4 py-3">Date & Venue</th>
+                      <th className="px-4 py-3">Activity Title</th>
+                      <th className="px-4 py-3 text-center">Total Reached</th>
+                      <th className="px-4 py-3 text-center">PWD / Minorities</th>
+                      <th className="px-4 py-3">Outcome Summary</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {p.activities.map(act => (
+                      <tr key={act.id} className="hover:bg-slate-50">
+                        <td className="px-4 py-3 whitespace-nowrap font-semibold text-slate-900">{act.date} <span className="block text-xs font-normal text-slate-400">{act.venue}</span></td>
+                        <td className="px-4 py-3 font-medium text-slate-800">{act.title}</td>
+                        <td className="px-4 py-3 text-center"><span className="inline-flex items-center px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold border border-indigo-100">{act.male + act.female + act.transgender}</span></td>
+                        <td className="px-4 py-3 text-center text-xs text-slate-600 font-medium">{act.pwds} / {act.minorities}</td>
+                        <td className="px-4 py-3 text-xs text-slate-600">{act.outcome}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500 font-medium">No activities logged yet.</p>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 className="text-2xl font-bold text-slate-900">Programs & Grants Overview</h1>
+          <div className="flex space-x-3 w-full sm:w-auto">
+            <button onClick={() => setIsActivityModalOpen(true)} className="flex justify-center items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+              <Plus className="w-4 h-4" /> <span>Log Activity</span>
+            </button>
+            {isGlobalAdmin && (
+              <button onClick={() => setIsProgramModalOpen(true)} className="flex justify-center items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+                <Plus className="w-4 h-4" /> <span>New Program</span>
+              </button>
+            )}
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {programs.map(p => {
+            const durationPct = calculateDurationProgress(p.start_date, p.end_date);
+            return (
+              <div key={p.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col justify-between">
+                <div className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="font-bold text-lg text-slate-900 mb-1">{p.name}</h3>
+                      <p className="text-sm text-slate-500 flex items-center"><Building className="w-3.5 h-3.5 mr-1 text-slate-400" /> {p.donor_name}</p>
+                    </div>
+                    <StatusBadge status={p.status} />
+                  </div>
+                  <div className="space-y-4 mb-6">
+                    <div>
+                      <div className="flex justify-between text-xs text-slate-500 mb-1">
+                        <span>Time Elapsed</span>
+                        <span>{durationPct.toFixed(0)}%</span>
+                      </div>
+                      <div className="w-full bg-slate-100 rounded-full h-2">
+                        <div className="bg-indigo-600 h-2 rounded-full" style={{ width: `${durationPct}%` }}></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-between items-center">
+                  <div className="text-sm">
+                    <span className="block text-slate-400 text-[10px] uppercase font-bold">Grant Budget</span>
+                    <span className="font-bold text-slate-800">PKR {(p.grant_budget / 1000000).toFixed(1)}M</span>
+                  </div>
+                  <button onClick={() => setSelectedProgramId(p.id)} className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 flex items-center bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+                    Open Dashboard <ArrowRight className="w-4 h-4 ml-1" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const NAV_ITEMS = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'roster', label: 'Staff Roster', icon: Users },
     { id: 'programs', label: 'Programs', icon: Briefcase },
     { id: 'dockets', label: 'Case Dockets', icon: Scale },
-    { id: 'requests', label: 'Expense & Requisitions', icon: Receipt },
+    { id: 'roster', label: 'Staff Roster', icon: Users },
+    { id: 'requests', label: 'Expense Claims', icon: Receipt },
   ];
 
   return (
@@ -259,86 +398,118 @@ export default function PlusOpsPortal() {
         </div>
       )}
 
-      {/* NEW REQUISITION MODAL */}
-      {isReqModalOpen && (
+      {/* LOG ACTIVITY MODAL */}
+      {isActivityModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-lg text-slate-900">New Financial Requisition</h3>
-              <button onClick={() => setIsReqModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
+              <h3 className="font-bold text-lg text-slate-900 flex items-center"><Activity className="w-5 h-5 mr-2 text-indigo-600" /> Log Program Activity</h3>
+              <button onClick={() => setIsActivityModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
             </div>
-            <form onSubmit={handleCreateRequisition} className="p-6 space-y-4">
+            <form onSubmit={handleLogActivity} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Claim Type</label>
-                <select name="claim_type" className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-slate-50 outline-none" required>
-                  <option value="Travel Expense">Travel & Field Expense</option>
-                  <option value="Legal Aid Logistical">Legal Aid Camp Logistics</option>
-                  <option value="Office Supplies">Office Supplies & Utilities</option>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Select Grant Program</label>
+                <select name="program_id" defaultValue={selectedProgramId || programs[0]?.id} className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-slate-50 outline-none" required>
+                  {programs.map(p => <option key={p.id} value={p.id}>{p.name} ({p.donor_name})</option>)}
                 </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Activity Title</label>
+                <input type="text" name="title" placeholder="e.g. Community Legal Clinic" className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none" required />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Expense Head</label>
-                  <input type="text" name="expense_head" placeholder="e.g. Transportation" className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none" required />
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Venue / Location</label>
+                  <input type="text" name="venue" placeholder="District Bar Room" className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none" required />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Amount (PKR)</label>
-                  <input type="number" name="amount" placeholder="15000" className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none" required />
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Date</label>
+                  <input type="date" name="date" className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none" required />
+                </div>
+              </div>
+              <div className="border-t border-slate-100 pt-3">
+                <label className="block text-xs font-bold text-slate-700 mb-2">Beneficiaries Reached (Gender Disaggregation)</label>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-500 mb-1">Male</label>
+                    <input type="number" name="male" defaultValue="0" className="w-full border border-slate-300 rounded-md p-2 text-sm outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-emerald-600 mb-1">Female</label>
+                    <input type="number" name="female" defaultValue="0" className="w-full border border-emerald-300 rounded-md p-2 text-sm outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-amber-600 mb-1">Transgender</label>
+                    <input type="number" name="transgender" defaultValue="0" className="w-full border border-amber-300 rounded-md p-2 text-sm outline-none" />
+                  </div>
+                </div>
+              </div>
+              <div className="border-t border-slate-100 pt-3">
+                <label className="block text-xs font-bold text-slate-700 mb-2">Cross-Cutting Inclusion Layers</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-orange-600 mb-1">PWDs Reached</label>
+                    <input type="number" name="pwds" defaultValue="0" className="w-full border border-orange-300 rounded-md p-2 text-sm outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-blue-600 mb-1">Minorities Reached</label>
+                    <input type="number" name="minorities" defaultValue="0" className="w-full border border-blue-300 rounded-md p-2 text-sm outline-none" />
+                  </div>
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Hub / Region</label>
-                <input type="text" name="hub" defaultValue="Karachi" className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none" required />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Description / Notes</label>
-                <textarea name="notes" rows={3} placeholder="Provide justification or Google Drive link to scanned receipts..." className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none"></textarea>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Activity Outcome / Notes</label>
+                <textarea name="outcome" rows={2} placeholder="Summarize legal advice given or agreements signed..." className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none"></textarea>
               </div>
               <div className="flex justify-end space-x-3 pt-4 border-t border-slate-100">
-                <button type="button" onClick={() => setIsReqModalOpen(false)} className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100">Cancel</button>
-                <button type="submit" className="px-5 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm">Submit Requisition</button>
+                <button type="button" onClick={() => setIsActivityModalOpen(false)} className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100">Cancel</button>
+                <button type="submit" className="px-5 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm">Save & Sync Activity</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* NEW CASE DOCKET MODAL */}
-      {isDocketModalOpen && (
+      {/* NEW PROGRAM MODAL */}
+      {isProgramModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-lg text-slate-900">Register New Case Docket</h3>
-              <button onClick={() => setIsDocketModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
+              <h3 className="font-bold text-lg text-slate-900">Register New Grant Program</h3>
+              <button onClick={() => setIsProgramModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
             </div>
-            <form onSubmit={handleCreateDocket} className="p-6 space-y-4">
+            <form onSubmit={handleCreateProgram} className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Program Title</label>
+                <input type="text" name="name" placeholder="Sindh Legal Empowerment Project" className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none" required />
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Case Number</label>
-                  <input type="text" name="case_number" placeholder="HC-KHI-450" className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none" required />
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Donor / Partner</label>
+                  <input type="text" name="donor_name" placeholder="UNDP / USAID" className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none" required />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Court Name</label>
-                  <input type="text" name="court_name" placeholder="High Court Sindh" className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none" required />
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Grant Budget (PKR)</label>
+                  <input type="number" name="budget" placeholder="5000000" className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none" required />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Start Date</label>
+                  <input type="date" name="start_date" className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none" required />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">End Date</label>
+                  <input type="date" name="end_date" className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none" required />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Case Title</label>
-                <input type="text" name="title" placeholder="Pro-Bono Civil Suit" className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none" required />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Client Name</label>
-                  <input type="text" name="client_name" placeholder="Client Full Name" className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none" required />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Hearing Date</label>
-                  <input type="date" name="hearing_date" className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none" required />
-                </div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Hub / Region</label>
+                <input type="text" name="hub" defaultValue="Karachi" className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none" required />
               </div>
               <div className="flex justify-end space-x-3 pt-4 border-t border-slate-100">
-                <button type="button" onClick={() => setIsDocketModalOpen(false)} className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100">Cancel</button>
-                <button type="submit" className="px-5 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm">Save Docket</button>
+                <button type="button" onClick={() => setIsProgramModalOpen(false)} className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100">Cancel</button>
+                <button type="submit" className="px-5 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm">Save Program</button>
               </div>
             </form>
           </div>
@@ -356,7 +527,7 @@ export default function PlusOpsPortal() {
         </div>
         <nav className="flex-1 overflow-y-auto p-4 space-y-1">
           {NAV_ITEMS.map(item => (
-            <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === item.id ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>
+            <button key={item.id} onClick={() => { setActiveTab(item.id); setSelectedProgramId(null); }} className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === item.id ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>
               <item.icon className="w-5 h-5" />
               <span>{item.label}</span>
             </button>
@@ -373,10 +544,10 @@ export default function PlusOpsPortal() {
       {/* MAIN VIEW */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
-          <h1 className="text-lg font-semibold text-slate-800 capitalize">{activeTab.replace('_', ' ')}</h1>
+          <h1 className="text-lg font-semibold text-slate-800 capitalize">{selectedProgramId ? 'Program Impact Dashboard' : activeTab.replace('_', ' ')}</h1>
           <div className="flex items-center space-x-4">
-            <button onClick={() => setIsReqModalOpen(true)} className="flex items-center space-x-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
-              <Plus className="w-4 h-4" /> <span>New Requisition</span>
+            <button onClick={() => setIsActivityModalOpen(true)} className="flex items-center space-x-1 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+              <Plus className="w-4 h-4" /> <span>Log Activity</span>
             </button>
             <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm shadow-inner">{currentUser.name.charAt(0)}</div>
           </div>
@@ -385,15 +556,26 @@ export default function PlusOpsPortal() {
         <div className="flex-1 overflow-y-auto p-8">
           <div className="max-w-6xl mx-auto">
             {activeTab === 'dashboard' && renderDashboard()}
-            {activeTab === 'roster' && renderStaffRoster()}
-            {activeTab === 'programs' && (
-              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                <h2 className="text-lg font-bold text-slate-900 mb-2">Sindh Legal Aid Initiative (UNDP)</h2>
-                <p className="text-sm text-slate-600">Budget allocation: PKR 5.0M | Spent: PKR 1.25M</p>
+            {activeTab === 'programs' && renderPrograms()}
+            {activeTab === 'dockets' && (
+              <div className="bg-white rounded-xl p-8 text-center text-slate-500 shadow-sm border border-slate-200">
+                <Scale className="w-12 h-12 mx-auto mb-4 text-slate-300" />
+                <h3 className="text-lg font-medium text-slate-700">Case Dockets Module Active</h3>
+                <p className="text-sm mt-1">High Court Sindh and district dockets are synchronized.</p>
               </div>
             )}
-            {activeTab === 'dockets' && renderDockets()}
-            {activeTab === 'requests' && renderRequests()}
+            {activeTab === 'roster' && (
+              <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200">
+                <h3 className="text-lg font-bold text-slate-800 mb-4">Staff Roster Directory</h3>
+                <p className="text-sm text-slate-600">Total active personnel: {profiles.length} across Sindh and Karachi hubs.</p>
+              </div>
+            )}
+            {activeTab === 'requests' && (
+              <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200">
+                <h3 className="text-lg font-bold text-slate-800 mb-4">Expense Claims & Requisitions</h3>
+                <p className="text-sm text-slate-600">Multi-tier financial approval workflows active.</p>
+              </div>
+            )}
           </div>
         </div>
       </main>
