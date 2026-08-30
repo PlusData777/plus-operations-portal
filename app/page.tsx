@@ -16,6 +16,12 @@ import StaffManagementView from '@/components/StaffManagementView';
 import PendingApprovalsView from '@/components/PendingApprovalsView';
 import StaffWorkspaceView from '@/components/StaffWorkspaceView';
 import AppraisalsView from '@/components/AppraisalsView';
+import FinanceView from '@/components/FinanceView';
+import HRView from '@/components/HRView';
+import PartnersView from '@/components/PartnersView';
+import TimesheetsView from '@/components/TimesheetsView';
+import AnalyticsView from '@/components/AnalyticsView';
+
 import { MasterRequisitionModal, RequisitionModal, DocketModal, ActivityModal, ProgramModal, LeaveModal } from '@/components/Modals';
 
 const INITIAL_PROFILES = [
@@ -27,78 +33,24 @@ const INITIAL_PROFILES = [
   { id: '6', email: 'staff@plus.org', name: 'General Staff', designation: 'Operations Officer', role: 'STAFF', department: 'Operations', reports_to: 'salma@plus.org', second_manager: 'japheth@plus.org', project: 'Sindh Legal Aid Initiative', qualifications: 'B.A / Public Administration', posting: 'Karachi HQ', contract_start: '2025-05-01', contract_end: '2027-05-01', rating: 4.0, status: 'ACTIVE' }
 ];
 
-const INITIAL_REQUESTS = [
-  { id: 'REQ-001', timestamp: '2026-08-25T10:30:00Z', claim_type: 'Travel Expense', requester_name: 'General Staff', requester_email: 'staff@plus.org', project_code: 'PRG-1', expense_head: 'Transportation', hub: 'Karachi', requested_amount: 15000, approved_amount: 0, approval_level: 1, current_approver: 'salma@plus.org', status: 'PENDING_L1', notes: 'Field visit transport' }
-];
-
-const INITIAL_LEAVE = [
-  { id: 'LEA-001', staff_name: 'General Staff', staff_email: 'staff@plus.org', leave_type: 'Annual Leave', start_date: '2026-09-05', end_date: '2026-09-07', reason: 'Family commitment', status: 'PENDING' }
-];
-
-const INITIAL_PROGRAMS = [
-  {
-    id: 'PRG-1',
-    name: 'Sindh Legal Aid Initiative',
-    donor_name: 'UNDP',
-    start_date: '2026-01-01',
-    end_date: '2026-12-31',
-    grant_budget: 5000000,
-    spent: 1250000,
-    hub: 'Karachi',
-    status: 'ACTIVE',
-    kpis: [{ id: 'kpi-1', title: 'Pro-bono Legal Consultations', target: 500, achieved: 210, unit: 'cases' }],
-    activities: [
-      {
-        id: 'act-1',
-        title: 'Field Mobilization & Prison Legal Aid Clinic',
-        venue: 'Central Jail & Community Center Karachi',
-        date: '2026-08-15',
-        male: 92,
-        female: 63,
-        transgender: 7,
-        pwds: 51,
-        minorities: 66,
-        outcome: 'Successfully established legal protections and initiated counseling.'
-      }
-    ]
-  }
-];
-
-const INITIAL_DOCKETS = [
-  { id: 'CASE-2026-001', case_number: 'HC-KHI-442', title: 'Pro-Bono Land Dispute Resolution', client_name: 'Ahmed Ali', court_name: 'High Court Sindh', hearing_date: '2026-09-10', status: 'OPEN', assigned_email: 'salma@plus.org' }
-];
-
 export default function PlusOpsPortal() {
   const [currentUser, setCurrentUser] = useState(INITIAL_PROFILES[0]);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [profiles, setProfiles] = useState(INITIAL_PROFILES);
-  const [requests, setRequests] = useState(INITIAL_REQUESTS);
-  const [leaveRequests, setLeaveRequests] = useState(INITIAL_LEAVE);
-  const [programs, setPrograms] = useState(INITIAL_PROGRAMS);
-  const [dockets, setDockets] = useState(INITIAL_DOCKETS);
+  const [requests, setRequests] = useState([]);
+  const [leaveRequests, setLeaveRequests] = useState([]);
+  const [programs, setPrograms] = useState([]);
+  const [dockets, setDockets] = useState([]);
   const [toastMsg, setToastMsg] = useState("");
-
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [selectedProgramId, setSelectedProgramId] = useState(null);
-  
+
   const [isMasterModalOpen, setIsMasterModalOpen] = useState(false);
   const [activeReqType, setActiveReqType] = useState('finance');
   const [isReqModalOpen, setIsReqModalOpen] = useState(false);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
-  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
-  const [isProgramModalOpen, setIsProgramModalOpen] = useState(false);
-  const [isDocketModalOpen, setIsDocketModalOpen] = useState(false);
 
-  const [aiBriefing, setAiBriefing] = useState("");
-  const [isGeneratingBriefing, setIsGeneratingBriefing] = useState(false);
-
-  // Sync user profile to localStorage for dedicated modules (analytics, finance, hr, partners, timesheets, cases)
   useEffect(() => {
-    try {
-      localStorage.setItem("plus_user", JSON.stringify(currentUser));
-    } catch {
-      // ignore
-    }
+    localStorage.setItem("plus_user", JSON.stringify(currentUser));
   }, [currentUser]);
 
   const showToast = (msg) => {
@@ -106,106 +58,23 @@ export default function PlusOpsPortal() {
     setTimeout(() => setToastMsg(""), 4000);
   };
 
-  const isExecutive = currentUser.role === 'EXECUTIVE';
-  const isAdmin = currentUser.role === 'ADMIN';
-  const isHrAdmin = currentUser.role === 'HR_ADMIN';
-  const isFinanceMgr = currentUser.role === 'FINANCE_MGR';
-  const isProgramMgr = currentUser.role === 'PROGRAM_MGR';
-
-  const canManagePrograms = isExecutive || isProgramMgr || isAdmin;
-  const canApproveFinance = isExecutive || isFinanceMgr;
-  const canApproveLeave = isExecutive || isHrAdmin;
-  const canManageUsers = isExecutive || isAdmin || isHrAdmin;
-
-  const visibleRequests = useMemo(() => {
-    if (isExecutive || isFinanceMgr || isHrAdmin || isAdmin) return requests;
-    return requests.filter(r => r.requester_email === currentUser.email);
-  }, [requests, currentUser, isExecutive, isFinanceMgr, isHrAdmin, isAdmin]);
-
-  const generateAIBriefing = () => {
-    setIsGeneratingBriefing(true);
-    setTimeout(() => {
-      setAiBriefing(`Executive Briefing (Role: ${currentUser.role}): All institutional modules operating under strict RBAC governance.`);
-      setIsGeneratingBriefing(false);
-    }, 1200);
-  };
-
-  const handleSelectRequisitionType = (type) => {
-    setIsMasterModalOpen(false);
-    if (type === 'leave') {
-      setIsLeaveModalOpen(true);
-    } else {
-      setActiveReqType(type);
-      setIsReqModalOpen(true);
-    }
-  };
-
-  const handleCreateLeave = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const newLeave = {
-      id: `LEA-00${leaveRequests.length + 1}`,
-      staff_name: currentUser.name,
-      staff_email: currentUser.email,
-      leave_type: formData.get('leave_type'),
-      start_date: formData.get('start_date'),
-      end_date: formData.get('end_date'),
-      reason: formData.get('reason'),
-      status: 'PENDING'
-    };
-    setLeaveRequests([newLeave, ...leaveRequests]);
-    setIsLeaveModalOpen(false);
-    showToast('Leave application submitted successfully.');
-  };
-
-  const handleCreateRequisition = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const manager = profiles.find(p => p.email === currentUser.reports_to) || profiles.find(p => p.role === 'PROGRAM_MGR');
-    const l1ApproverEmail = manager ? manager.email : 'salma@plus.org';
-
-    const newReq = {
-      id: `REQ-00${requests.length + 1}`,
-      timestamp: new Date().toISOString(),
-      claim_type: formData.get('claim_type') || activeReqType.toUpperCase(),
-      requester_name: currentUser.name,
-      requester_email: currentUser.email,
-      project_code: 'PRG-1',
-      expense_head: formData.get('expense_head') || 'General Support',
-      hub: currentUser.posting || 'Karachi',
-      requested_amount: parseFloat(formData.get('amount') || 5000),
-      approved_amount: 0,
-      approval_level: 1,
-      current_approver: l1ApproverEmail,
-      status: 'PENDING_L1',
-      notes: formData.get('notes')
-    };
-
-    setRequests([newReq, ...requests]);
-    setIsReqModalOpen(false);
-    showToast(`${activeReqType.toUpperCase()} requisition routed to manager (L1).`);
-  };
-
-  // Main Navigation linking internal views and dedicated App Router modules
   const NAV_ITEMS = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, type: 'view' },
-    { id: 'programs', label: 'Programs', icon: Briefcase, type: 'view' },
-    { id: 'dockets', label: 'Case Dockets', icon: Scale, type: 'view' },
-    { id: 'staff_workspace', label: 'My Workspace', icon: CheckSquare, type: 'view' },
-    { id: 'staff_mgmt', label: 'Staff Directory', icon: UserCheck, type: 'view' },
-    { id: 'roster', label: 'Staff Roster', icon: Users, type: 'view' },
-    { id: 'pending_queue', label: 'Pending Approvals', icon: Clock, type: 'view' },
-    { id: 'appraisals', label: 'Appraisals', icon: Award, type: 'view' },
-    { id: 'requests', label: 'Expense Claims', icon: Receipt, type: 'view' },
-    { id: 'leave', label: 'Leave Requests', icon: Calendar, type: 'view' },
-    { id: 'policy', label: 'Policy Folders', icon: Folder, type: 'view' },
-    // External App Router Dedicated Pages
-    { id: '/analytics', label: 'Executive Analytics', icon: BarChart3, type: 'link' },
-    { id: '/finance', label: 'Finance & Grants', icon: Building, type: 'link' },
-    { id: '/hr', label: 'HR Lifecycle & Exits', icon: UserCheck, type: 'link' },
-    { id: '/partners', label: 'Partners & MoUs', icon: HeartHandshake, type: 'link' },
-    { id: '/timesheets', label: 'Staff Timesheets', icon: Clock, type: 'link' },
-    { id: '/cases', label: 'Litigation Dockets', icon: Scale, type: 'link' },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'programs', label: 'Programs', icon: Briefcase },
+    { id: 'dockets', label: 'Case Dockets', icon: Scale },
+    { id: 'staff_workspace', label: 'My Workspace', icon: CheckSquare },
+    { id: 'staff_mgmt', label: 'Staff Directory', icon: UserCheck },
+    { id: 'roster', label: 'Staff Roster', icon: Users },
+    { id: 'pending_queue', label: 'Pending Approvals', icon: Clock },
+    { id: 'appraisals', label: 'Appraisals', icon: Award },
+    { id: 'requests', label: 'Expense Claims', icon: Receipt },
+    { id: 'leave', label: 'Leave Requests', icon: Calendar },
+    { id: 'policy', label: 'Policy Folders', icon: Folder },
+    { id: 'analytics', label: 'Executive Analytics', icon: BarChart3 },
+    { id: 'finance', label: 'Finance & Grants', icon: Building },
+    { id: 'hr', label: 'HR Lifecycle & Exits', icon: UserCheck },
+    { id: 'partners', label: 'Partners & MoUs', icon: HeartHandshake },
+    { id: 'timesheets', label: 'Staff Timesheets', icon: Clock },
   ];
 
   return (
@@ -216,10 +85,6 @@ export default function PlusOpsPortal() {
           <span className="text-sm font-medium">{toastMsg}</span>
         </div>
       )}
-
-      <MasterRequisitionModal isOpen={isMasterModalOpen} onClose={() => setIsMasterModalOpen(false)} onSelectType={handleSelectRequisitionType} />
-      <RequisitionModal isOpen={isReqModalOpen} onClose={() => setIsReqModalOpen(false)} onSubmit={handleCreateRequisition} type={activeReqType} title={`${activeReqType.toUpperCase()} Requisition`} />
-      <LeaveModal isOpen={isLeaveModalOpen} onClose={() => setIsLeaveModalOpen(false)} onSubmit={handleCreateLeave} />
 
       <aside className={`${isSidebarOpen ? 'w-64' : 'w-0 overflow-hidden'} bg-[#0052CC] text-blue-100 flex flex-col shadow-xl transition-all duration-300 z-20 shrink-0`}>
         <div className="p-6 border-b border-blue-600 flex justify-between items-center">
@@ -232,34 +97,20 @@ export default function PlusOpsPortal() {
         <div className="px-6 pt-3"><span className="text-[10px] bg-blue-700 text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider">{currentUser.role}</span></div>
         
         <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-          {NAV_ITEMS.map(item => {
-            if (item.type === 'link') {
-              return (
-                <a
-                  key={item.id}
-                  href={item.id}
-                  className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-blue-600/50 hover:text-white text-blue-100"
-                >
-                  <item.icon className="w-5 h-5 text-amber-300" />
-                  <span>{item.label}</span>
-                </a>
-              );
-            }
-            return (
-              <button 
-                key={item.id} 
-                onClick={() => { setActiveTab(item.id); setSelectedProgramId(null); }} 
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === item.id ? 'bg-[#003d99] text-white shadow-sm' : 'hover:bg-blue-600/50 hover:text-white'}`}
-              >
-                <item.icon className="w-5 h-5" />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
+          {NAV_ITEMS.map(item => (
+            <button 
+              key={item.id} 
+              onClick={() => setActiveTab(item.id)} 
+              className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${activeTab === item.id ? 'bg-[#003d99] text-white shadow-sm' : 'hover:bg-blue-600/50 hover:text-white'}`}
+            >
+              <item.icon className="w-5 h-5" />
+              <span>{item.label}</span>
+            </button>
+          ))}
         </nav>
 
         <div className="p-4 border-t border-blue-600 bg-[#0042a6]">
-          <label className="text-[10px] uppercase text-blue-200 font-bold mb-2 block">Switch User Role (RBAC Testing):</label>
+          <label className="text-[10px] uppercase text-blue-200 font-bold mb-2 block">Switch User Role:</label>
           <select className="w-full bg-[#003380] border border-blue-500 rounded p-2 text-xs text-white outline-none font-medium" value={currentUser.id} onChange={(e) => setCurrentUser(profiles.find(p => p.id === e.target.value))}>
             {profiles.map(p => <option key={p.id} value={p.id}>{p.name} ({p.role})</option>)}
           </select>
@@ -270,7 +121,7 @@ export default function PlusOpsPortal() {
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 md:px-8 shrink-0">
           <div className="flex items-center space-x-4">
             <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">{isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}</button>
-            <h1 className="text-base md:text-lg font-bold text-slate-800 capitalize">{selectedProgramId ? 'Program Impact Dashboard' : activeTab.replace('_', ' ')}</h1>
+            <h1 className="text-base md:text-lg font-bold text-slate-800 capitalize">{activeTab.replace('_', ' ')}</h1>
           </div>
           <div className="flex items-center space-x-3">
             <button onClick={() => setIsMasterModalOpen(true)} className="flex items-center space-x-1 bg-[#0052CC] hover:bg-[#003d99] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors"><Plus className="w-4 h-4" /> <span className="hidden sm:inline">New Requisition</span></button>
@@ -280,17 +131,20 @@ export default function PlusOpsPortal() {
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
           <div className="max-w-6xl mx-auto">
-            {activeTab === 'dashboard' && <DashboardView visibleRequests={visibleRequests} programs={programs} dockets={dockets} currentUser={currentUser} aiBriefing={aiBriefing} isGeneratingBriefing={isGeneratingBriefing} generateAIBriefing={generateAIBriefing} setActiveTab={setActiveTab} />}
-            {activeTab === 'programs' && <ProgramsView programs={programs} selectedProgramId={selectedProgramId} setSelectedProgramId={setSelectedProgramId} setIsActivityModalOpen={setIsActivityModalOpen} setIsProgramModalOpen={setIsProgramModalOpen} isGlobalAdmin={canManagePrograms} />}
-            {activeTab === 'dockets' && <DocketsView dockets={dockets} setIsDocketModalOpen={setIsDocketModalOpen} />}
+            {activeTab === 'dashboard' && <DashboardView visibleRequests={requests} programs={programs} dockets={dockets} currentUser={currentUser} setActiveTab={setActiveTab} />}
             {activeTab === 'staff_workspace' && <StaffWorkspaceView currentUser={currentUser} requests={requests} leaveRequests={leaveRequests} showToast={showToast} profiles={profiles} />}
             {activeTab === 'staff_mgmt' && <StaffManagementView profiles={profiles} setProfiles={setProfiles} currentUser={currentUser} showToast={showToast} />}
-            {activeTab === 'roster' && <RosterView profiles={profiles} currentUser={currentUser} canManageUsers={canManageUsers} />}
+            {activeTab === 'roster' && <RosterView profiles={profiles} currentUser={currentUser} />}
             {activeTab === 'pending_queue' && <PendingApprovalsView requests={requests} setRequests={setRequests} leaveRequests={leaveRequests} setLeaveRequests={setLeaveRequests} currentUser={currentUser} showToast={showToast} />}
             {activeTab === 'appraisals' && <AppraisalsView currentUser={currentUser} profiles={profiles} showToast={showToast} />}
-            {activeTab === 'requests' && <RequestsView visibleRequests={visibleRequests} setIsReqModalOpen={() => setIsMasterModalOpen(true)} currentUser={currentUser} canApproveFinance={canApproveFinance} requests={requests} setRequests={setRequests} showToast={showToast} />}
-            {activeTab === 'leave' && <LeaveView leaveRequests={leaveRequests} setLeaveRequests={setLeaveRequests} setIsLeaveModalOpen={() => setIsMasterModalOpen(true)} currentUser={currentUser} canApprove={canApproveLeave} />}
+            {activeTab === 'requests' && <RequestsView visibleRequests={requests} setIsReqModalOpen={() => setIsMasterModalOpen(true)} currentUser={currentUser} requests={requests} setRequests={setRequests} showToast={showToast} />}
+            {activeTab === 'leave' && <LeaveView leaveRequests={leaveRequests} setLeaveRequests={setLeaveRequests} setIsLeaveModalOpen={() => setIsMasterModalOpen(true)} currentUser={currentUser} />}
             {activeTab === 'policy' && <PolicyView />}
+            {activeTab === 'finance' && <FinanceView currentUser={currentUser} showToast={showToast} />}
+            {activeTab === 'hr' && <HRView currentUser={currentUser} showToast={showToast} />}
+            {activeTab === 'partners' && <PartnersView showToast={showToast} />}
+            {activeTab === 'timesheets' && <TimesheetsView currentUser={currentUser} showToast={showToast} />}
+            {activeTab === 'analytics' && <AnalyticsView />}
           </div>
         </div>
       </main>
