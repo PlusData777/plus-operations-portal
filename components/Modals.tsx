@@ -1,6 +1,6 @@
 "use client";
 import React from 'react';
-import { X, Activity } from 'lucide-react';
+import { X } from 'lucide-react';
 
 export function RequisitionModal({ isOpen, onClose, onSubmit }) {
   if (!isOpen) return null;
@@ -36,7 +36,7 @@ export function RequisitionModal({ isOpen, onClose, onSubmit }) {
           </div>
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-slate-600">Cancel</button>
-            <button type="submit" className="px-5 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white">Submit Requisition</button>
+            <button type="submit" className="px-5 py-2 rounded-lg text-sm font-semibold bg-[#0052CC] text-white hover:bg-[#003d99]">Submit Requisition</button>
           </div>
         </form>
       </div>
@@ -80,7 +80,7 @@ export function DocketModal({ isOpen, onClose, onSubmit }) {
           </div>
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-slate-600">Cancel</button>
-            <button type="submit" className="px-5 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white">Save Docket</button>
+            <button type="submit" className="px-5 py-2 rounded-lg text-sm font-semibold bg-[#0052CC] text-white hover:bg-[#003d99]">Save Docket</button>
           </div>
         </form>
       </div>
@@ -133,7 +133,7 @@ export function ActivityModal({ isOpen, onClose, onSubmit, programs }) {
           </div>
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-slate-600">Cancel</button>
-            <button type="submit" className="px-5 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white">Save Activity</button>
+            <button type="submit" className="px-5 py-2 rounded-lg text-sm font-semibold bg-[#0052CC] text-white hover:bg-[#003d99]">Save Activity</button>
           </div>
         </form>
       </div>
@@ -165,7 +165,7 @@ export function ProgramModal({ isOpen, onClose, onSubmit }) {
           </div>
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-slate-600">Cancel</button>
-            <button type="submit" className="px-5 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white">Save Program</button>
+            <button type="submit" className="px-5 py-2 rounded-lg text-sm font-semibold bg-[#0052CC] text-white hover:bg-[#003d99]">Save Program</button>
           </div>
         </form>
       </div>
