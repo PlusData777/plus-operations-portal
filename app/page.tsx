@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import {
-  HeartHandshake, Smile, Accessibility, FileBarChart,
-  Home, Users, Clock, Calendar, Receipt, CheckSquare, Briefcase, Scale, Activity,
-  BrainCircuit, Sparkles, Loader2, ArrowLeft, Download, Plus, ArrowRight, Building, Upload, X, CheckCircle2
+  Heart, User, UserCheck, FileText,
+  LayoutDashboard, Users, Clock, Calendar, Receipt, CheckSquare, Briefcase, Scale, Activity,
+  Zap, Star, Loader2, ArrowLeft, Download, Plus, ArrowRight, Building, Upload, X, CheckCircle
 } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithCustomToken, signInAnonymously } from 'firebase/auth';
@@ -543,11 +543,11 @@ export default function PlusOpsPortal() {
 
       <div className="bg-gradient-to-r from-indigo-900 to-slate-900 rounded-xl p-6 shadow-md text-white relative overflow-hidden">
         <div className="absolute top-0 right-0 p-4 opacity-20">
-          <BrainCircuit className="w-32 h-32" />
+          <Zap className="w-32 h-32" />
         </div>
         <div className="relative z-10">
           <div className="flex items-center space-x-2 mb-4">
-            <Sparkles className="w-6 h-6 text-indigo-300" />
+            <Star className="w-6 h-6 text-indigo-300" />
             <h2 className="text-xl font-bold">AI Executive Briefing</h2>
           </div>
           {aiBriefing ? (
@@ -562,7 +562,7 @@ export default function PlusOpsPortal() {
             disabled={isGeneratingBriefing}
             className="mt-4 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2"
           >
-            {isGeneratingBriefing ? <Loader2 className="w-4 h-4 animate-spin" /> : <BrainCircuit className="w-4 h-4" />}
+            {isGeneratingBriefing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
             <span>{isGeneratingBriefing ? 'Analyzing Data...' : 'Generate AI Briefing'}</span>
           </button>
         </div>
@@ -604,7 +604,7 @@ export default function PlusOpsPortal() {
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
               <div>
                 <h1 className="text-2xl font-bold text-slate-900 flex items-center">
-                  <HeartHandshake className="w-6 h-6 mr-2 text-indigo-600" />
+                  <Heart className="w-6 h-6 mr-2 text-indigo-600" />
                   Program Operations & Impact Hub
                 </h1>
                 <p className="text-slate-500 text-sm mt-1 max-w-2xl">
@@ -613,7 +613,7 @@ export default function PlusOpsPortal() {
               </div>
               <div className="mt-4 md:mt-0 flex space-x-3 print:hidden">
                 <button className="flex items-center space-x-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                  <FileBarChart className="w-4 h-4" />
+                  <FileText className="w-4 h-4" />
                   <span>Export M&E Report</span>
                 </button>
                 <button 
@@ -643,7 +643,7 @@ export default function PlusOpsPortal() {
               <div className="bg-white border border-emerald-200 rounded-xl p-4 flex flex-col justify-between shadow-[0_0_10px_rgba(16,185,129,0.05)]">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-xs font-bold text-emerald-600 tracking-wider uppercase">Women Reached</span>
-                  <HeartHandshake className="w-4 h-4 text-emerald-500" />
+                  <Heart className="w-4 h-4 text-emerald-500" />
                 </div>
                 <div>
                   <span className="text-3xl font-bold text-emerald-600">{female}</span>
@@ -655,7 +655,7 @@ export default function PlusOpsPortal() {
               <div className="bg-white border border-amber-200 rounded-xl p-4 flex flex-col justify-between shadow-[0_0_10px_rgba(245,158,11,0.05)]">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-xs font-bold text-amber-600 tracking-wider uppercase">Transgender</span>
-                  <Sparkles className="w-4 h-4 text-amber-500" />
+                  <Star className="w-4 h-4 text-amber-500" />
                 </div>
                 <div>
                   <span className="text-3xl font-bold text-amber-600">{trans}</span>
@@ -667,7 +667,7 @@ export default function PlusOpsPortal() {
               <div className="bg-blue-50/50 border border-blue-200 rounded-xl p-4 flex flex-col justify-between">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-xs font-bold text-blue-700 tracking-wider uppercase">Minorities</span>
-                  <Smile className="w-4 h-4 text-blue-500" />
+                  <User className="w-4 h-4 text-blue-500" />
                 </div>
                 <div>
                   <span className="text-3xl font-bold text-blue-700">{minorities}</span>
@@ -679,7 +679,7 @@ export default function PlusOpsPortal() {
               <div className="bg-orange-50/50 border border-orange-200 rounded-xl p-4 flex flex-col justify-between">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-xs font-bold text-orange-700 tracking-wider uppercase">PWDs</span>
-                  <Accessibility className="w-4 h-4 text-orange-500" />
+                  <UserCheck className="w-4 h-4 text-orange-500" />
                 </div>
                 <div>
                   <span className="text-3xl font-bold text-orange-700">{pwds}</span>
@@ -702,7 +702,7 @@ export default function PlusOpsPortal() {
           {}
           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm print:break-before-page">
             <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
-              <FileBarChart className="w-5 h-5 mr-2 text-indigo-600" /> 
+              <FileText className="w-5 h-5 mr-2 text-indigo-600" /> 
               Recent Activities & Field Logs
             </h3>
             {p.activities && p.activities.length > 0 ? (
@@ -1037,7 +1037,7 @@ export default function PlusOpsPortal() {
         <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
           <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
             <h2 className="text-lg font-bold text-slate-800 flex items-center">
-              <FileBarChart className="w-5 h-5 mr-2 text-[#d96c2c]" /> 
+              <FileText className="w-5 h-5 mr-2 text-[#d96c2c]" /> 
               Log Program Activity (M&E)
             </h2>
             <button onClick={() => setIsActivityModalOpen(false)} className="text-slate-400 hover:bg-slate-200 p-2 rounded-full transition-colors"><X className="w-5 h-5" /></button>
@@ -1088,7 +1088,7 @@ export default function PlusOpsPortal() {
                 </div>
                 
                 <h3 className="text-sm font-bold text-slate-800 mb-3 flex items-center mt-2">
-                  <Accessibility className="w-4 h-4 mr-2 text-orange-500" /> Cross-Cutting Layers (Subsets)
+                  <UserCheck className="w-4 h-4 mr-2 text-orange-500" /> Cross-Cutting Layers (Subsets)
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-orange-50 p-3 rounded-lg border border-orange-100">
@@ -1121,7 +1121,7 @@ export default function PlusOpsPortal() {
   };
 
   const NAV_ITEMS = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'staff', label: 'Staff Roster', icon: Users, adminOnly: true },
     { id: 'timesheets', label: 'Timesheets', icon: Clock },
     { id: 'leaves', label: 'Leaves & Attendance', icon: Calendar },
@@ -1136,7 +1136,7 @@ export default function PlusOpsPortal() {
       {/* Toast Notification Layer */}
       {toastMsg && (
         <div className="absolute top-6 left-1/2 -translate-x-1/2 z-[100] bg-slate-900 text-white px-6 py-3 rounded-lg shadow-2xl flex items-center space-x-3 animate-in fade-in slide-in-from-top-4">
-          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+          <CheckCircle className="w-5 h-5 text-emerald-400" />
           <span className="text-sm font-medium">{toastMsg}</span>
         </div>
       )}
