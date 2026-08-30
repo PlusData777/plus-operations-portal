@@ -17,7 +17,7 @@ const StatusBadge = ({ status }) => {
       default: return 'bg-slate-100 text-slate-700 border-slate-200';
     }
   };
-  return <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${getStyles()}`}>{status.replace('_', ' ')}</span>;
+  return <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${getStyles()}`}>{status?.replace('_', ' ')}</span>;
 };
 
 export default function ProgramsView({ 
@@ -40,71 +40,100 @@ export default function ProgramsView({
   if (selectedProgramId) {
     const p = programs.find(prog => prog.id === selectedProgramId);
     if (!p) return null;
-    const male = p.activities?.reduce((sum, a) => sum + a.male, 0) || 0;
-    const female = p.activities?.reduce((sum, a) => sum + a.female, 0) || 0;
-    const trans = p.activities?.reduce((sum, a) => sum + a.transgender, 0) || 0;
-    const pwds = p.activities?.reduce((sum, a) => sum + a.pwds, 0) || 0;
-    const minorities = p.activities?.reduce((sum, a) => sum + a.minorities, 0) || 0;
+    const male = p.activities?.reduce((sum, a) => sum + (a.male || 0), 0) || 0;
+    const female = p.activities?.reduce((sum, a) => sum + (a.female || 0), 0) || 0;
+    const trans = p.activities?.reduce((sum, a) => sum + (a.transgender || 0), 0) || 0;
+    const pwds = p.activities?.reduce((sum, a) => sum + (a.pwds || 0), 0) || 0;
+    const minorities = p.activities?.reduce((sum, a) => sum + (a.minorities || 0), 0) || 0;
+    const totalReached = male + female + trans;
 
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <button onClick={() => setSelectedProgramId(null)} className="flex items-center text-slate-500 hover:text-indigo-600 font-semibold text-sm">
+          <button onClick={() => setSelectedProgramId(null)} className="flex items-center text-slate-500 hover:text-indigo-600 font-semibold text-sm transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Programs
           </button>
-          <button onClick={() => window.print()} className="flex items-center space-x-2 bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium">
+          <button onClick={() => window.print()} className="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
             <Download className="w-4 h-4" /> <span>Export PDF</span>
           </button>
         </div>
+
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">{p.name} ({p.donor_name})</h1>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-4">
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">{p.donor_name} Grant</span>
+              <h1 className="text-2xl font-bold text-slate-900 mt-2 flex items-center">
+                <Heart className="w-6 h-6 mr-2 text-indigo-600" /> {p.name}
+              </h1>
+            </div>
+            <button onClick={() => setIsActivityModalOpen(true)} className="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+              <Plus className="w-4 h-4" /> <span>Log Activity</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col justify-between">
               <span className="text-xs font-bold text-slate-400 uppercase">Total Reached</span>
-              <div className="text-2xl font-bold text-slate-900 mt-1">{male + female + trans}</div>
+              <span className="text-3xl font-bold text-slate-900 mt-2">{totalReached}</span>
             </div>
-            <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-200">
+            <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-200 flex flex-col justify-between">
               <span className="text-xs font-bold text-emerald-600 uppercase">Women</span>
-              <div className="text-2xl font-bold text-emerald-600 mt-1">{female}</div>
+              <span className="text-3xl font-bold text-emerald-600 mt-2">{female}</span>
             </div>
-            <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
+            <div className="bg-amber-50/50 p-4 rounded-xl border border-amber-200 flex flex-col justify-between">
               <span className="text-xs font-bold text-amber-600 uppercase">Transgender</span>
-              <div className="text-2xl font-bold text-amber-600 mt-1">{trans}</div>
+              <span className="text-3xl font-bold text-amber-600 mt-2">{trans}</span>
             </div>
-            <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
+            <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-200 flex flex-col justify-between">
               <span className="text-xs font-bold text-blue-700 uppercase">Minorities</span>
-              <div className="text-2xl font-bold text-blue-700 mt-1">{minorities}</div>
+              <span className="text-3xl font-bold text-blue-700 mt-2">{minorities}</span>
             </div>
-            <div className="bg-orange-50 p-4 rounded-xl border border-orange-200">
+            <div className="bg-orange-50/50 p-4 rounded-xl border border-orange-200 flex flex-col justify-between">
               <span className="text-xs font-bold text-orange-700 uppercase">PWDs</span>
-              <div className="text-2xl font-bold text-orange-700 mt-1">{pwds}</div>
+              <span className="text-3xl font-bold text-orange-700 mt-2">{pwds}</span>
             </div>
           </div>
         </div>
+
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <h3 className="text-lg font-bold text-slate-800 mb-4">Logged Activities</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-600">
-              <thead className="bg-slate-50 text-xs uppercase font-semibold text-slate-500 border-b">
-                <tr>
-                  <th className="px-4 py-3">Date & Venue</th>
-                  <th className="px-4 py-3">Title</th>
-                  <th className="px-4 py-3 text-center">Total</th>
-                  <th className="px-4 py-3">Outcome</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {p.activities?.map(a => (
-                  <tr key={a.id}>
-                    <td className="px-4 py-3 font-semibold">{a.date} <span className="block text-xs font-normal text-slate-400">{a.venue}</span></td>
-                    <td className="px-4 py-3">{a.title}</td>
-                    <td className="px-4 py-3 text-center font-bold text-indigo-600">{a.male + a.female + a.transgender}</td>
-                    <td className="px-4 py-3 text-xs">{a.outcome}</td>
+          <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
+            <FileText className="w-5 h-5 mr-2 text-indigo-600" /> Logged Field Activities & Outreach
+          </h3>
+          {p.activities && p.activities.length > 0 ? (
+            <div className="overflow-x-auto rounded-lg border border-slate-200">
+              <table className="w-full text-left text-sm text-slate-600">
+                <thead className="bg-slate-50 text-xs uppercase font-semibold text-slate-500 border-b border-slate-200">
+                  <tr>
+                    <th className="px-4 py-3">Date & Venue</th>
+                    <th className="px-4 py-3">Activity Title</th>
+                    <th className="px-4 py-3 text-center">Total Reached</th>
+                    <th className="px-4 py-3 text-center">PWD / Minorities</th>
+                    <th className="px-4 py-3">Outcome Summary</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {p.activities.map(act => (
+                    <tr key={act.id} className="hover:bg-slate-50">
+                      <td className="px-4 py-3 whitespace-nowrap font-semibold text-slate-900">
+                        {act.date} 
+                        <span className="block text-xs font-normal text-slate-400">{act.venue}</span>
+                      </td>
+                      <td className="px-4 py-3 font-medium text-slate-800">{act.title}</td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold border border-indigo-100">
+                          {(act.male || 0) + (act.female || 0) + (act.transgender || 0)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center text-xs text-slate-600 font-medium">{act.pwds || 0} / {act.minorities || 0}</td>
+                      <td className="px-4 py-3 text-xs text-slate-600">{act.outcome}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-sm text-slate-500 font-medium">No activities logged yet for this program.</p>
+          )}
         </div>
       </div>
     );
@@ -112,40 +141,53 @@ export default function ProgramsView({
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-bold text-slate-900">Programs & Grants Overview</h1>
-        <div className="flex space-x-3">
-          <button onClick={() => setIsActivityModalOpen(true)} className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
+        <div className="flex space-x-3 w-full sm:w-auto">
+          <button onClick={() => setIsActivityModalOpen(true)} className="flex justify-center items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
             <Plus className="w-4 h-4" /> <span>Log Activity</span>
           </button>
           {isGlobalAdmin && (
-            <button onClick={() => setIsProgramModalOpen(true)} className="flex items-center space-x-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
+            <button onClick={() => setIsProgramModalOpen(true)} className="flex justify-center items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
               <Plus className="w-4 h-4" /> <span>New Program</span>
             </button>
           )}
         </div>
       </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {programs.map(p => {
           const durationPct = calculateDurationProgress(p.start_date, p.end_date);
           return (
-            <div key={p.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col justify-between">
+            <div key={p.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col justify-between">
               <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="font-bold text-lg text-slate-900 mb-1">{p.name}</h3>
-                    <p className="text-sm text-slate-500"><Building className="w-3.5 h-3.5 inline mr-1" /> {p.donor_name}</p>
+                    <p className="text-sm text-slate-500 flex items-center">
+                      <Building className="w-3.5 h-3.5 mr-1 text-slate-400" /> {p.donor_name}
+                    </p>
                   </div>
                   <StatusBadge status={p.status} />
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2 mb-2">
-                  <div className="bg-indigo-600 h-2 rounded-full" style={{ width: `${durationPct}%` }}></div>
+                <div className="space-y-4 mb-2">
+                  <div>
+                    <div className="flex justify-between text-xs text-slate-500 mb-1">
+                      <span>Time Elapsed</span>
+                      <span>{durationPct.toFixed(0)}%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-2">
+                      <div className="bg-indigo-600 h-2 rounded-full" style={{ width: `${durationPct}%` }}></div>
+                    </div>
+                  </div>
                 </div>
-                <span className="text-xs text-slate-400">Time Elapsed: {durationPct.toFixed(0)}%</span>
               </div>
               <div className="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-between items-center">
-                <span className="font-bold text-slate-800 text-sm">PKR {(p.grant_budget / 1000000).toFixed(1)}M</span>
-                <button onClick={() => setSelectedProgramId(p.id)} className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 flex items-center bg-white px-3 py-1.5 rounded-lg border border-slate-200">
+                <div className="text-sm">
+                  <span className="block text-slate-400 text-[10px] uppercase font-bold">Grant Budget</span>
+                  <span className="font-bold text-slate-800">PKR {(Number(p.grant_budget || 0) / 1000000).toFixed(1)}M</span>
+                </div>
+                <button onClick={() => setSelectedProgramId(p.id)} className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 flex items-center bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
                   Open Dashboard <ArrowRight className="w-4 h-4 ml-1" />
                 </button>
               </div>
