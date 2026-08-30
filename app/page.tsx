@@ -6,9 +6,6 @@ import {
   LayoutDashboard, Users, Clock, Calendar, Receipt, CheckSquare, Briefcase, Scale, Activity,
   Zap, Star, Loader2, ArrowLeft, Download, Plus, ArrowRight, Building, Upload, X, CheckCircle
 } from 'lucide-react';
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithCustomToken, signInAnonymously } from 'firebase/auth';
-import { getFirestore, doc, setDoc, onSnapshot, collection } from 'firebase/firestore';
 
 /*
  * ============================================================================
@@ -252,55 +249,8 @@ export default function PlusOpsPortal() {
   const [riskAssessments, setRiskAssessments] = useState({});
 
   useEffect(() => {
-    let unsubscribeRequests, unsubscribePrograms;
-    
-    const initDb = async () => {
-      if (typeof __firebase_config === 'undefined') return;
-      const config = JSON.parse(__firebase_config);
-      const app = initializeApp(config);
-      const auth = getAuth(app);
-      const db = getFirestore(app);
-      const appId = typeof __app_id !== 'undefined' ? __app_id : 'plus-ops';
-
-      try {
-        if (typeof __initial_auth_token !== 'undefined') {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
-        setIsDbConnected(true);
-
-        // Listen for live updates to Programs
-        unsubscribePrograms = onSnapshot(
-          collection(db, 'artifacts', appId, 'public', 'data', 'programs'),
-          (snapshot) => {
-            const progs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if (progs.length > 0) setPrograms(progs);
-          },
-          (error) => console.error("Programs sync error:", error)
-        );
-
-        // Listen for live updates to Expense Requests
-        unsubscribeRequests = onSnapshot(
-          collection(db, 'artifacts', appId, 'public', 'data', 'requests'),
-          (snapshot) => {
-            const reqs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if (reqs.length > 0) setRequests(reqs);
-          },
-          (error) => console.error("Requests sync error:", error)
-        );
-
-      } catch (error) {
-        console.error("Database connection failed:", error);
-      }
-    };
-
-    initDb();
-
-    return () => {
-      if (unsubscribeRequests) unsubscribeRequests();
-      if (unsubscribePrograms) unsubscribePrograms();
-    };
+    // Ready for your Supabase real-time subscriptions
+    // e.g., supabase.channel('public:programs').on('postgres_changes', ...).subscribe()
   }, []);
 
   const showToast = (msg) => {
@@ -383,13 +333,8 @@ export default function PlusOpsPortal() {
         notes: formData.get('justification')
       };
 
-      if (isDbConnected) {
-        const db = getFirestore();
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'plus-ops';
-        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'requests', newRequest.id), newRequest);
-      } else {
-        setRequests([newRequest, ...requests]);
-      }
+      // TODO: Replace with Supabase Insert
+      setRequests([newRequest, ...requests]);
     }
     setIsReqModalOpen(false);
     showToast('Requisition submitted successfully & routed to approver.');
@@ -412,15 +357,10 @@ export default function PlusOpsPortal() {
       activities: []
     };
     
-    if (isDbConnected) {
-      const db = getFirestore();
-      const appId = typeof __app_id !== 'undefined' ? __app_id : 'plus-ops';
-      await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'programs', newProgram.id), newProgram);
-    } else {
-      setPrograms([...programs, newProgram]);
-    }
+    // TODO: Replace with Supabase Insert
+    setPrograms([...programs, newProgram]);
     setIsProgramModalOpen(false);
-    showToast('New program created securely in the live database.');
+    showToast('New program created securely.');
   };
 
   const handleAddKpi = async (e) => {
@@ -440,16 +380,11 @@ export default function PlusOpsPortal() {
         }]
       };
 
-      if (isDbConnected) {
-        const db = getFirestore();
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'plus-ops';
-        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'programs', updatedProgram.id), updatedProgram);
-      } else {
-        setPrograms(programs.map(p => p.id === selectedProgramId ? updatedProgram : p));
-      }
+      // TODO: Replace with Supabase Update
+      setPrograms(programs.map(p => p.id === selectedProgramId ? updatedProgram : p));
     }
     setIsKpiModalOpen(false);
-    showToast('KPI registered in the database.');
+    showToast('KPI registered.');
   };
 
   const handleLogActivity = async (e) => {
@@ -477,16 +412,11 @@ export default function PlusOpsPortal() {
         activities: [...(targetProgram.activities || []), newActivity]
       };
 
-      if (isDbConnected) {
-        const db = getFirestore();
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'plus-ops';
-        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'programs', updatedProgram.id), updatedProgram);
-      } else {
-        setPrograms(programs.map(p => p.id === progId ? updatedProgram : p));
-      }
+      // TODO: Replace with Supabase Update
+      setPrograms(programs.map(p => p.id === progId ? updatedProgram : p));
     }
     setIsActivityModalOpen(false);
-    showToast('Activity logged and synchronized globally.');
+    showToast('Activity logged and synchronized.');
   };
 
   const calculateDurationProgress = (start, end) => {
