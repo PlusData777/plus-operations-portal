@@ -19,12 +19,12 @@ import AppraisalsView from '@/components/AppraisalsView';
 import { MasterRequisitionModal, RequisitionModal, DocketModal, ActivityModal, ProgramModal, LeaveModal } from '@/components/Modals';
 
 const INITIAL_PROFILES = [
-  { id: '1', email: 'altafkhoso.adv@gmail.com', name: 'Altaf Khoso', designation: 'CEO', role: 'EXECUTIVE', department: 'Management', reports_to: null, status: 'ACTIVE' },
-  { id: '2', email: 'atif@plus.org', name: 'Atif Ali', designation: 'Admin', role: 'ADMIN', department: 'IT', reports_to: 'altafkhoso.adv@gmail.com', status: 'ACTIVE' },
-  { id: '3', email: 'ashfaq@plus.org', name: 'Ashfaq Ali', designation: 'HR Lead', role: 'HR_ADMIN', department: 'HR', reports_to: 'altafkhoso.adv@gmail.com', status: 'ACTIVE' },
-  { id: '4', email: 'japheth@plus.org', name: 'Japheth Wilson', designation: 'Finance Manager', role: 'FINANCE_MGR', department: 'Finance', reports_to: 'altafkhoso.adv@gmail.com', status: 'ACTIVE' },
-  { id: '5', email: 'salma@plus.org', name: 'Salma Habib Bhutto', designation: 'Program Manager', role: 'PROGRAM_MGR', department: 'Programs', reports_to: 'altafkhoso.adv@gmail.com', status: 'ACTIVE' },
-  { id: '6', email: 'staff@plus.org', name: 'General Staff', designation: 'Operations Officer', role: 'STAFF', department: 'Operations', reports_to: 'salma@plus.org', status: 'ACTIVE' }
+  { id: '1', email: 'altafkhoso.adv@gmail.com', name: 'Altaf Khoso', designation: 'CEO', role: 'EXECUTIVE', department: 'Management', reports_to: null, second_manager: null, project: 'All Management', qualifications: 'LL.M / Supreme Court Advocate', posting: 'Karachi HQ', contract_start: '2024-01-01', contract_end: '2028-12-31', rating: 5.0, status: 'ACTIVE' },
+  { id: '2', email: 'atif@plus.org', name: 'Atif Ali', designation: 'Admin & IT Lead', role: 'ADMIN', department: 'IT', reports_to: 'altafkhoso.adv@gmail.com', second_manager: null, project: 'Institutional Operations', qualifications: 'B.Sc Computer Science', posting: 'Karachi HQ', contract_start: '2025-01-01', contract_end: '2027-12-31', rating: 4.8, status: 'ACTIVE' },
+  { id: '3', email: 'ashfaq@plus.org', name: 'Ashfaq Ali', designation: 'HR Lead', role: 'HR_ADMIN', department: 'HR', reports_to: 'altafkhoso.adv@gmail.com', second_manager: null, project: 'HR & Governance', qualifications: 'MBA HR', posting: 'Karachi HQ', contract_start: '2025-03-01', contract_end: '2027-03-01', rating: 4.6, status: 'ACTIVE' },
+  { id: '4', email: 'japheth@plus.org', name: 'Japheth Wilson', designation: 'Finance Manager', role: 'FINANCE_MGR', department: 'Finance', reports_to: 'altafkhoso.adv@gmail.com', second_manager: null, project: 'UNDP Grant & Accounts', qualifications: 'ACCA / M.Com', posting: 'Karachi HQ', contract_start: '2024-06-01', contract_end: '2027-06-01', rating: 4.7, status: 'ACTIVE' },
+  { id: '5', email: 'salma@plus.org', name: 'Salma Habib Bhutto', designation: 'Program Manager', role: 'PROGRAM_MGR', department: 'Programs', reports_to: 'altafkhoso.adv@gmail.com', second_manager: 'japheth@plus.org', project: 'Sindh Legal Aid Initiative', qualifications: 'LL.B / Bar-at-Law', posting: 'Hyderabad Hub', contract_start: '2024-01-15', contract_end: '2026-12-31', rating: 4.9, status: 'ACTIVE' },
+  { id: '6', email: 'staff@plus.org', name: 'General Staff', designation: 'Operations Officer', role: 'STAFF', department: 'Operations', reports_to: 'salma@plus.org', second_manager: 'japheth@plus.org', project: 'Sindh Legal Aid Initiative', qualifications: 'B.A / Public Administration', posting: 'Karachi HQ', contract_start: '2025-05-01', contract_end: '2027-05-01', rating: 4.0, status: 'ACTIVE' }
 ];
 
 const INITIAL_REQUESTS = [
@@ -163,7 +163,7 @@ export default function PlusOpsPortal() {
       requester_email: currentUser.email,
       project_code: 'PRG-1',
       expense_head: formData.get('expense_head') || 'General Support',
-      hub: 'Karachi',
+      hub: currentUser.posting || 'Karachi',
       requested_amount: parseFloat(formData.get('amount') || 5000),
       approved_amount: 0,
       approval_level: 1,
@@ -175,66 +175,6 @@ export default function PlusOpsPortal() {
     setRequests([newReq, ...requests]);
     setIsReqModalOpen(false);
     showToast(`${activeReqType.toUpperCase()} requisition routed to manager (L1).`);
-  };
-
-  const handleCreateProgram = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const newProgram = {
-      id: `PRG-${Date.now()}`,
-      name: formData.get('name'),
-      donor_name: formData.get('donor_name'),
-      start_date: formData.get('start_date'),
-      end_date: formData.get('end_date'),
-      grant_budget: parseFloat(formData.get('budget') || 0),
-      spent: 0,
-      hub: 'Karachi',
-      status: 'ACTIVE',
-      kpis: [],
-      activities: []
-    };
-    setPrograms([newProgram, ...programs]);
-    setIsProgramModalOpen(false);
-    showToast('New grant program registered.');
-  };
-
-  const handleLogActivity = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const progId = formData.get('program_id');
-    const newActivity = {
-      id: `act-${Date.now()}`,
-      title: formData.get('title'),
-      venue: formData.get('venue'),
-      date: formData.get('date'),
-      male: parseInt(formData.get('male') || 0),
-      female: parseInt(formData.get('female') || 0),
-      transgender: parseInt(formData.get('transgender') || 0),
-      pwds: parseInt(formData.get('pwds') || 0),
-      minorities: parseInt(formData.get('minorities') || 0),
-      outcome: formData.get('outcome')
-    };
-    setPrograms(programs.map(p => p.id === progId ? { ...p, activities: [newActivity, ...(p.activities || [])] } : p));
-    setIsActivityModalOpen(false);
-    showToast('Field activity logged successfully.');
-  };
-
-  const handleCreateDocket = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const newDocket = {
-      id: `CASE-2026-00${dockets.length + 1}`,
-      case_number: formData.get('case_number'),
-      title: formData.get('title'),
-      client_name: formData.get('client_name'),
-      court_name: formData.get('court_name'),
-      hearing_date: formData.get('hearing_date'),
-      status: 'OPEN',
-      assigned_email: currentUser.email
-    };
-    setDockets([newDocket, ...dockets]);
-    setIsDocketModalOpen(false);
-    showToast('Case docket registered.');
   };
 
   const NAV_ITEMS = [
@@ -260,23 +200,12 @@ export default function PlusOpsPortal() {
         </div>
       )}
 
-      <MasterRequisitionModal 
-        isOpen={isMasterModalOpen} 
-        onClose={() => setIsMasterModalOpen(false)} 
-        onSelectType={handleSelectRequisitionType} 
-      />
-
-      <RequisitionModal 
-        isOpen={isReqModalOpen} 
-        onClose={() => setIsReqModalOpen(false)} 
-        onSubmit={handleCreateRequisition} 
-        type={activeReqType}
-        title={`${activeReqType.toUpperCase()} Requisition`}
-      />
+      <MasterRequisitionModal isOpen={isMasterModalOpen} onClose={() => setIsMasterModalOpen(false)} onSelectType={handleSelectRequisitionType} />
+      <RequisitionModal isOpen={isReqModalOpen} onClose={() => setIsReqModalOpen(false)} onSubmit={handleCreateRequisition} type={activeReqType} title={`${activeReqType.toUpperCase()} Requisition`} />
       <LeaveModal isOpen={isLeaveModalOpen} onClose={() => setIsLeaveModalOpen(false)} onSubmit={handleCreateLeave} />
-      <DocketModal isOpen={isDocketModalOpen} onClose={() => setIsDocketModalOpen(false)} onSubmit={handleCreateDocket} />
-      <ActivityModal isOpen={isActivityModalOpen} onClose={() => setIsActivityModalOpen(false)} onSubmit={handleLogActivity} programs={programs} />
-      <ProgramModal isOpen={isProgramModalOpen} onClose={() => setIsProgramModalOpen(false)} onSubmit={handleCreateProgram} />
+      <DocketModal isOpen={isDocketModalOpen} onClose={() => setIsDocketModalOpen(false)} onSubmit={handleCreateDocket => {}} />
+      <ActivityModal isOpen={isActivityModalOpen} onClose={() => setIsActivityModalOpen(false)} onSubmit={e => {}} programs={programs} />
+      <ProgramModal isOpen={isProgramModalOpen} onClose={() => setIsProgramModalOpen(false)} onSubmit={e => {}} />
 
       <aside className={`${isSidebarOpen ? 'w-64' : 'w-0 overflow-hidden'} bg-[#0052CC] text-blue-100 flex flex-col shadow-xl transition-all duration-300 z-20 shrink-0`}>
         <div className="p-6 border-b border-blue-600 flex justify-between items-center">
@@ -284,22 +213,13 @@ export default function PlusOpsPortal() {
             <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center shadow-inner"><Building className="w-5 h-5 text-white" /></div>
             <span className="text-xl font-bold tracking-tight">PLUS OPS</span>
           </div>
-          <button onClick={() => setIsSidebarOpen(false)} className="text-blue-200 hover:text-white md:hidden">
-            <X className="w-5 h-5" />
-          </button>
+          <button onClick={() => setIsSidebarOpen(false)} className="text-blue-200 hover:text-white md:hidden"><X className="w-5 h-5" /></button>
         </div>
-        <div className="px-6 pt-3">
-          <span className="text-[10px] bg-blue-700 text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider">{currentUser.role}</span>
-        </div>
+        <div className="px-6 pt-3"><span className="text-[10px] bg-blue-700 text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider">{currentUser.role}</span></div>
         <nav className="flex-1 overflow-y-auto p-4 space-y-1">
           {NAV_ITEMS.map(item => (
-            <button 
-              key={item.id} 
-              onClick={() => { setActiveTab(item.id); setSelectedProgramId(null); }} 
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === item.id ? 'bg-[#003d99] text-white shadow-sm' : 'hover:bg-blue-600/50 hover:text-white'}`}
-            >
-              <item.icon className="w-5 h-5" />
-              <span>{item.label}</span>
+            <button key={item.id} onClick={() => { setActiveTab(item.id); setSelectedProgramId(null); }} className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === item.id ? 'bg-[#003d99] text-white shadow-sm' : 'hover:bg-blue-600/50 hover:text-white'}`}>
+              <item.icon className="w-5 h-5" /><span>{item.label}</span>
             </button>
           ))}
         </nav>
@@ -314,59 +234,25 @@ export default function PlusOpsPortal() {
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 md:px-8 shrink-0">
           <div className="flex items-center space-x-4">
-            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">
-              {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-            <h1 className="text-base md:text-lg font-bold text-slate-800 capitalize">
-              {selectedProgramId ? 'Program Impact Dashboard' : activeTab.replace('_', ' ')}
-            </h1>
+            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">{isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}</button>
+            <h1 className="text-base md:text-lg font-bold text-slate-800 capitalize">{selectedProgramId ? 'Program Impact Dashboard' : activeTab.replace('_', ' ')}</h1>
           </div>
-
           <div className="flex items-center space-x-3">
-            {selectedProgramId && (
-              <button onClick={() => setSelectedProgramId(null)} className="flex items-center space-x-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg transition-colors border">
-                <ArrowLeft className="w-4 h-4" /> <span>Back to Main Page</span>
-              </button>
-            )}
-            <button onClick={() => setIsMasterModalOpen(true)} className="flex items-center space-x-1 bg-[#0052CC] hover:bg-[#003d99] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors">
-              <Plus className="w-4 h-4" /> <span className="hidden sm:inline">New Requisition</span>
-            </button>
-            <div className="w-8 h-8 rounded-full bg-blue-100 text-[#0052CC] flex items-center justify-center font-bold text-sm border border-blue-200" title={currentUser.name}>
-              {currentUser.name.charAt(0)}
-            </div>
+            <button onClick={() => setIsMasterModalOpen(true)} className="flex items-center space-x-1 bg-[#0052CC] hover:bg-[#003d99] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors"><Plus className="w-4 h-4" /> <span className="hidden sm:inline">New Requisition</span></button>
+            <div className="w-8 h-8 rounded-full bg-blue-100 text-[#0052CC] flex items-center justify-center font-bold text-sm border border-blue-200" title={currentUser.name}>{currentUser.name.charAt(0)}</div>
           </div>
         </header>
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
           <div className="max-w-6xl mx-auto">
-            {activeTab === 'dashboard' && (
-              <DashboardView 
-                visibleRequests={visibleRequests} 
-                programs={programs} 
-                dockets={dockets} 
-                currentUser={currentUser} 
-                aiBriefing={aiBriefing} 
-                isGeneratingBriefing={isGeneratingBriefing} 
-                generateAIBriefing={generateAIBriefing} 
-                setActiveTab={setActiveTab}
-              />
-            )}
+            {activeTab === 'dashboard' && <DashboardView visibleRequests={visibleRequests} programs={programs} dockets={dockets} currentUser={currentUser} aiBriefing={aiBriefing} isGeneratingBriefing={isGeneratingBriefing} generateAIBriefing={generateAIBriefing} setActiveTab={setActiveTab} />}
             {activeTab === 'programs' && <ProgramsView programs={programs} selectedProgramId={selectedProgramId} setSelectedProgramId={setSelectedProgramId} setIsActivityModalOpen={setIsActivityModalOpen} setIsProgramModalOpen={setIsProgramModalOpen} isGlobalAdmin={canManagePrograms} />}
             {activeTab === 'dockets' && <DocketsView dockets={dockets} setIsDocketModalOpen={setIsDocketModalOpen} />}
-            {activeTab === 'staff_workspace' && <StaffWorkspaceView currentUser={currentUser} requests={requests} leaveRequests={leaveRequests} showToast={showToast} />}
-            {activeTab === 'staff_mgmt' && <StaffManagementView profiles={profiles} setProfiles={setProfiles} canManageUsers={canManageUsers} showToast={showToast} />}
+            {activeTab === 'staff_workspace' && <StaffWorkspaceView currentUser={currentUser} requests={requests} leaveRequests={leaveRequests} showToast={showToast} profiles={profiles} />}
+            {activeTab === 'staff_mgmt' && <StaffManagementView profiles={profiles} setProfiles={setProfiles} currentUser={currentUser} showToast={showToast} />}
             {activeTab === 'roster' && <RosterView profiles={profiles} currentUser={currentUser} canManageUsers={canManageUsers} />}
-            {activeTab === 'pending_queue' && (
-              <PendingApprovalsView 
-                requests={requests} 
-                setRequests={setRequests} 
-                leaveRequests={leaveRequests} 
-                setLeaveRequests={setLeaveRequests} 
-                currentUser={currentUser} 
-                showToast={showToast} 
-              />
-            )}
-            {activeTab === 'appraisals' && <AppraisalsView currentUser={currentUser} showToast={showToast} />}
+            {activeTab === 'pending_queue' && <PendingApprovalsView requests={requests} setRequests={setRequests} leaveRequests={leaveRequests} setLeaveRequests={setLeaveRequests} currentUser={currentUser} showToast={showToast} />}
+            {activeTab === 'appraisals' && <AppraisalsView currentUser={currentUser} profiles={profiles} showToast={showToast} />}
             {activeTab === 'requests' && <RequestsView visibleRequests={visibleRequests} setIsReqModalOpen={() => setIsMasterModalOpen(true)} currentUser={currentUser} canApproveFinance={canApproveFinance} requests={requests} setRequests={setRequests} showToast={showToast} />}
             {activeTab === 'leave' && <LeaveView leaveRequests={leaveRequests} setLeaveRequests={setLeaveRequests} setIsLeaveModalOpen={() => setIsMasterModalOpen(true)} currentUser={currentUser} canApprove={canApproveLeave} />}
             {activeTab === 'policy' && <PolicyView />}
