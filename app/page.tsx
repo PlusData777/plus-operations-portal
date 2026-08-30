@@ -109,6 +109,14 @@ export default function PlusOpsPortal() {
     return requests.filter(r => r.requester_email === currentUser.email);
   }, [requests, currentUser, isExecutive, isFinanceMgr, isHrAdmin, isAdmin]);
 
+  const generateAIBriefing = () => {
+    setIsGeneratingBriefing(true);
+    setTimeout(() => {
+      setAiBriefing(`Executive Briefing (Role: ${currentUser.role}): All institutional modules operating under strict RBAC governance.`);
+      setIsGeneratingBriefing(false);
+    }, 1200);
+  };
+
   const handleSelectRequisitionType = (type) => {
     setIsMasterModalOpen(false);
     if (type === 'leave') {
