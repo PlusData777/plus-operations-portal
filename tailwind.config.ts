@@ -8,7 +8,15 @@ const config: Config = {
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        brand: {
+          navy: "var(--brand-navy)",
+          rust: "var(--brand-rust)",
+          yellow: "var(--brand-yellow)",
+        }
+      }
+    },
   },
   plugins: [],
 };
