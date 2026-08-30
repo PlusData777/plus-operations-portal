@@ -42,7 +42,7 @@ export default function PlusOpsPortal() {
   const [requests, setRequests] = useState([]);
   const [leaveRequests, setLeaveRequests] = useState([]);
   const [toastMsg, setToastMsg] = useState("");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Modals
   const [isMasterModalOpen, setIsMasterModalOpen] = useState(false);
@@ -193,11 +193,11 @@ export default function PlusOpsPortal() {
   ];
 
   return (
-    <div className="flex h-screen bg-slate-50 font-sans overflow-hidden">
+    <div className="flex h-screen bg-slate-50 font-sans overflow-hidden relative">
       {toastMsg && (
-        <div className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-slate-700">
-          <CheckCircle className="w-5 h-5 text-emerald-400" />
-          <span className="text-sm font-medium">{toastMsg}</span>
+        <div className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-slate-700 text-xs">
+          <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span className="font-medium">{toastMsg}</span>
         </div>
       )}
 
@@ -210,25 +210,25 @@ export default function PlusOpsPortal() {
               <button onClick={() => setIsMasterModalOpen(false)}><X className="w-5 h-5 text-slate-400" /></button>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <button onClick={() => handleSelectRequisitionType('leave')} className="p-4 border rounded-2xl hover:bg-blue-50 hover:border-[#0052CC] text-left transition">
-                <Calendar className="w-6 h-6 text-[#0052CC] mb-2" />
-                <h4 className="font-bold text-xs text-slate-900">Leave Application</h4>
-                <p className="text-[10px] text-slate-500 mt-0.5">Apply for annual or sick leave</p>
+              <button onClick={() => handleSelectRequisitionType('leave')} className="p-3 border rounded-2xl hover:bg-blue-50 hover:border-[#0052CC] text-left transition">
+                <Calendar className="w-5 h-5 text-[#0052CC] mb-1.5" />
+                <h4 className="font-bold text-xs text-slate-900">Leave</h4>
+                <p className="text-[10px] text-slate-500">Apply for leave</p>
               </button>
-              <button onClick={() => handleSelectRequisitionType('finance')} className="p-4 border rounded-2xl hover:bg-blue-50 hover:border-[#0052CC] text-left transition">
-                <Receipt className="w-6 h-6 text-[#0052CC] mb-2" />
-                <h4 className="font-bold text-xs text-slate-900">Financial Claim</h4>
-                <p className="text-[10px] text-slate-500 mt-0.5">Reimbursements & advances</p>
+              <button onClick={() => handleSelectRequisitionType('finance')} className="p-3 border rounded-2xl hover:bg-blue-50 hover:border-[#0052CC] text-left transition">
+                <Receipt className="w-5 h-5 text-[#0052CC] mb-1.5" />
+                <h4 className="font-bold text-xs text-slate-900">Claim</h4>
+                <p className="text-[10px] text-slate-500">Reimbursement</p>
               </button>
-              <button onClick={() => handleSelectRequisitionType('assets')} className="p-4 border rounded-2xl hover:bg-blue-50 hover:border-[#0052CC] text-left transition">
-                <Building className="w-6 h-6 text-[#0052CC] mb-2" />
-                <h4 className="font-bold text-xs text-slate-900">Asset Requisition</h4>
-                <p className="text-[10px] text-slate-500 mt-0.5">Equipment & IT gear</p>
+              <button onClick={() => handleSelectRequisitionType('assets')} className="p-3 border rounded-2xl hover:bg-blue-50 hover:border-[#0052CC] text-left transition">
+                <Building className="w-5 h-5 text-[#0052CC] mb-1.5" />
+                <h4 className="font-bold text-xs text-slate-900">Asset</h4>
+                <p className="text-[10px] text-slate-500">Equipment & IT</p>
               </button>
-              <button onClick={() => handleSelectRequisitionType('admin')} className="p-4 border rounded-2xl hover:bg-blue-50 hover:border-[#0052CC] text-left transition">
-                <Folder className="w-6 h-6 text-[#0052CC] mb-2" />
-                <h4 className="font-bold text-xs text-slate-900">Admin Support</h4>
-                <p className="text-[10px] text-slate-500 mt-0.5">Logistics & camp support</p>
+              <button onClick={() => handleSelectRequisitionType('admin')} className="p-3 border rounded-2xl hover:bg-blue-50 hover:border-[#0052CC] text-left transition">
+                <Folder className="w-5 h-5 text-[#0052CC] mb-1.5" />
+                <h4 className="font-bold text-xs text-slate-900">Admin</h4>
+                <p className="text-[10px] text-slate-500">Logistics support</p>
               </button>
             </div>
           </div>
@@ -244,7 +244,7 @@ export default function PlusOpsPortal() {
               <button onClick={() => setIsReqModalOpen(false)}><X className="w-5 h-5 text-slate-400" /></button>
             </div>
             <form onSubmit={handleCreateRequisition} className="space-y-3">
-              <div><label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">Purpose / Expense Head</label><input type="text" required name="expense_head" placeholder="e.g. Field camp logistics" className="w-full rounded-xl border p-2 text-xs" /></div>
+              <div><label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">Purpose / Head</label><input type="text" required name="expense_head" placeholder="e.g. Field camp logistics" className="w-full rounded-xl border p-2 text-xs" /></div>
               <div><label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">Amount Requested (PKR)</label><input type="number" required name="amount" placeholder="25000" className="w-full rounded-xl border p-2 text-xs font-bold" /></div>
               <div><label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">Justification Notes</label><textarea rows={3} name="notes" placeholder="Provide details..." className="w-full rounded-xl border p-2 text-xs resize-none" /></div>
               <div className="flex justify-end space-x-2 pt-2">
@@ -287,61 +287,71 @@ export default function PlusOpsPortal() {
         </div>
       )}
 
-      {/* SIDEBAR */}
-      <aside className={`${isSidebarOpen ? 'w-64' : 'w-0 overflow-hidden'} bg-[#0052CC] text-blue-100 flex flex-col shadow-xl transition-all duration-300 z-20 shrink-0`}>
-        <div className="p-6 border-b border-blue-600 flex justify-between items-center">
+      {/* MOBILE BACKDROP OVERLAY */}
+      {isSidebarOpen && (
+        <div 
+          onClick={() => setIsSidebarOpen(false)} 
+          className="fixed inset-0 bg-slate-900/50 z-30 md:hidden backdrop-blur-xs"
+        />
+      )}
+
+      {/* SIDEBAR DRAWER (Sliding Overlay on Mobile, Static on Desktop) */}
+      <aside className={`fixed md:static inset-y-0 left-0 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 bg-[#0052CC] text-blue-100 flex flex-col shadow-xl transition-transform duration-300 z-40 w-64 shrink-0`}>
+        <div className="p-5 border-b border-blue-600 flex justify-between items-center">
           <div className="flex items-center space-x-3 text-white">
             <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center shadow-inner"><Building className="w-5 h-5 text-white" /></div>
             <span className="text-xl font-bold tracking-tight">PLUS OPS</span>
           </div>
           <button onClick={() => setIsSidebarOpen(false)} className="text-blue-200 hover:text-white md:hidden"><X className="w-5 h-5" /></button>
         </div>
-        <div className="px-6 pt-3"><span className="text-[10px] bg-blue-700 text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider">{currentUser.role}</span></div>
+        <div className="px-5 pt-3"><span className="text-[10px] bg-blue-700 text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider">{currentUser.role}</span></div>
         
-        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+        <nav className="flex-1 overflow-y-auto p-3 space-y-1">
           {NAV_ITEMS.map(item => (
             <button 
               key={item.id} 
-              onClick={() => setActiveTab(item.id)} 
-              className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${activeTab === item.id ? 'bg-[#003d99] text-white shadow-sm' : 'hover:bg-blue-600/50 hover:text-white'}`}
+              onClick={() => { setActiveTab(item.id); setIsSidebarOpen(false); }} 
+              className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${activeTab === item.id ? 'bg-[#003d99] text-white shadow-sm' : 'hover:bg-blue-600/50 hover:text-white'}`}
             >
-              <item.icon className="w-5 h-5" />
-              <span>{item.label}</span>
+              <item.icon className="w-5 h-5 shrink-0" />
+              <span className="truncate">{item.label}</span>
             </button>
           ))}
         </nav>
       </aside>
 
       {/* MAIN VIEW */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 md:px-8 shrink-0">
-          <div className="flex items-center space-x-4">
-            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">{isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}</button>
-            <h1 className="text-base md:text-lg font-bold text-slate-800 capitalize">{activeTab.replace('_', ' ')}</h1>
+      <main className="flex-1 flex flex-col h-screen overflow-hidden w-full">
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 shrink-0">
+          <div className="flex items-center space-x-3 overflow-hidden">
+            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors shrink-0 cursor-pointer">
+              <Menu className="w-5 h-5" />
+            </button>
+            <h1 className="text-sm md:text-lg font-bold text-slate-800 capitalize truncate">{activeTab.replace('_', ' ')}</h1>
           </div>
           
-          <div className="flex items-center space-x-4">
-            <button onClick={() => setIsMasterModalOpen(true)} className="flex items-center space-x-1.5 bg-[#0052CC] hover:bg-[#003d99] text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition-colors cursor-pointer">
-              <Plus className="w-4 h-4 text-amber-300" /> <span>+ New Requisition</span>
+          <div className="flex items-center space-x-2 md:space-x-4 shrink-0">
+            <button onClick={() => setIsMasterModalOpen(true)} className="flex items-center space-x-1 bg-[#0052CC] hover:bg-[#003d99] text-white px-3 md:px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition-colors cursor-pointer">
+              <Plus className="w-3.5 h-3.5 text-amber-300 shrink-0" /> <span className="hidden sm:inline">New Requisition</span><span className="sm:hidden">New</span>
             </button>
 
             {/* USER PROFILE DROPDOWN */}
             <div className="relative" ref={menuRef}>
-              <button onClick={() => setIsUserMenuOpen(!isUserMenuOpen)} className="flex items-center space-x-2 p-1.5 rounded-xl hover:bg-slate-100 transition cursor-pointer">
-                <div className="w-8 h-8 rounded-full bg-blue-100 text-[#0052CC] flex items-center justify-center font-bold text-sm border border-blue-200">
+              <button onClick={() => setIsUserMenuOpen(!isUserMenuOpen)} className="flex items-center space-x-2 p-1 rounded-xl hover:bg-slate-100 transition cursor-pointer">
+                <div className="w-8 h-8 rounded-full bg-blue-100 text-[#0052CC] flex items-center justify-center font-bold text-sm border border-blue-200 shrink-0">
                   {currentUser.name ? currentUser.name.charAt(0) : 'U'}
                 </div>
-                <div className="hidden md:block text-left">
+                <div className="hidden lg:block text-left">
                   <span className="block text-xs font-bold text-slate-800 leading-none">{currentUser.name}</span>
                   <span className="block text-[10px] text-slate-400 mt-0.5 leading-none">{currentUser.email}</span>
                 </div>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
               </button>
 
               {isUserMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white border border-slate-200 shadow-xl py-2 z-50 animate-in fade-in">
+                <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white border border-slate-200 shadow-xl py-2 z-50">
                   <div className="px-4 py-2 border-b border-slate-100">
-                    <p className="text-xs font-bold text-slate-900">{currentUser.name}</p>
+                    <p className="text-xs font-bold text-slate-900 truncate">{currentUser.name}</p>
                     <p className="text-[11px] text-slate-500 truncate">{currentUser.email}</p>
                     <span className="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-[#0052CC] border border-blue-200">{currentUser.role}</span>
                   </div>
