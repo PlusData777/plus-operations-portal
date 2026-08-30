@@ -54,6 +54,21 @@ export default function PlusOpsPortal() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
+  // Load user session from local storage on mount
+  useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem("plus_user");
+      if (storedUser) {
+        setCurrentUser(JSON.parse(storedUser));
+      } else {
+        window.location.href = '/login';
+      }
+    } catch (e) {
+      console.warn("Session retrieval failed:", e);
+      window.location.href = '/login';
+    }
+  }, []);
+
   const fetchGlobalData = async () => {
     try {
       const [profRes, pRes, dRes, rRes, lRes] = await Promise.all([
@@ -77,10 +92,6 @@ export default function PlusOpsPortal() {
     fetchGlobalData();
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("plus_user", JSON.stringify(currentUser));
-  }, [currentUser]);
-
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -95,6 +106,11 @@ export default function PlusOpsPortal() {
   const showToast = (msg) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(""), 4000);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("plus_user");
+    window.location.href = '/login';
   };
 
   const handleSelectRequisitionType = (type) => {
@@ -330,10 +346,10 @@ export default function PlusOpsPortal() {
                     <span className="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-[#0052CC] border border-blue-200">{currentUser.role}</span>
                   </div>
                   <div className="pt-1">
-                    <button onClick={() => { setActiveTab('staff_workspace'); setIsUserMenuOpen(false); }} className="w-full flex items-center space-x-2 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                    <button onClick={() => { setActiveTab('staff_workspace'); setIsUserMenuOpen(false); }} className="w-full flex items-center space-x-2 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer">
                       <User className="w-4 h-4 text-slate-400" /><span>My Workspace</span>
                     </button>
-                    <button onClick={() => { alert('Logged out session simulation.'); setIsUserMenuOpen(false); }} className="w-full flex items-center space-x-2 px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50">
+                    <button onClick={handleLogout} className="w-full flex items-center space-x-2 px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 cursor-pointer">
                       <LogOut className="w-4 h-4 text-red-500" /><span>Logout</span>
                     </button>
                   </div>
