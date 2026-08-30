@@ -32,9 +32,6 @@ export default function PlusOpsPortal() {
   const [toastMsg, setToastMsg] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  const [isMasterModalOpen, setIsMasterModalOpen] = useState(false);
-  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
-
   const fetchGlobalData = async () => {
     try {
       const [pRes, dRes, rRes, lRes] = await Promise.all([
@@ -123,7 +120,6 @@ export default function PlusOpsPortal() {
             <h1 className="text-base md:text-lg font-bold text-slate-800 capitalize">{activeTab.replace('_', ' ')}</h1>
           </div>
           <div className="flex items-center space-x-3">
-            <button onClick={() => setIsLeaveModalOpen(true)} className="flex items-center space-x-1 bg-[#0052CC] hover:bg-[#003d99] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors"><Plus className="w-4 h-4" /> <span>Apply for Leave</span></button>
             <div className="w-8 h-8 rounded-full bg-blue-100 text-[#0052CC] flex items-center justify-center font-bold text-sm border border-blue-200" title={currentUser.name}>{currentUser.name.charAt(0)}</div>
           </div>
         </header>
