@@ -10,9 +10,17 @@ export default function PendingApprovalsView({
   currentUser, 
   showToast 
 }) {
-  // Filter all items that are pending and require attention
-  const pendingRequests = requests.filter(r => r.status.includes('PENDING'));
-  const pendingLeaves = leaveRequests.filter(l => l.status === 'PENDING');
+  // Filter pending items where the CURRENT user is specifically the designated approver AND NOT the requester
+  const pendingRequests = requests.filter(r => 
+    r.status.includes('PENDING') && 
+    r.current_approver === currentUser.email && 
+    r.requester_email !== currentUser.email
+  );
+
+  const pendingLeaves = leaveRequests.filter(l => 
+    l.status === 'PENDING' && 
+    l.staff_email !== currentUser.email
+  );
 
   const handleApproveReq = (reqId) => {
     setRequests(requests.map(r => {
@@ -45,7 +53,7 @@ export default function PendingApprovalsView({
     <div className="space-y-6">
       <div className="flex items-center space-x-2">
         <Clock className="w-6 h-6 text-[#0052CC]" />
-        <h2 className="text-xl font-bold text-slate-900">Pending Approvals Queue</h2>
+        <h2 className="text-xl font-bold text-slate-900">Pending Approvals Queue ({currentUser.name})</h2>
       </div>
 
       {/* FINANCIAL REQUISITIONS PENDING */}
@@ -68,7 +76,7 @@ export default function PendingApprovalsView({
             </thead>
             <tbody className="divide-y divide-slate-100">
               {pendingRequests.length === 0 ? (
-                <tr><td colSpan={6} className="px-6 py-6 text-center text-slate-400 italic">No pending requisitions in queue.</td></tr>
+                <tr><td colSpan={6} className="px-6 py-6 text-center text-slate-400 italic">No pending requisitions requiring your approval.</td></tr>
               ) : (
                 pendingRequests.map(req => (
                   <tr key={req.id} className="hover:bg-slate-50">
@@ -112,7 +120,7 @@ export default function PendingApprovalsView({
             </thead>
             <tbody className="divide-y divide-slate-100">
               {pendingLeaves.length === 0 ? (
-                <tr><td colSpan={5} className="px-6 py-6 text-center text-slate-400 italic">No pending leave applications.</td></tr>
+                <tr><td colSpan={5} className="px-6 py-6 text-center text-slate-400 italic">No pending leave applications requiring your review.</td></tr>
               ) : (
                 pendingLeaves.map(leave => (
                   <tr key={leave.id} className="hover:bg-slate-50">
