@@ -76,9 +76,8 @@ export default function PlusOpsPortal() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedProgramId, setSelectedProgramId] = useState(null);
   
-  // Modal controllers
   const [isMasterModalOpen, setIsMasterModalOpen] = useState(false);
-  const [activeReqType, setActiveReqType] = useState('finance'); // 'finance' | 'admin' | 'asset'
+  const [activeReqType, setActiveReqType] = useState('finance');
   const [isReqModalOpen, setIsReqModalOpen] = useState(false);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
@@ -240,14 +239,12 @@ export default function PlusOpsPortal() {
         </div>
       )}
 
-      {/* MASTER REQUISITION SELECTOR POPUP */}
       <MasterRequisitionModal 
         isOpen={isMasterModalOpen} 
         onClose={() => setIsMasterModalOpen(false)} 
         onSelectType={handleSelectRequisitionType} 
       />
 
-      {/* SUB-MODALS */}
       <RequisitionModal 
         isOpen={isReqModalOpen} 
         onClose={() => setIsReqModalOpen(false)} 
@@ -260,7 +257,6 @@ export default function PlusOpsPortal() {
       <ActivityModal isOpen={isActivityModalOpen} onClose={() => setIsActivityModalOpen(false)} onSubmit={handleLogActivity} programs={programs} />
       <ProgramModal isOpen={isProgramModalOpen} onClose={() => setIsProgramModalOpen(false)} onSubmit={handleCreateProgram} />
 
-      {/* SIDEBAR */}
       <aside className={`${isSidebarOpen ? 'w-64' : 'w-0 overflow-hidden'} bg-[#0052CC] text-blue-100 flex flex-col shadow-xl transition-all duration-300 z-20 shrink-0`}>
         <div className="p-6 border-b border-blue-600 flex justify-between items-center">
           <div className="flex items-center space-x-3 text-white">
@@ -294,7 +290,6 @@ export default function PlusOpsPortal() {
         </div>
       </aside>
 
-      {/* MAIN VIEW */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 md:px-8 shrink-0">
           <div className="flex items-center space-x-4">
@@ -325,7 +320,7 @@ export default function PlusOpsPortal() {
           <div className="max-w-6xl mx-auto">
             {activeTab === 'dashboard' && <DashboardView visibleRequests={visibleRequests} programs={programs} dockets={dockets} currentUser={currentUser} aiBriefing={aiBriefing} isGeneratingBriefing={isGeneratingBriefing} generateAIBriefing={generateAIBriefing} />}
             {activeTab === 'programs' && <ProgramsView programs={programs} selectedProgramId={selectedProgramId} setSelectedProgramId={setSelectedProgramId} setIsActivityModalOpen={setIsActivityModalOpen} setIsProgramModalOpen={setIsProgramModalOpen} isGlobalAdmin={canManagePrograms} />}
-            {activeTab::'dockets' && <DocketsView dockets={dockets} setIsDocketModalOpen={setIsDocketModalOpen} />}
+            {activeTab === 'dockets' && <DocketsView dockets={dockets} setIsDocketModalOpen={setIsDocketModalOpen} />}
             {activeTab === 'roster' && <RosterView profiles={profiles} currentUser={currentUser} canManageUsers={canManageUsers} />}
             {activeTab === 'requests' && <RequestsView visibleRequests={visibleRequests} setIsReqModalOpen={() => setIsMasterModalOpen(true)} currentUser={currentUser} canApproveFinance={canApproveFinance} />}
             {activeTab === 'leave' && <LeaveView leaveRequests={leaveRequests} setLeaveRequests={setLeaveRequests} setIsLeaveModalOpen={() => setIsMasterModalOpen(true)} currentUser={currentUser} canApprove={canApproveLeave} />}
