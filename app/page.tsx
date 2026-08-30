@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useMemo } from 'react';
 import {
-  LayoutDashboard, Users, Receipt, Briefcase, Scale, Building, Plus, CheckCircle, Menu, X, ArrowLeft, ShieldAlert
+  LayoutDashboard, Users, Receipt, Briefcase, Scale, Building, Plus, CheckCircle, Menu, X, ArrowLeft, Calendar, Folder
 } from 'lucide-react';
 
 import DashboardView from '@/components/DashboardView';
@@ -9,7 +9,9 @@ import ProgramsView from '@/components/ProgramsView';
 import DocketsView from '@/components/DocketsView';
 import RosterView from '@/components/RosterView';
 import RequestsView from '@/components/RequestsView';
-import { RequisitionModal, DocketModal, ActivityModal, ProgramModal } from '@/components/Modals';
+import LeaveView from '@/components/LeaveView';
+import PolicyView from '@/components/PolicyView';
+import { RequisitionModal, DocketModal, ActivityModal, ProgramModal, LeaveModal } from '@/components/Modals';
 
 const INITIAL_PROFILES = [
   { id: '1', email: 'altafkhoso.adv@gmail.com', name: 'Altaf Khoso', designation: 'CEO', role: 'EXECUTIVE', department: 'Management', approval_scope: 'ALL', status: 'ACTIVE' },
@@ -22,6 +24,10 @@ const INITIAL_PROFILES = [
 
 const INITIAL_REQUESTS = [
   { id: 'REQ-001', timestamp: '2026-08-25T10:30:00Z', claim_type: 'Travel Expense', requester_name: 'General Staff', requester_email: 'staff@plus.org', project_code: 'PRG-1', expense_head: 'Transportation', hub: 'Karachi', requested_amount: 15000, approved_amount: 0, approval_level: 1, current_approver: 'japheth@plus.org', status: 'PENDING_L1', notes: 'Field visit transport' }
+];
+
+const INITIAL_LEAVE = [
+  { id: 'LEA-001', staff_name: 'General Staff', staff_email: 'staff@plus.org', leave_type: 'Annual Leave', start_date: '2026-09-05', end_date: '2026-09-07', reason: 'Family commitment', status: 'PENDING' }
 ];
 
 const INITIAL_PROGRAMS = [
@@ -50,32 +56,6 @@ const INITIAL_PROGRAMS = [
         outcome: 'Successfully established legal protections and initiated counseling.'
       }
     ]
-  },
-  {
-    id: 'PRG-2',
-    name: 'Women Rights Advocacy & Protection Camp',
-    donor_name: 'Global Fund for Women',
-    start_date: '2026-03-01',
-    end_date: '2026-11-30',
-    grant_budget: 2000000,
-    spent: 850000,
-    hub: 'Hyderabad',
-    status: 'ACTIVE',
-    kpis: [{ id: 'kpi-2', title: 'Legal Awareness Seminars', target: 20, achieved: 12, unit: 'workshops' }],
-    activities: [
-      {
-        id: 'act-2',
-        title: 'Rural Women Legal Rights Workshop',
-        venue: 'District Council Hall Hyderabad',
-        date: '2026-08-20',
-        male: 10,
-        female: 145,
-        transgender: 4,
-        pwds: 18,
-        minorities: 32,
-        outcome: 'Educated rural women on inheritance rights and protection laws.'
-      }
-    ]
   }
 ];
 
@@ -88,6 +68,7 @@ export default function PlusOpsPortal() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [profiles] = useState(INITIAL_PROFILES);
   const [requests, setRequests] = useState(INITIAL_REQUESTS);
+  const [leaveRequests, setLeaveRequests] = useState(INITIAL_LEAVE);
   const [programs, setPrograms] = useState(INITIAL_PROGRAMS);
   const [dockets, setDockets] = useState(INITIAL_DOCKETS);
   const [toastMsg, setToastMsg] = useState("");
@@ -98,6 +79,7 @@ export default function PlusOpsPortal() {
   const [isProgramModalOpen, setIsProgramModalOpen] = useState(false);
   const [isReqModalOpen, setIsReqModalOpen] = useState(false);
   const [isDocketModalOpen, setIsDocketModalOpen] = useState(false);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [aiBriefing, setAiBriefing] = useState("");
   const [isGeneratingBriefing, setIsGeneratingBriefing] = useState(false);
 
@@ -106,16 +88,15 @@ export default function PlusOpsPortal() {
     setTimeout(() => setToastMsg(""), 4000);
   };
 
-  // Explicit RBAC Permissions
   const isExecutive = currentUser.role === 'EXECUTIVE';
   const isAdmin = currentUser.role === 'ADMIN';
   const isHrAdmin = currentUser.role === 'HR_ADMIN';
   const isFinanceMgr = currentUser.role === 'FINANCE_MGR';
   const isProgramMgr = currentUser.role === 'PROGRAM_MGR';
-  const isStaff = currentUser.role === 'STAFF';
 
   const canManagePrograms = isExecutive || isProgramMgr || isAdmin;
   const canApproveFinance = isExecutive || isFinanceMgr;
+  const canApproveLeave = isExecutive || isHrAdmin;
   const canManageUsers = isExecutive || isAdmin || isHrAdmin;
 
   const visibleRequests = useMemo(() => {
@@ -126,17 +107,31 @@ export default function PlusOpsPortal() {
   const generateAIBriefing = () => {
     setIsGeneratingBriefing(true);
     setTimeout(() => {
-      setAiBriefing(`Executive Briefing (Role: ${currentUser.role}): All organizational modules operating under strict RBAC governance.`);
+      setAiBriefing(`Executive Briefing (Role: ${currentUser.role}): All modules (Requisitions, Leave Tracking, Policy Folders, Dockets) fully synchronized.`);
       setIsGeneratingBriefing(false);
     }, 1200);
   };
 
+  const handleCreateLeave = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const newLeave = {
+      id: `LEA-00${leaveRequests.length + 1}`,
+      staff_name: currentUser.name,
+      staff_email: currentUser.email,
+      leave_type: formData.get('leave_type'),
+      start_date: formData.get('start_date'),
+      end_date: formData.get('end_date'),
+      reason: formData.get('reason'),
+      status: 'PENDING'
+    };
+    setLeaveRequests([newLeave, ...leaveRequests]);
+    setIsLeaveModalOpen(false);
+    showToast('Leave application submitted successfully.');
+  };
+
   const handleCreateProgram = (e) => {
     e.preventDefault();
-    if (!canManagePrograms) {
-      showToast('Permission denied: Insufficient authority to create programs.');
-      return;
-    }
     const formData = new FormData(e.target);
     const newProgram = {
       id: `PRG-${Date.now()}`,
@@ -153,7 +148,7 @@ export default function PlusOpsPortal() {
     };
     setPrograms([newProgram, ...programs]);
     setIsProgramModalOpen(false);
-    showToast('New grant program registered successfully.');
+    showToast('New grant program registered.');
   };
 
   const handleLogActivity = (e) => {
@@ -198,7 +193,7 @@ export default function PlusOpsPortal() {
     };
     setRequests([newReq, ...requests]);
     setIsReqModalOpen(false);
-    showToast('Financial requisition submitted for review.');
+    showToast('Financial requisition submitted.');
   };
 
   const handleCreateDocket = (e) => {
@@ -216,7 +211,7 @@ export default function PlusOpsPortal() {
     };
     setDockets([newDocket, ...dockets]);
     setIsDocketModalOpen(false);
-    showToast('Case docket registered successfully.');
+    showToast('Case docket registered.');
   };
 
   const NAV_ITEMS = [
@@ -225,6 +220,8 @@ export default function PlusOpsPortal() {
     { id: 'dockets', label: 'Case Dockets', icon: Scale },
     { id: 'roster', label: 'Staff Roster', icon: Users },
     { id: 'requests', label: 'Expense Claims', icon: Receipt },
+    { id: 'leave', label: 'Leave Requests', icon: Calendar },
+    { id: 'policy', label: 'Policy Folders', icon: Folder },
   ];
 
   return (
@@ -241,6 +238,7 @@ export default function PlusOpsPortal() {
       <DocketModal isOpen={isDocketModalOpen} onClose={() => setIsDocketModalOpen(false)} onSubmit={handleCreateDocket} />
       <ActivityModal isOpen={isActivityModalOpen} onClose={() => setIsActivityModalOpen(false)} onSubmit={handleLogActivity} programs={programs} />
       <ProgramModal isOpen={isProgramModalOpen} onClose={() => setIsProgramModalOpen(false)} onSubmit={handleCreateProgram} />
+      <LeaveModal isOpen={isLeaveModalOpen} onClose={() => setIsLeaveModalOpen(false)} onSubmit={handleCreateLeave} />
 
       {/* SIDEBAR */}
       <aside className={`${isSidebarOpen ? 'w-64' : 'w-0 overflow-hidden'} bg-[#0052CC] text-blue-100 flex flex-col shadow-xl transition-all duration-300 z-20 shrink-0`}>
@@ -310,6 +308,8 @@ export default function PlusOpsPortal() {
             {activeTab === 'dockets' && <DocketsView dockets={dockets} setIsDocketModalOpen={setIsDocketModalOpen} />}
             {activeTab === 'roster' && <RosterView profiles={profiles} currentUser={currentUser} canManageUsers={canManageUsers} />}
             {activeTab === 'requests' && <RequestsView visibleRequests={visibleRequests} setIsReqModalOpen={setIsReqModalOpen} currentUser={currentUser} canApproveFinance={canApproveFinance} />}
+            {activeTab === 'leave' && <LeaveView leaveRequests={leaveRequests} setLeaveRequests={setLeaveRequests} setIsLeaveModalOpen={setIsLeaveModalOpen} currentUser={currentUser} canApprove={canApproveLeave} />}
+            {activeTab === 'policy' && <PolicyView />}
           </div>
         </div>
       </main>
