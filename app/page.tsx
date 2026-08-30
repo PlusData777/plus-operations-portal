@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic';
 import React, { useState, useMemo } from 'react';
 import {
-  LayoutDashboard, Users, Receipt, Briefcase, Scale, Building, Plus, CheckCircle, Menu, X, ArrowLeft, Calendar, Folder, UserCheck
+  LayoutDashboard, Users, Receipt, Briefcase, Scale, Building, Plus, CheckCircle, Menu, X, ArrowLeft, Calendar, Folder, UserCheck, Clock
 } from 'lucide-react';
 
 import DashboardView from '@/components/DashboardView';
@@ -13,6 +13,7 @@ import RequestsView from '@/components/RequestsView';
 import LeaveView from '@/components/LeaveView';
 import PolicyView from '@/components/PolicyView';
 import StaffManagementView from '@/components/StaffManagementView';
+import PendingApprovalsView from '@/components/PendingApprovalsView';
 import { MasterRequisitionModal, RequisitionModal, DocketModal, ActivityModal, ProgramModal, LeaveModal } from '@/components/Modals';
 
 const INITIAL_PROFILES = [
@@ -242,6 +243,7 @@ export default function PlusOpsPortal() {
     { id: 'dockets', label: 'Case Dockets', icon: Scale },
     { id: 'staff_mgmt', label: 'Staff Directory', icon: UserCheck },
     { id: 'roster', label: 'Staff Roster', icon: Users },
+    { id: 'pending_queue', label: 'Pending Approvals', icon: Clock },
     { id: 'requests', label: 'Expense Claims', icon: Receipt },
     { id: 'leave', label: 'Leave Requests', icon: Calendar },
     { id: 'policy', label: 'Policy Folders', icon: Folder },
@@ -335,11 +337,32 @@ export default function PlusOpsPortal() {
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
           <div className="max-w-6xl mx-auto">
-            {activeTab === 'dashboard' && <DashboardView visibleRequests={visibleRequests} programs={programs} dockets={dockets} currentUser={currentUser} aiBriefing={aiBriefing} isGeneratingBriefing={isGeneratingBriefing} generateAIBriefing={generateAIBriefing} />}
+            {activeTab === 'dashboard' && (
+              <DashboardView 
+                visibleRequests={visibleRequests} 
+                programs={programs} 
+                dockets={dockets} 
+                currentUser={currentUser} 
+                aiBriefing={aiBriefing} 
+                isGeneratingBriefing={isGeneratingBriefing} 
+                generateAIBriefing={generateAIBriefing} 
+                setActiveTab={setActiveTab}
+              />
+            )}
             {activeTab === 'programs' && <ProgramsView programs={programs} selectedProgramId={selectedProgramId} setSelectedProgramId={setSelectedProgramId} setIsActivityModalOpen={setIsActivityModalOpen} setIsProgramModalOpen={setIsProgramModalOpen} isGlobalAdmin={canManagePrograms} />}
             {activeTab === 'dockets' && <DocketsView dockets={dockets} setIsDocketModalOpen={setIsDocketModalOpen} />}
             {activeTab === 'staff_mgmt' && <StaffManagementView profiles={profiles} setProfiles={setProfiles} canManageUsers={canManageUsers} showToast={showToast} />}
             {activeTab === 'roster' && <RosterView profiles={profiles} currentUser={currentUser} canManageUsers={canManageUsers} />}
+            {activeTab === 'pending_queue' && (
+              <PendingApprovalsView 
+                requests={requests} 
+                setRequests={setRequests} 
+                leaveRequests={leaveRequests} 
+                setLeaveRequests={setLeaveRequests} 
+                currentUser={currentUser} 
+                showToast={showToast} 
+              />
+            )}
             {activeTab === 'requests' && <RequestsView visibleRequests={visibleRequests} setIsReqModalOpen={() => setIsMasterModalOpen(true)} currentUser={currentUser} canApproveFinance={canApproveFinance} requests={requests} setRequests={setRequests} showToast={showToast} />}
             {activeTab === 'leave' && <LeaveView leaveRequests={leaveRequests} setLeaveRequests={setLeaveRequests} setIsLeaveModalOpen={() => setIsMasterModalOpen(true)} currentUser={currentUser} canApprove={canApproveLeave} />}
             {activeTab === 'policy' && <PolicyView />}
