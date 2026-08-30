@@ -3,33 +3,16 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  AlertCircle,
-  AlertTriangle,
   ArrowLeft,
   Award,
-  BookOpen,
-  Briefcase,
   CheckCircle2,
-  Clock,
-  Download,
   FileCheck2,
-  FileText,
-  Filter,
-  GraduationCap,
-  HeartHandshake,
   LogOut,
   Plus,
-  RefreshCw,
-  Scale,
-  Search,
   Send,
-  Shield,
   ShieldAlert,
   ShieldCheck,
-  Star,
   UserCheck,
-  UserPlus,
-  Users,
   X,
 } from "lucide-react";
 
@@ -128,7 +111,6 @@ export default function HRLifecyclePage() {
   const [activeTab, setActiveTab] = useState<"APPRAISALS" | "EXIT_CLEARANCE" | "ONBOARDING" | "GRIEVANCES">("APPRAISALS");
   const [appraisals, setAppraisals] = useState<AppraisalRecord[]>(INITIAL_APPRAISALS);
   const [exits, setExits] = useState<ExitClearanceRecord[]>(INITIAL_EXITS);
-  const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Appraisal Form State
@@ -229,13 +211,13 @@ export default function HRLifecyclePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] pb-16">
+    <div className="min-h-screen bg-slate-50 pb-16 font-sans">
       {/* Top Header */}
       <div className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-md">
         <div className="container mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 hover:text-[#1b365d]"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 hover:text-[#0052CC]"
           >
             <ArrowLeft className="h-4 w-4" />
             <span>Back to Workspace</span>
@@ -251,8 +233,8 @@ export default function HRLifecyclePage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <UserCheck className="h-6 w-6 text-[#1b365d]" />
-              <h1 className="text-2xl font-bold text-[#1b365d]">HR Governance & Staff Lifecycle</h1>
+              <UserCheck className="h-6 w-6 text-[#0052CC]" />
+              <h1 className="text-2xl font-bold text-slate-900">HR Governance & Staff Lifecycle</h1>
             </div>
             <p className="mt-1 text-xs text-slate-500">
               Staff performance evaluations, exit handovers, bar licensure verification, and workplace standards.
@@ -261,7 +243,7 @@ export default function HRLifecyclePage() {
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#1b365d] px-4 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-[#122440] cursor-pointer"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#0052CC] px-4 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-[#003d99] cursor-pointer"
           >
             <Plus className="h-4 w-4 text-[#fad207]" />
             <span>
@@ -278,7 +260,7 @@ export default function HRLifecyclePage() {
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Personnel</span>
-            <p className="mt-2 text-2xl font-bold text-[#1b365d]">22 Staff</p>
+            <p className="mt-2 text-2xl font-bold text-[#0052CC]">22 Staff</p>
             <span className="text-[10px] text-slate-500">Active roster across 3 Hubs</span>
           </div>
 
@@ -296,7 +278,7 @@ export default function HRLifecyclePage() {
 
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Policy Compliance</span>
-            <p className="mt-2 text-2xl font-bold text-[#1b365d]">100%</p>
+            <p className="mt-2 text-2xl font-bold text-[#0052CC]">100%</p>
             <span className="text-[10px] text-slate-500">Bar Licensure & SGBV Code</span>
           </div>
         </div>
@@ -307,7 +289,7 @@ export default function HRLifecyclePage() {
             onClick={() => setActiveTab("APPRAISALS")}
             className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 transition cursor-pointer ${
               activeTab === "APPRAISALS"
-                ? "bg-[#1b365d] text-white shadow-2xs"
+                ? "bg-[#0052CC] text-white shadow-2xs"
                 : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
             }`}
           >
@@ -319,7 +301,7 @@ export default function HRLifecyclePage() {
             onClick={() => setActiveTab("EXIT_CLEARANCE")}
             className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 transition cursor-pointer ${
               activeTab === "EXIT_CLEARANCE"
-                ? "bg-[#1b365d] text-white shadow-2xs"
+                ? "bg-[#0052CC] text-white shadow-2xs"
                 : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
             }`}
           >
@@ -331,7 +313,7 @@ export default function HRLifecyclePage() {
             onClick={() => setActiveTab("ONBOARDING")}
             className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 transition cursor-pointer ${
               activeTab === "ONBOARDING"
-                ? "bg-[#1b365d] text-white shadow-2xs"
+                ? "bg-[#0052CC] text-white shadow-2xs"
                 : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
             }`}
           >
@@ -343,7 +325,7 @@ export default function HRLifecyclePage() {
             onClick={() => setActiveTab("GRIEVANCES")}
             className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 transition cursor-pointer ${
               activeTab === "GRIEVANCES"
-                ? "bg-[#1b365d] text-white shadow-2xs"
+                ? "bg-[#0052CC] text-white shadow-2xs"
                 : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
             }`}
           >
@@ -358,13 +340,13 @@ export default function HRLifecyclePage() {
             {appraisals.map((apr) => (
               <div
                 key={apr.id}
-                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3 hover:border-[#1b365d] transition"
+                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3 hover:border-[#0052CC] transition"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-[#1b365d]">{apr.id}</span>
-                      <span className="rounded-md bg-[#1b365d]/10 px-2 py-0.5 text-[10px] font-bold text-[#1b365d]">
+                      <span className="font-mono text-xs font-bold text-[#0052CC]">{apr.id}</span>
+                      <span className="rounded-md bg-[#0052CC]/10 px-2 py-0.5 text-[10px] font-bold text-[#0052CC]">
                         {apr.reviewPeriod}
                       </span>
                       <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
@@ -379,7 +361,7 @@ export default function HRLifecyclePage() {
                     className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
                       apr.overallRating === "Outstanding"
                         ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                        : "bg-blue-50 text-[#1b365d] border border-blue-200"
+                        : "bg-blue-50 text-[#0052CC] border border-blue-200"
                     }`}
                   >
                     ★ {apr.overallRating}
@@ -388,21 +370,21 @@ export default function HRLifecyclePage() {
 
                 {/* Score Disaggregation */}
                 <div className="grid grid-cols-3 gap-3 border-t border-slate-100 pt-3 text-xs">
-                  <div className="rounded-xl bg-[#f8fafc] p-2.5 border border-slate-100 text-center">
+                  <div className="rounded-xl bg-slate-50 p-2.5 border border-slate-100 text-center">
                     <span className="text-[10px] font-bold uppercase text-slate-400 block">Casework & Disposal</span>
-                    <span className="font-bold text-[#1b365d] text-sm">{apr.caseworkScore} / 5.0</span>
+                    <span className="font-bold text-[#0052CC] text-sm">{apr.caseworkScore} / 5.0</span>
                   </div>
-                  <div className="rounded-xl bg-[#f8fafc] p-2.5 border border-slate-100 text-center">
+                  <div className="rounded-xl bg-slate-50 p-2.5 border border-slate-100 text-center">
                     <span className="text-[10px] font-bold uppercase text-slate-400 block">Field / Program Output</span>
                     <span className="font-bold text-[#c65a28] text-sm">{apr.fieldTargetScore} / 5.0</span>
                   </div>
-                  <div className="rounded-xl bg-[#f8fafc] p-2.5 border border-slate-100 text-center">
+                  <div className="rounded-xl bg-slate-50 p-2.5 border border-slate-100 text-center">
                     <span className="text-[10px] font-bold uppercase text-slate-400 block">Compliance & Punctuality</span>
                     <span className="font-bold text-emerald-600 text-sm">{apr.complianceScore} / 5.0</span>
                   </div>
                 </div>
 
-                <div className="rounded-xl bg-[#f8fafc] p-3 text-xs text-slate-600 border border-slate-100">
+                <div className="rounded-xl bg-slate-50 p-3 text-xs text-slate-600 border border-slate-100">
                   <span className="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">Manager Evaluation Notes</span>
                   {apr.managerComments}
                 </div>
@@ -417,12 +399,12 @@ export default function HRLifecyclePage() {
             {exits.map((ext) => (
               <div
                 key={ext.id}
-                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3 hover:border-[#1b365d] transition"
+                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3 hover:border-[#0052CC] transition"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-[#1b365d]">{ext.id}</span>
+                      <span className="font-mono text-xs font-bold text-[#0052CC]">{ext.id}</span>
                       <span className="rounded-md bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 text-[10px] font-bold">
                         Last Day: {ext.lastWorkingDay}
                       </span>
@@ -437,21 +419,21 @@ export default function HRLifecyclePage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 border-t border-slate-100 pt-3 text-xs">
-                  <div className="flex items-center gap-2 p-2 bg-[#f8fafc] rounded-lg">
+                  <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
                     <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
                     <span>Finance Settled: <strong>Verified</strong></span>
                   </div>
-                  <div className="flex items-center gap-2 p-2 bg-[#f8fafc] rounded-lg">
+                  <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
                     <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
                     <span>Assets Returned: <strong>Verified</strong></span>
                   </div>
-                  <div className="flex items-center gap-2 p-2 bg-[#f8fafc] rounded-lg">
+                  <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
                     <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
                     <span>Access Deactivated: <strong>Done</strong></span>
                   </div>
                 </div>
 
-                <div className="p-3 bg-[#f8fafc] rounded-xl border border-slate-100 text-xs text-slate-600">
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs text-slate-600">
                   <span className="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">Court Briefs & File Handover</span>
                   Active court dockets and Vakalatnamas transferred to: <strong>{ext.caseworkHandoverTo}</strong>
                 </div>
@@ -467,7 +449,7 @@ export default function HRLifecyclePage() {
               Statutory Bar Licensure & Organizational Undertakings
             </h3>
             <div className="space-y-3 text-xs text-slate-600">
-              <div className="p-3.5 bg-[#f8fafc] rounded-xl border border-slate-100 flex items-center justify-between">
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
                 <div>
                   <p className="font-bold text-slate-800">Sindh Bar Council License Verification</p>
                   <span className="text-[11px] text-slate-500">All panel advocates verified under Sindh Bar Advocates Act.</span>
@@ -477,7 +459,7 @@ export default function HRLifecyclePage() {
                 </span>
               </div>
 
-              <div className="p-3.5 bg-[#f8fafc] rounded-xl border border-slate-100 flex items-center justify-between">
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
                 <div>
                   <p className="font-bold text-slate-800">Child Protection & Anti-Harassment Code of Conduct</p>
                   <span className="text-[11px] text-slate-500">Signed undertaking on protection of women and minors in custodial spaces.</span>
@@ -487,7 +469,7 @@ export default function HRLifecyclePage() {
                 </span>
               </div>
 
-              <div className="p-3.5 bg-[#f8fafc] rounded-xl border border-slate-100 flex items-center justify-between">
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
                 <div>
                   <p className="font-bold text-slate-800">Client Confidentiality & Legal Privilege Undertaking</p>
                   <span className="text-[11px] text-slate-500">Strict data protection regarding vulnerable prisoners and bail litigation files.</span>
@@ -532,12 +514,12 @@ export default function HRLifecyclePage() {
           <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <h3 className="text-base font-bold text-[#1b365d]">
+                <h3 className="text-base font-bold text-slate-900">
                   {activeTab === "APPRAISALS" ? "Record Performance Appraisal" : "Initiate Staff Exit Clearance"}
                 </h3>
                 <p className="text-[11px] text-slate-500">Official HR Governance Action</p>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
+              <button onClick={() => setIsModalOpen(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 cursor-pointer">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -553,7 +535,7 @@ export default function HRLifecyclePage() {
                       placeholder="e.g. Adv Azizullah"
                       value={appStaffName}
                       onChange={(e) => setAppStaffName(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#0052CC] focus:bg-white focus:outline-hidden"
                     />
                   </div>
                   <div>
@@ -561,7 +543,7 @@ export default function HRLifecyclePage() {
                     <select
                       value={appPeriod}
                       onChange={(e) => setAppPeriod(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-semibold focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-semibold focus:border-[#0052CC] focus:bg-white focus:outline-hidden"
                     >
                       <option value="Q1-Q2 2026">Q1-Q2 2026 (Semi-Annual)</option>
                       <option value="Q3 2026">Q3 2026 (Quarterly)</option>
@@ -580,7 +562,7 @@ export default function HRLifecyclePage() {
                       max="5"
                       value={appCasework}
                       onChange={(e) => setAppCasework(parseFloat(e.target.value) || 0)}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-bold text-[#1b365d] focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-bold text-[#0052CC] focus:border-[#0052CC] focus:bg-white focus:outline-hidden"
                     />
                   </div>
                   <div>
@@ -592,7 +574,7 @@ export default function HRLifecyclePage() {
                       max="5"
                       value={appField}
                       onChange={(e) => setAppField(parseFloat(e.target.value) || 0)}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-bold text-[#c65a28] focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-bold text-[#c65a28] focus:border-[#0052CC] focus:bg-white focus:outline-hidden"
                     />
                   </div>
                   <div>
@@ -604,7 +586,7 @@ export default function HRLifecyclePage() {
                       max="5"
                       value={appCompliance}
                       onChange={(e) => setAppCompliance(parseFloat(e.target.value) || 0)}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-bold text-emerald-600 focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-bold text-emerald-600 focus:border-[#0052CC] focus:bg-white focus:outline-hidden"
                     />
                   </div>
                 </div>
@@ -617,7 +599,7 @@ export default function HRLifecyclePage() {
                     placeholder="Summarize key strengths, case turnaround, and development goals..."
                     value={appComments}
                     onChange={(e) => setAppComments(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden resize-none"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs focus:border-[#0052CC] focus:bg-white focus:outline-hidden resize-none"
                   />
                 </div>
 
@@ -631,7 +613,7 @@ export default function HRLifecyclePage() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#1b365d] py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#122440] cursor-pointer"
+                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#0052CC] py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#003d99] cursor-pointer"
                   >
                     <Send className="h-3.5 w-3.5 text-[#fad207]" />
                     <span>Save Evaluation</span>
@@ -648,7 +630,7 @@ export default function HRLifecyclePage() {
                     placeholder="Departing staff member's name"
                     value={exitStaffName}
                     onChange={(e) => setExitStaffName(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs focus:border-[#0052CC] focus:bg-white focus:outline-hidden"
                   />
                 </div>
 
@@ -660,7 +642,7 @@ export default function HRLifecyclePage() {
                       required
                       value={exitLastDay}
                       onChange={(e) => setExitLastDay(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#0052CC] focus:bg-white focus:outline-hidden"
                     />
                   </div>
                   <div>
@@ -671,7 +653,7 @@ export default function HRLifecyclePage() {
                       placeholder="e.g. Faiz / Adv Azizullah"
                       value={exitHandoverTo}
                       onChange={(e) => setExitHandoverTo(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#0052CC] focus:bg-white focus:outline-hidden"
                     />
                   </div>
                 </div>
