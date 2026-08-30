@@ -1,7 +1,6 @@
 "use client";
 export const dynamic = 'force-dynamic';
 import React, { useState, useMemo } from 'react';
-// ... rest of your imports and component code
 import {
   LayoutDashboard, Users, Receipt, Briefcase, Scale, Building, Plus, CheckCircle, Menu, X, ArrowLeft, Calendar, Folder
 } from 'lucide-react';
