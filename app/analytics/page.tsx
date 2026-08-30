@@ -7,17 +7,9 @@ import {
   BarChart3,
   CheckCircle2,
   Clock,
-  Download,
-  FileCheck2,
-  FileSpreadsheet,
-  FileText,
-  Loader2,
   Printer,
   RefreshCw,
   Scale,
-  ShieldAlert,
-  ShieldCheck,
-  TrendingUp,
   Users,
 } from "lucide-react";
 
@@ -123,13 +115,13 @@ export default function ExecutiveAnalyticsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] pb-16">
+    <div className="min-h-screen bg-slate-50 pb-16 font-sans">
       {/* Top Header */}
       <div className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-md print:hidden">
         <div className="container mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 hover:text-[#1b365d]"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 hover:text-[#0052CC]"
           >
             <ArrowLeft className="h-4 w-4" />
             <span>Back to Workspace</span>
@@ -145,8 +137,8 @@ export default function ExecutiveAnalyticsPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <BarChart3 className="h-6 w-6 text-[#1b365d]" />
-              <h1 className="text-2xl font-bold text-[#1b365d]">Executive Analytics & Donor Governance</h1>
+              <BarChart3 className="h-6 w-6 text-[#0052CC]" />
+              <h1 className="text-2xl font-bold text-slate-900">Executive Analytics & Donor Governance</h1>
             </div>
             <p className="mt-1 text-xs text-slate-500">
               Audited operational KPIs, NAVTTC prison certifications, and institutional compliance matrix.
@@ -177,10 +169,10 @@ export default function ExecutiveAnalyticsPage() {
           {/* Official Letterhead Header for Print */}
           <div className="border-b border-slate-200 pb-6 flex items-start justify-between">
             <div>
-              <span className="rounded-md bg-[#1b365d]/10 px-2.5 py-1 text-[11px] font-bold text-[#1b365d]">
+              <span className="rounded-md bg-[#0052CC]/10 px-2.5 py-1 text-[11px] font-bold text-[#0052CC]">
                 STATUTORY PROGRESS & DONOR COMPLIANCE REPORT
               </span>
-              <h2 className="text-xl font-bold text-[#1b365d] mt-2">Pakistan Legal United Society (PLUS)</h2>
+              <h2 className="text-xl font-bold text-slate-900 mt-2">Pakistan Legal United Society (PLUS)</h2>
               <p className="text-xs text-[#c65a28] font-bold font-serif">انصاف سب کا حق ہے !</p>
               <p className="text-[11px] text-slate-500 mt-1">
                 Regional Hubs: Karachi (Head Office) · Hyderabad · Sukkur (Women Development Complex)
@@ -196,7 +188,7 @@ export default function ExecutiveAnalyticsPage() {
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <div className="rounded-2xl border border-slate-100 bg-[#f8fafc] p-4">
               <span className="text-[10px] font-bold uppercase text-slate-400">Total Cases Handled</span>
-              <p className="text-2xl font-bold text-[#1b365d] mt-1">{metrics.casesHandled.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-[#0052CC] mt-1">{metrics.casesHandled.toLocaleString()}</p>
               <span className="text-[11px] font-semibold text-emerald-600">{metrics.disposalRate} Disposal Success</span>
             </div>
 
@@ -214,7 +206,7 @@ export default function ExecutiveAnalyticsPage() {
 
             <div className="rounded-2xl border border-slate-100 bg-[#f8fafc] p-4">
               <span className="text-[10px] font-bold uppercase text-slate-400">Stakeholders Trained</span>
-              <p className="text-2xl font-bold text-[#1b365d] mt-1">{metrics.stakeholdersTrained.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-[#0052CC] mt-1">{metrics.stakeholdersTrained.toLocaleString()}</p>
               <span className="text-[11px] text-slate-500">Police, Judges & CSOs</span>
             </div>
           </div>
@@ -232,11 +224,11 @@ export default function ExecutiveAnalyticsPage() {
                   return (
                     <div key={deptName}>
                       <div className="flex justify-between text-xs font-semibold mb-1">
-                        <span>{deptName}</span>
-                        <span className="font-mono">Rs {amt.toLocaleString("en-PK")} ({pct.toFixed(1)}%)</span>
+                        <span className="text-slate-700">{deptName}</span>
+                        <span className="font-mono text-slate-900">Rs {amt.toLocaleString("en-PK")} ({pct.toFixed(1)}%)</span>
                       </div>
                       <div className="h-2 w-full rounded-full bg-slate-200">
-                        <div className="h-2 rounded-full bg-[#1b365d]" style={{ width: `${Math.max(pct, 12)}%` }} />
+                        <div className="h-2 rounded-full bg-[#0052CC]" style={{ width: `${Math.max(pct, 12)}%` }} />
                       </div>
                     </div>
                   );
