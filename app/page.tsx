@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useMemo } from 'react';
 import {
-  LayoutDashboard, Users, Receipt, Briefcase, Scale, Building, Plus, CheckCircle, Menu, X, ArrowLeft
+  LayoutDashboard, Users, Receipt, Briefcase, Scale, Building, Plus, CheckCircle, Menu, X, ArrowLeft, ShieldAlert
 } from 'lucide-react';
 
 import DashboardView from '@/components/DashboardView';
@@ -92,7 +92,6 @@ export default function PlusOpsPortal() {
   const [dockets, setDockets] = useState(INITIAL_DOCKETS);
   const [toastMsg, setToastMsg] = useState("");
 
-  // UI State: Sidebar toggle & Sub-views
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedProgramId, setSelectedProgramId] = useState(null);
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
@@ -107,22 +106,37 @@ export default function PlusOpsPortal() {
     setTimeout(() => setToastMsg(""), 4000);
   };
 
-  const isGlobalAdmin = ['ADMIN', 'EXECUTIVE', 'HR_ADMIN', 'FINANCE_MGR', 'PROGRAM_MGR'].includes(currentUser.role);
+  // Explicit RBAC Permissions
+  const isExecutive = currentUser.role === 'EXECUTIVE';
+  const isAdmin = currentUser.role === 'ADMIN';
+  const isHrAdmin = currentUser.role === 'HR_ADMIN';
+  const isFinanceMgr = currentUser.role === 'FINANCE_MGR';
+  const isProgramMgr = currentUser.role === 'PROGRAM_MGR';
+  const isStaff = currentUser.role === 'STAFF';
+
+  const canManagePrograms = isExecutive || isProgramMgr || isAdmin;
+  const canApproveFinance = isExecutive || isFinanceMgr;
+  const canManageUsers = isExecutive || isAdmin || isHrAdmin;
+
   const visibleRequests = useMemo(() => {
-    if (isGlobalAdmin) return requests;
+    if (isExecutive || isFinanceMgr || isHrAdmin || isAdmin) return requests;
     return requests.filter(r => r.requester_email === currentUser.email);
-  }, [requests, currentUser, isGlobalAdmin]);
+  }, [requests, currentUser, isExecutive, isFinanceMgr, isHrAdmin, isAdmin]);
 
   const generateAIBriefing = () => {
     setIsGeneratingBriefing(true);
     setTimeout(() => {
-      setAiBriefing("Executive Briefing (Live): Theme updated to match Islamic Relief blue palette. Mobile responsiveness enabled.");
+      setAiBriefing(`Executive Briefing (Role: ${currentUser.role}): All organizational modules operating under strict RBAC governance.`);
       setIsGeneratingBriefing(false);
     }, 1200);
   };
 
   const handleCreateProgram = (e) => {
     e.preventDefault();
+    if (!canManagePrograms) {
+      showToast('Permission denied: Insufficient authority to create programs.');
+      return;
+    }
     const formData = new FormData(e.target);
     const newProgram = {
       id: `PRG-${Date.now()}`,
@@ -139,7 +153,7 @@ export default function PlusOpsPortal() {
     };
     setPrograms([newProgram, ...programs]);
     setIsProgramModalOpen(false);
-    showToast('New grant program registered.');
+    showToast('New grant program registered successfully.');
   };
 
   const handleLogActivity = (e) => {
@@ -184,7 +198,7 @@ export default function PlusOpsPortal() {
     };
     setRequests([newReq, ...requests]);
     setIsReqModalOpen(false);
-    showToast('Financial requisition submitted.');
+    showToast('Financial requisition submitted for review.');
   };
 
   const handleCreateDocket = (e) => {
@@ -202,7 +216,7 @@ export default function PlusOpsPortal() {
     };
     setDockets([newDocket, ...dockets]);
     setIsDocketModalOpen(false);
-    showToast('Case docket registered.');
+    showToast('Case docket registered successfully.');
   };
 
   const NAV_ITEMS = [
@@ -228,26 +242,25 @@ export default function PlusOpsPortal() {
       <ActivityModal isOpen={isActivityModalOpen} onClose={() => setIsActivityModalOpen(false)} onSubmit={handleLogActivity} programs={programs} />
       <ProgramModal isOpen={isProgramModalOpen} onClose={() => setIsProgramModalOpen(false)} onSubmit={handleCreateProgram} />
 
-      {/* SIDEBAR (Collapsible for Mobile & Desktop) */}
+      {/* SIDEBAR */}
       <aside className={`${isSidebarOpen ? 'w-64' : 'w-0 overflow-hidden'} bg-[#0052CC] text-blue-100 flex flex-col shadow-xl transition-all duration-300 z-20 shrink-0`}>
         <div className="p-6 border-b border-blue-600 flex justify-between items-center">
           <div className="flex items-center space-x-3 text-white">
             <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center shadow-inner"><Building className="w-5 h-5 text-white" /></div>
             <span className="text-xl font-bold tracking-tight">PLUS OPS</span>
           </div>
-          <button onClick={() => setIsSidebarOpen(false)} className="text-blue-200 hover:text-white md:hidden" title="Close Sidebar">
+          <button onClick={() => setIsSidebarOpen(false)} className="text-blue-200 hover:text-white md:hidden">
             <X className="w-5 h-5" />
           </button>
         </div>
-        <p className="text-[11px] text-blue-200 px-6 pt-3 font-medium">Operations Portal v2.0</p>
+        <div className="px-6 pt-3">
+          <span className="text-[10px] bg-blue-700 text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider">{currentUser.role}</span>
+        </div>
         <nav className="flex-1 overflow-y-auto p-4 space-y-1">
           {NAV_ITEMS.map(item => (
             <button 
               key={item.id} 
-              onClick={() => { 
-                setActiveTab(item.id); 
-                setSelectedProgramId(null); 
-              }} 
+              onClick={() => { setActiveTab(item.id); setSelectedProgramId(null); }} 
               className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === item.id ? 'bg-[#003d99] text-white shadow-sm' : 'hover:bg-blue-600/50 hover:text-white'}`}
             >
               <item.icon className="w-5 h-5" />
@@ -256,8 +269,8 @@ export default function PlusOpsPortal() {
           ))}
         </nav>
         <div className="p-4 border-t border-blue-600 bg-[#0042a6]">
-          <label className="text-[10px] uppercase text-blue-200 font-bold mb-2 block">Test View As:</label>
-          <select className="w-full bg-[#003380] border border-blue-500 rounded p-2 text-xs text-white outline-none" value={currentUser.id} onChange={(e) => setCurrentUser(profiles.find(p => p.id === e.target.value))}>
+          <label className="text-[10px] uppercase text-blue-200 font-bold mb-2 block">Switch User Role:</label>
+          <select className="w-full bg-[#003380] border border-blue-500 rounded p-2 text-xs text-white outline-none font-medium" value={currentUser.id} onChange={(e) => setCurrentUser(profiles.find(p => p.id === e.target.value))}>
             {profiles.map(p => <option key={p.id} value={p.id}>{p.name} ({p.role})</option>)}
           </select>
         </div>
@@ -267,7 +280,7 @@ export default function PlusOpsPortal() {
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 md:px-8 shrink-0">
           <div className="flex items-center space-x-4">
-            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors" title="Toggle Sidebar">
+            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">
               {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
             <h1 className="text-base md:text-lg font-bold text-slate-800 capitalize">
@@ -284,7 +297,7 @@ export default function PlusOpsPortal() {
             <button onClick={() => setIsReqModalOpen(true)} className="flex items-center space-x-1 bg-[#0052CC] hover:bg-[#003d99] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors">
               <Plus className="w-4 h-4" /> <span className="hidden sm:inline">New Requisition</span>
             </button>
-            <div className="w-8 h-8 rounded-full bg-blue-100 text-[#0052CC] flex items-center justify-center font-bold text-sm border border-blue-200">
+            <div className="w-8 h-8 rounded-full bg-blue-100 text-[#0052CC] flex items-center justify-center font-bold text-sm border border-blue-200" title={currentUser.name}>
               {currentUser.name.charAt(0)}
             </div>
           </div>
@@ -293,10 +306,10 @@ export default function PlusOpsPortal() {
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
           <div className="max-w-6xl mx-auto">
             {activeTab === 'dashboard' && <DashboardView visibleRequests={visibleRequests} programs={programs} dockets={dockets} currentUser={currentUser} aiBriefing={aiBriefing} isGeneratingBriefing={isGeneratingBriefing} generateAIBriefing={generateAIBriefing} />}
-            {activeTab === 'programs' && <ProgramsView programs={programs} selectedProgramId={selectedProgramId} setSelectedProgramId={setSelectedProgramId} setIsActivityModalOpen={setIsActivityModalOpen} setIsProgramModalOpen={setIsProgramModalOpen} isGlobalAdmin={isGlobalAdmin} />}
+            {activeTab === 'programs' && <ProgramsView programs={programs} selectedProgramId={selectedProgramId} setSelectedProgramId={setSelectedProgramId} setIsActivityModalOpen={setIsActivityModalOpen} setIsProgramModalOpen={setIsProgramModalOpen} isGlobalAdmin={canManagePrograms} />}
             {activeTab === 'dockets' && <DocketsView dockets={dockets} setIsDocketModalOpen={setIsDocketModalOpen} />}
-            {activeTab === 'roster' && <RosterView profiles={profiles} />}
-            {activeTab === 'requests' && <RequestsView visibleRequests={visibleRequests} setIsReqModalOpen={setIsReqModalOpen} />}
+            {activeTab === 'roster' && <RosterView profiles={profiles} currentUser={currentUser} canManageUsers={canManageUsers} />}
+            {activeTab === 'requests' && <RequestsView visibleRequests={visibleRequests} setIsReqModalOpen={setIsReqModalOpen} currentUser={currentUser} canApproveFinance={canApproveFinance} />}
           </div>
         </div>
       </main>
