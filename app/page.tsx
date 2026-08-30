@@ -11,7 +11,7 @@ import RosterView from '@/components/RosterView';
 import RequestsView from '@/components/RequestsView';
 import LeaveView from '@/components/LeaveView';
 import PolicyView from '@/components/PolicyView';
-import { RequisitionModal, DocketModal, ActivityModal, ProgramModal, LeaveModal } from '@/components/Modals';
+import { MasterRequisitionModal, RequisitionModal, DocketModal, ActivityModal, ProgramModal, LeaveModal } from '@/components/Modals';
 
 const INITIAL_PROFILES = [
   { id: '1', email: 'altafkhoso.adv@gmail.com', name: 'Altaf Khoso', designation: 'CEO', role: 'EXECUTIVE', department: 'Management', approval_scope: 'ALL', status: 'ACTIVE' },
@@ -75,11 +75,16 @@ export default function PlusOpsPortal() {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedProgramId, setSelectedProgramId] = useState(null);
+  
+  // Modal controllers
+  const [isMasterModalOpen, setIsMasterModalOpen] = useState(false);
+  const [activeReqType, setActiveReqType] = useState('finance'); // 'finance' | 'admin' | 'asset'
+  const [isReqModalOpen, setIsReqModalOpen] = useState(false);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [isProgramModalOpen, setIsProgramModalOpen] = useState(false);
-  const [isReqModalOpen, setIsReqModalOpen] = useState(false);
   const [isDocketModalOpen, setIsDocketModalOpen] = useState(false);
-  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
+
   const [aiBriefing, setAiBriefing] = useState("");
   const [isGeneratingBriefing, setIsGeneratingBriefing] = useState(false);
 
@@ -104,12 +109,14 @@ export default function PlusOpsPortal() {
     return requests.filter(r => r.requester_email === currentUser.email);
   }, [requests, currentUser, isExecutive, isFinanceMgr, isHrAdmin, isAdmin]);
 
-  const generateAIBriefing = () => {
-    setIsGeneratingBriefing(true);
-    setTimeout(() => {
-      setAiBriefing(`Executive Briefing (Role: ${currentUser.role}): All modules (Requisitions, Leave Tracking, Policy Folders, Dockets) fully synchronized.`);
-      setIsGeneratingBriefing(false);
-    }, 1200);
+  const handleSelectRequisitionType = (type) => {
+    setIsMasterModalOpen(false);
+    if (type === 'leave') {
+      setIsLeaveModalOpen(true);
+    } else {
+      setActiveReqType(type);
+      setIsReqModalOpen(true);
+    }
   };
 
   const handleCreateLeave = (e) => {
@@ -128,6 +135,30 @@ export default function PlusOpsPortal() {
     setLeaveRequests([newLeave, ...leaveRequests]);
     setIsLeaveModalOpen(false);
     showToast('Leave application submitted successfully.');
+  };
+
+  const handleCreateRequisition = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const newReq = {
+      id: `REQ-00${requests.length + 1}`,
+      timestamp: new Date().toISOString(),
+      claim_type: formData.get('claim_type') || activeReqType.toUpperCase(),
+      requester_name: currentUser.name,
+      requester_email: currentUser.email,
+      project_code: 'PRG-1',
+      expense_head: formData.get('expense_head') || 'General Support',
+      hub: 'Karachi',
+      requested_amount: parseFloat(formData.get('amount') || 5000),
+      approved_amount: 0,
+      approval_level: 1,
+      current_approver: 'japheth@plus.org',
+      status: 'PENDING_L1',
+      notes: formData.get('notes')
+    };
+    setRequests([newReq, ...requests]);
+    setIsReqModalOpen(false);
+    showToast(`${activeReqType.toUpperCase()} requisition submitted successfully.`);
   };
 
   const handleCreateProgram = (e) => {
@@ -172,30 +203,6 @@ export default function PlusOpsPortal() {
     showToast('Field activity logged successfully.');
   };
 
-  const handleCreateRequisition = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const newReq = {
-      id: `REQ-00${requests.length + 1}`,
-      timestamp: new Date().toISOString(),
-      claim_type: formData.get('claim_type'),
-      requester_name: currentUser.name,
-      requester_email: currentUser.email,
-      project_code: 'PRG-1',
-      expense_head: formData.get('expense_head'),
-      hub: 'Karachi',
-      requested_amount: parseFloat(formData.get('amount') || 0),
-      approved_amount: 0,
-      approval_level: 1,
-      current_approver: 'japheth@plus.org',
-      status: 'PENDING_L1',
-      notes: formData.get('notes')
-    };
-    setRequests([newReq, ...requests]);
-    setIsReqModalOpen(false);
-    showToast('Financial requisition submitted.');
-  };
-
   const handleCreateDocket = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -233,12 +240,25 @@ export default function PlusOpsPortal() {
         </div>
       )}
 
-      {/* MODALS */}
-      <RequisitionModal isOpen={isReqModalOpen} onClose={() => setIsReqModalOpen(false)} onSubmit={handleCreateRequisition} />
+      {/* MASTER REQUISITION SELECTOR POPUP */}
+      <MasterRequisitionModal 
+        isOpen={isMasterModalOpen} 
+        onClose={() => setIsMasterModalOpen(false)} 
+        onSelectType={handleSelectRequisitionType} 
+      />
+
+      {/* SUB-MODALS */}
+      <RequisitionModal 
+        isOpen={isReqModalOpen} 
+        onClose={() => setIsReqModalOpen(false)} 
+        onSubmit={handleCreateRequisition} 
+        type={activeReqType}
+        title={`${activeReqType.toUpperCase()} Requisition`}
+      />
+      <LeaveModal isOpen={isLeaveModalOpen} onClose={() => setIsLeaveModalOpen(false)} onSubmit={handleCreateLeave} />
       <DocketModal isOpen={isDocketModalOpen} onClose={() => setIsDocketModalOpen(false)} onSubmit={handleCreateDocket} />
       <ActivityModal isOpen={isActivityModalOpen} onClose={() => setIsActivityModalOpen(false)} onSubmit={handleLogActivity} programs={programs} />
       <ProgramModal isOpen={isProgramModalOpen} onClose={() => setIsProgramModalOpen(false)} onSubmit={handleCreateProgram} />
-      <LeaveModal isOpen={isLeaveModalOpen} onClose={() => setIsLeaveModalOpen(false)} onSubmit={handleCreateLeave} />
 
       {/* SIDEBAR */}
       <aside className={`${isSidebarOpen ? 'w-64' : 'w-0 overflow-hidden'} bg-[#0052CC] text-blue-100 flex flex-col shadow-xl transition-all duration-300 z-20 shrink-0`}>
@@ -292,7 +312,7 @@ export default function PlusOpsPortal() {
                 <ArrowLeft className="w-4 h-4" /> <span>Back to Main Page</span>
               </button>
             )}
-            <button onClick={() => setIsReqModalOpen(true)} className="flex items-center space-x-1 bg-[#0052CC] hover:bg-[#003d99] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors">
+            <button onClick={() => setIsMasterModalOpen(true)} className="flex items-center space-x-1 bg-[#0052CC] hover:bg-[#003d99] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors">
               <Plus className="w-4 h-4" /> <span className="hidden sm:inline">New Requisition</span>
             </button>
             <div className="w-8 h-8 rounded-full bg-blue-100 text-[#0052CC] flex items-center justify-center font-bold text-sm border border-blue-200" title={currentUser.name}>
@@ -305,10 +325,10 @@ export default function PlusOpsPortal() {
           <div className="max-w-6xl mx-auto">
             {activeTab === 'dashboard' && <DashboardView visibleRequests={visibleRequests} programs={programs} dockets={dockets} currentUser={currentUser} aiBriefing={aiBriefing} isGeneratingBriefing={isGeneratingBriefing} generateAIBriefing={generateAIBriefing} />}
             {activeTab === 'programs' && <ProgramsView programs={programs} selectedProgramId={selectedProgramId} setSelectedProgramId={setSelectedProgramId} setIsActivityModalOpen={setIsActivityModalOpen} setIsProgramModalOpen={setIsProgramModalOpen} isGlobalAdmin={canManagePrograms} />}
-            {activeTab === 'dockets' && <DocketsView dockets={dockets} setIsDocketModalOpen={setIsDocketModalOpen} />}
+            {activeTab::'dockets' && <DocketsView dockets={dockets} setIsDocketModalOpen={setIsDocketModalOpen} />}
             {activeTab === 'roster' && <RosterView profiles={profiles} currentUser={currentUser} canManageUsers={canManageUsers} />}
-            {activeTab === 'requests' && <RequestsView visibleRequests={visibleRequests} setIsReqModalOpen={setIsReqModalOpen} currentUser={currentUser} canApproveFinance={canApproveFinance} />}
-            {activeTab === 'leave' && <LeaveView leaveRequests={leaveRequests} setLeaveRequests={setLeaveRequests} setIsLeaveModalOpen={setIsLeaveModalOpen} currentUser={currentUser} canApprove={canApproveLeave} />}
+            {activeTab === 'requests' && <RequestsView visibleRequests={visibleRequests} setIsReqModalOpen={() => setIsMasterModalOpen(true)} currentUser={currentUser} canApproveFinance={canApproveFinance} />}
+            {activeTab === 'leave' && <LeaveView leaveRequests={leaveRequests} setLeaveRequests={setLeaveRequests} setIsLeaveModalOpen={() => setIsMasterModalOpen(true)} currentUser={currentUser} canApprove={canApproveLeave} />}
             {activeTab === 'policy' && <PolicyView />}
           </div>
         </div>
