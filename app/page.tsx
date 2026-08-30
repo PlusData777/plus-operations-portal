@@ -299,7 +299,7 @@ export default function PlusOpsPortal() {
       <aside className={`fixed md:static inset-y-0 left-0 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 bg-[#0052CC] text-blue-100 flex flex-col shadow-xl transition-transform duration-300 z-40 w-64 shrink-0`}>
         <div className="p-5 border-b border-blue-600 flex justify-between items-center">
           <div className="flex items-center space-x-3 text-white">
-            <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center shadow-inner overflow-hidden p-1">
+            <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center shadow-inner overflow-hidden p-1 shrink-0">
               <img 
                 src="https://grassrootsjusticenetwork.org/wp-content/uploads/2023/12/PLUS-logo-1.png" 
                 alt="PLUS Logo" 
@@ -330,7 +330,7 @@ export default function PlusOpsPortal() {
       <main className="flex-1 flex flex-col h-screen overflow-hidden w-full">
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 shrink-0">
           <div className="flex items-center space-x-3 overflow-hidden">
-            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors shrink-0 cursor-pointer md:hidden">
+            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors shrink-0 cursor-pointer">
               <Menu className="w-5 h-5" />
             </button>
             <h1 className="text-sm md:text-lg font-bold text-slate-800 capitalize truncate">{activeTab.replace('_', ' ')}</h1>
