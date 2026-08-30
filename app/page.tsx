@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useMemo } from 'react';
 import {
-  LayoutDashboard, Users, Receipt, Briefcase, Scale, Building, Plus, CheckCircle
+  LayoutDashboard, Users, Receipt, Briefcase, Scale, Building, Plus, CheckCircle, Menu, X, ArrowLeft
 } from 'lucide-react';
 
 import DashboardView from '@/components/DashboardView';
@@ -92,7 +92,8 @@ export default function PlusOpsPortal() {
   const [dockets, setDockets] = useState(INITIAL_DOCKETS);
   const [toastMsg, setToastMsg] = useState("");
 
-  // Modals & Navigation state
+  // UI State: Sidebar toggle & Sub-views
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedProgramId, setSelectedProgramId] = useState(null);
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [isProgramModalOpen, setIsProgramModalOpen] = useState(false);
@@ -115,7 +116,7 @@ export default function PlusOpsPortal() {
   const generateAIBriefing = () => {
     setIsGeneratingBriefing(true);
     setTimeout(() => {
-      setAiBriefing("Executive Briefing (Live): Modular architecture is fully compiled. All components are synchronized.");
+      setAiBriefing("Executive Briefing (Live): Theme updated to match Islamic Relief blue palette. Mobile responsiveness enabled.");
       setIsGeneratingBriefing(false);
     }, 1200);
   };
@@ -227,26 +228,36 @@ export default function PlusOpsPortal() {
       <ActivityModal isOpen={isActivityModalOpen} onClose={() => setIsActivityModalOpen(false)} onSubmit={handleLogActivity} programs={programs} />
       <ProgramModal isOpen={isProgramModalOpen} onClose={() => setIsProgramModalOpen(false)} onSubmit={handleCreateProgram} />
 
-      {/* SIDEBAR */}
-      <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col shadow-xl z-10">
-        <div className="p-6 border-b border-slate-800">
+      {/* SIDEBAR (Collapsible for Mobile & Desktop) */}
+      <aside className={`${isSidebarOpen ? 'w-64' : 'w-0 overflow-hidden'} bg-[#0052CC] text-blue-100 flex flex-col shadow-xl transition-all duration-300 z-20 shrink-0`}>
+        <div className="p-6 border-b border-blue-600 flex justify-between items-center">
           <div className="flex items-center space-x-3 text-white">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center"><Building className="w-5 h-5" /></div>
+            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center shadow-inner"><Building className="w-5 h-5 text-white" /></div>
             <span className="text-xl font-bold tracking-tight">PLUS OPS</span>
           </div>
-          <p className="text-xs text-slate-500 mt-2">Operations Portal v2.0</p>
+          <button onClick={() => setIsSidebarOpen(false)} className="text-blue-200 hover:text-white md:hidden" title="Close Sidebar">
+            <X className="w-5 h-5" />
+          </button>
         </div>
+        <p className="text-[11px] text-blue-200 px-6 pt-3 font-medium">Operations Portal v2.0</p>
         <nav className="flex-1 overflow-y-auto p-4 space-y-1">
           {NAV_ITEMS.map(item => (
-            <button key={item.id} onClick={() => { setActiveTab(item.id); setSelectedProgramId(null); }} className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === item.id ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>
+            <button 
+              key={item.id} 
+              onClick={() => { 
+                setActiveTab(item.id); 
+                setSelectedProgramId(null); 
+              }} 
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === item.id ? 'bg-[#003d99] text-white shadow-sm' : 'hover:bg-blue-600/50 hover:text-white'}`}
+            >
               <item.icon className="w-5 h-5" />
               <span>{item.label}</span>
             </button>
           ))}
         </nav>
-        <div className="p-4 border-t border-slate-800">
-          <label className="text-[10px] uppercase text-slate-500 font-bold mb-2 block">Test View As:</label>
-          <select className="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs text-white outline-none" value={currentUser.id} onChange={(e) => setCurrentUser(profiles.find(p => p.id === e.target.value))}>
+        <div className="p-4 border-t border-blue-600 bg-[#0042a6]">
+          <label className="text-[10px] uppercase text-blue-200 font-bold mb-2 block">Test View As:</label>
+          <select className="w-full bg-[#003380] border border-blue-500 rounded p-2 text-xs text-white outline-none" value={currentUser.id} onChange={(e) => setCurrentUser(profiles.find(p => p.id === e.target.value))}>
             {profiles.map(p => <option key={p.id} value={p.id}>{p.name} ({p.role})</option>)}
           </select>
         </div>
@@ -254,17 +265,32 @@ export default function PlusOpsPortal() {
 
       {/* MAIN VIEW */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
-          <h1 className="text-lg font-semibold text-slate-800 capitalize">{selectedProgramId ? 'Program Impact Dashboard' : activeTab.replace('_', ' ')}</h1>
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 md:px-8 shrink-0">
           <div className="flex items-center space-x-4">
-            <button onClick={() => setIsReqModalOpen(true)} className="flex items-center space-x-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm">
-              <Plus className="w-4 h-4" /> <span>New Requisition</span>
+            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors" title="Toggle Sidebar">
+              {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
-            <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm">{currentUser.name.charAt(0)}</div>
+            <h1 className="text-base md:text-lg font-bold text-slate-800 capitalize">
+              {selectedProgramId ? 'Program Impact Dashboard' : activeTab.replace('_', ' ')}
+            </h1>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            {selectedProgramId && (
+              <button onClick={() => setSelectedProgramId(null)} className="flex items-center space-x-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg transition-colors border">
+                <ArrowLeft className="w-4 h-4" /> <span>Back to Main Page</span>
+              </button>
+            )}
+            <button onClick={() => setIsReqModalOpen(true)} className="flex items-center space-x-1 bg-[#0052CC] hover:bg-[#003d99] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors">
+              <Plus className="w-4 h-4" /> <span className="hidden sm:inline">New Requisition</span>
+            </button>
+            <div className="w-8 h-8 rounded-full bg-blue-100 text-[#0052CC] flex items-center justify-center font-bold text-sm border border-blue-200">
+              {currentUser.name.charAt(0)}
+            </div>
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-8">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8">
           <div className="max-w-6xl mx-auto">
             {activeTab === 'dashboard' && <DashboardView visibleRequests={visibleRequests} programs={programs} dockets={dockets} currentUser={currentUser} aiBriefing={aiBriefing} isGeneratingBriefing={isGeneratingBriefing} generateAIBriefing={generateAIBriefing} />}
             {activeTab === 'programs' && <ProgramsView programs={programs} selectedProgramId={selectedProgramId} setSelectedProgramId={setSelectedProgramId} setIsActivityModalOpen={setIsActivityModalOpen} setIsProgramModalOpen={setIsProgramModalOpen} isGlobalAdmin={isGlobalAdmin} />}
