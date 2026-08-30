@@ -3,23 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  AlertCircle,
   ArrowLeft,
-  Briefcase,
-  Building2,
   Calendar,
-  CheckCircle2,
-  Clock,
-  Download,
   Filter,
-  Gavel,
   Plus,
-  RefreshCw,
   Scale,
   Search,
   Send,
-  UserCheck,
-  Users,
   X,
 } from "lucide-react";
 
@@ -91,7 +81,6 @@ export default function CaseLoadPage() {
   } | null>(null);
 
   const [cases, setCases] = useState<LegalCase[]>(INITIAL_CASES);
-  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedHub, setSelectedHub] = useState("ALL");
   const [selectedStatus, setSelectedStatus] = useState("ALL");
@@ -135,7 +124,6 @@ export default function CaseLoadPage() {
     );
   }, [currentUser]);
 
-  // Advocates see their assigned cases; Admins see the total institutional docket
   const visibleCases = useMemo(() => {
     if (!currentUser) return [];
     let list = isAdminOrExec
@@ -163,7 +151,6 @@ export default function CaseLoadPage() {
     return list;
   }, [cases, currentUser, isAdminOrExec, selectedHub, selectedStatus, searchQuery]);
 
-  // Metric Computations
   const stats = useMemo(() => {
     const total = visibleCases.length;
     const bailsGranted = visibleCases.filter((c) => c.status === "Bail Granted").length;
@@ -204,13 +191,13 @@ export default function CaseLoadPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] pb-16">
+    <div className="min-h-screen bg-slate-50 pb-16 font-sans">
       {/* Top Header */}
       <div className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-md">
         <div className="container mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 hover:text-[#1b365d]"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 hover:text-[#0052CC]"
           >
             <ArrowLeft className="h-4 w-4" />
             <span>Back to Workspace</span>
@@ -226,8 +213,8 @@ export default function CaseLoadPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <Scale className="h-6 w-6 text-[#1b365d]" />
-              <h1 className="text-2xl font-bold text-[#1b365d]">Case Load & Defense Docket</h1>
+              <Scale className="h-6 w-6 text-[#0052CC]" />
+              <h1 className="text-2xl font-bold text-slate-900">Case Load & Defense Docket</h1>
             </div>
             <p className="mt-1 text-xs text-slate-500">
               Active legal aid casework, bail applications, constitutional writs, and hearing dates across Sindh.
@@ -236,7 +223,7 @@ export default function CaseLoadPage() {
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#1b365d] px-4 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-[#122440] cursor-pointer"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#0052CC] px-4 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-[#003d99] cursor-pointer"
           >
             <Plus className="h-4 w-4 text-[#fad207]" />
             <span>+ Log New Case Intake</span>
@@ -247,7 +234,7 @@ export default function CaseLoadPage() {
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Docket</span>
-            <p className="mt-2 text-2xl font-bold text-[#1b365d]">{stats.total}</p>
+            <p className="mt-2 text-2xl font-bold text-[#0052CC]">{stats.total}</p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Active / In Trial</span>
@@ -272,7 +259,7 @@ export default function CaseLoadPage() {
               placeholder="Search by case title, FIR/Bail number, court, or client name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-4 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-4 text-xs focus:border-[#0052CC] focus:bg-white focus:outline-hidden"
             />
           </div>
 
@@ -280,7 +267,7 @@ export default function CaseLoadPage() {
             <select
               value={selectedHub}
               onChange={(e) => setSelectedHub(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 focus:border-[#1b365d] focus:outline-hidden"
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 focus:border-[#0052CC] focus:outline-hidden"
             >
               <option value="ALL">All Regional Hubs</option>
               <option value="Karachi">Karachi (Head Office)</option>
@@ -291,7 +278,7 @@ export default function CaseLoadPage() {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 focus:border-[#1b365d] focus:outline-hidden"
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 focus:border-[#0052CC] focus:outline-hidden"
             >
               <option value="ALL">All Case Stages</option>
               <option value="Under Trial">Under Trial</option>
@@ -307,13 +294,13 @@ export default function CaseLoadPage() {
           {visibleCases.map((item) => (
             <div
               key={item.id}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3 transition hover:border-[#1b365d]"
+              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3 transition hover:border-[#0052CC]"
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-[#1b365d]">{item.id}</span>
-                    <span className="rounded-md bg-[#1b365d]/10 px-2 py-0.5 text-[10px] font-bold text-[#1b365d]">
+                    <span className="font-mono text-xs font-bold text-[#0052CC]">{item.id}</span>
+                    <span className="rounded-md bg-[#0052CC]/10 px-2 py-0.5 text-[10px] font-bold text-[#0052CC]">
                       {item.caseCategory}
                     </span>
                     <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
@@ -330,7 +317,7 @@ export default function CaseLoadPage() {
                       ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                       : item.status === "Under Trial"
                       ? "bg-amber-50 text-amber-700 border border-amber-200"
-                      : "bg-blue-50 text-[#1b365d] border border-blue-200"
+                      : "bg-blue-50 text-[#0052CC] border border-blue-200"
                   }`}
                 >
                   {item.status}
@@ -348,7 +335,7 @@ export default function CaseLoadPage() {
                 </div>
               </div>
 
-              <div className="rounded-xl bg-[#f8fafc] p-3 border border-slate-100 text-xs text-slate-600">
+              <div className="rounded-xl bg-slate-50 p-3 border border-slate-100 text-xs text-slate-600">
                 <span className="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">Proceedings Summary</span>
                 {item.stageNotes}
               </div>
@@ -358,7 +345,7 @@ export default function CaseLoadPage() {
                   <Calendar className="h-3.5 w-3.5 text-[#c65a28]" />
                   <span>Next Hearing: <strong className="text-slate-800">{item.nextHearingDate}</strong></span>
                 </div>
-                <span className="text-[11px] text-[#1b365d]">Client: {item.clientName}</span>
+                <span className="text-[11px] text-[#0052CC]">Client: {item.clientName}</span>
               </div>
             </div>
           ))}
@@ -371,7 +358,7 @@ export default function CaseLoadPage() {
           <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <h3 className="text-base font-bold text-[#1b365d]">Log New Legal Aid Case Intake</h3>
+                <h3 className="text-base font-bold text-slate-900">Log New Legal Aid Case Intake</h3>
                 <p className="text-[11px] text-slate-500">Add client matter to the active PLUS litigation docket.</p>
               </div>
               <button
@@ -393,7 +380,7 @@ export default function CaseLoadPage() {
                   placeholder="e.g. State vs. [Client Name]"
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs focus:border-[#0052CC] focus:bg-white focus:outline-hidden"
                 />
               </div>
 
@@ -407,7 +394,7 @@ export default function CaseLoadPage() {
                     placeholder="e.g. Bail App #512/26"
                     value={formNumber}
                     onChange={(e) => setFormNumber(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden font-mono"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#0052CC] focus:bg-white focus:outline-hidden font-mono"
                   />
                 </div>
                 <div>
@@ -420,7 +407,7 @@ export default function CaseLoadPage() {
                     placeholder="Client Full Name"
                     value={formClient}
                     onChange={(e) => setFormClient(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#0052CC] focus:bg-white focus:outline-hidden"
                   />
                 </div>
               </div>
@@ -433,7 +420,7 @@ export default function CaseLoadPage() {
                   <select
                     value={formHub}
                     onChange={(e) => setFormHub(e.target.value as any)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-semibold focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-semibold focus:border-[#0052CC] focus:bg-white focus:outline-hidden"
                   >
                     <option value="Sukkur">Sukkur Regional</option>
                     <option value="Hyderabad">Hyderabad Regional</option>
@@ -447,7 +434,7 @@ export default function CaseLoadPage() {
                   <select
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value as any)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-semibold focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-semibold focus:border-[#0052CC] focus:bg-white focus:outline-hidden"
                   >
                     <option value="Bail Petition">Bail Petition (CrPC 497)</option>
                     <option value="Human Rights Writ">Human Rights / Constitutional Writ</option>
@@ -467,7 +454,7 @@ export default function CaseLoadPage() {
                     required
                     value={formCourt}
                     onChange={(e) => setFormCourt(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#0052CC] focus:bg-white focus:outline-hidden"
                   />
                 </div>
                 <div>
@@ -479,7 +466,7 @@ export default function CaseLoadPage() {
                     required
                     value={formHearingDate}
                     onChange={(e) => setFormHearingDate(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs focus:border-[#0052CC] focus:bg-white focus:outline-hidden"
                   />
                 </div>
               </div>
@@ -494,7 +481,7 @@ export default function CaseLoadPage() {
                   placeholder="Summarize the defense strategy or current stage of hearings..."
                   value={formNotes}
                   onChange={(e) => setFormNotes(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs focus:border-[#1b365d] focus:bg-white focus:outline-hidden resize-none"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs focus:border-[#0052CC] focus:bg-white focus:outline-hidden resize-none"
                 />
               </div>
 
@@ -509,7 +496,7 @@ export default function CaseLoadPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#1b365d] py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#122440] disabled:opacity-50 cursor-pointer"
+                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#0052CC] py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#003d99] disabled:opacity-50 cursor-pointer"
                 >
                   <Send className="h-3.5 w-3.5 text-[#fad207]" />
                   <span>{submitting ? "Saving..." : "Add to Docket"}</span>
