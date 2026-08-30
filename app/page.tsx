@@ -1,8 +1,8 @@
 "use client";
 export const dynamic = 'force-dynamic';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
-  LayoutDashboard, Users, Receipt, Briefcase, Scale, Building, Plus, CheckCircle, Menu, X, ArrowLeft, Calendar, Folder, UserCheck, Clock, CheckSquare, Award
+  LayoutDashboard, Users, Receipt, Briefcase, Scale, Building, Plus, CheckCircle, Menu, X, ArrowLeft, Calendar, Folder, UserCheck, Clock, CheckSquare, Award, BarChart3, HeartHandshake
 } from 'lucide-react';
 
 import DashboardView from '@/components/DashboardView';
@@ -92,6 +92,15 @@ export default function PlusOpsPortal() {
   const [aiBriefing, setAiBriefing] = useState("");
   const [isGeneratingBriefing, setIsGeneratingBriefing] = useState(false);
 
+  // Sync user profile to localStorage for dedicated modules (analytics, finance, hr, partners, timesheets, cases)
+  useEffect(() => {
+    try {
+      localStorage.setItem("plus_user", JSON.stringify(currentUser));
+    } catch {
+      // ignore
+    }
+  }, [currentUser]);
+
   const showToast = (msg) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(""), 4000);
@@ -177,18 +186,26 @@ export default function PlusOpsPortal() {
     showToast(`${activeReqType.toUpperCase()} requisition routed to manager (L1).`);
   };
 
+  // Main Navigation linking internal views and dedicated App Router modules
   const NAV_ITEMS = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'programs', label: 'Programs', icon: Briefcase },
-    { id: 'dockets', label: 'Case Dockets', icon: Scale },
-    { id: 'staff_workspace', label: 'My Workspace', icon: CheckSquare },
-    { id: 'staff_mgmt', label: 'Staff Directory', icon: UserCheck },
-    { id: 'roster', label: 'Staff Roster', icon: Users },
-    { id: 'pending_queue', label: 'Pending Approvals', icon: Clock },
-    { id: 'appraisals', label: 'Appraisals', icon: Award },
-    { id: 'requests', label: 'Expense Claims', icon: Receipt },
-    { id: 'leave', label: 'Leave Requests', icon: Calendar },
-    { id: 'policy', label: 'Policy Folders', icon: Folder },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, type: 'view' },
+    { id: 'programs', label: 'Programs', icon: Briefcase, type: 'view' },
+    { id: 'dockets', label: 'Case Dockets', icon: Scale, type: 'view' },
+    { id: 'staff_workspace', label: 'My Workspace', icon: CheckSquare, type: 'view' },
+    { id: 'staff_mgmt', label: 'Staff Directory', icon: UserCheck, type: 'view' },
+    { id: 'roster', label: 'Staff Roster', icon: Users, type: 'view' },
+    { id: 'pending_queue', label: 'Pending Approvals', icon: Clock, type: 'view' },
+    { id: 'appraisals', label: 'Appraisals', icon: Award, type: 'view' },
+    { id: 'requests', label: 'Expense Claims', icon: Receipt, type: 'view' },
+    { id: 'leave', label: 'Leave Requests', icon: Calendar, type: 'view' },
+    { id: 'policy', label: 'Policy Folders', icon: Folder, type: 'view' },
+    // External App Router Dedicated Pages
+    { id: '/analytics', label: 'Executive Analytics', icon: BarChart3, type: 'link' },
+    { id: '/finance', label: 'Finance & Grants', icon: Building, type: 'link' },
+    { id: '/hr', label: 'HR Lifecycle & Exits', icon: UserCheck, type: 'link' },
+    { id: '/partners', label: 'Partners & MoUs', icon: HeartHandshake, type: 'link' },
+    { id: '/timesheets', label: 'Staff Timesheets', icon: Clock, type: 'link' },
+    { id: '/cases', label: 'Litigation Dockets', icon: Scale, type: 'link' },
   ];
 
   return (
@@ -203,9 +220,6 @@ export default function PlusOpsPortal() {
       <MasterRequisitionModal isOpen={isMasterModalOpen} onClose={() => setIsMasterModalOpen(false)} onSelectType={handleSelectRequisitionType} />
       <RequisitionModal isOpen={isReqModalOpen} onClose={() => setIsReqModalOpen(false)} onSubmit={handleCreateRequisition} type={activeReqType} title={`${activeReqType.toUpperCase()} Requisition`} />
       <LeaveModal isOpen={isLeaveModalOpen} onClose={() => setIsLeaveModalOpen(false)} onSubmit={handleCreateLeave} />
-      <DocketModal isOpen={isDocketModalOpen} onClose={() => setIsDocketModalOpen(false)} onSubmit={handleCreateDocket => {}} />
-      <ActivityModal isOpen={isActivityModalOpen} onClose={() => setIsActivityModalOpen(false)} onSubmit={e => {}} programs={programs} />
-      <ProgramModal isOpen={isProgramModalOpen} onClose={() => setIsProgramModalOpen(false)} onSubmit={e => {}} />
 
       <aside className={`${isSidebarOpen ? 'w-64' : 'w-0 overflow-hidden'} bg-[#0052CC] text-blue-100 flex flex-col shadow-xl transition-all duration-300 z-20 shrink-0`}>
         <div className="p-6 border-b border-blue-600 flex justify-between items-center">
@@ -216,15 +230,36 @@ export default function PlusOpsPortal() {
           <button onClick={() => setIsSidebarOpen(false)} className="text-blue-200 hover:text-white md:hidden"><X className="w-5 h-5" /></button>
         </div>
         <div className="px-6 pt-3"><span className="text-[10px] bg-blue-700 text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider">{currentUser.role}</span></div>
+        
         <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-          {NAV_ITEMS.map(item => (
-            <button key={item.id} onClick={() => { setActiveTab(item.id); setSelectedProgramId(null); }} className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === item.id ? 'bg-[#003d99] text-white shadow-sm' : 'hover:bg-blue-600/50 hover:text-white'}`}>
-              <item.icon className="w-5 h-5" /><span>{item.label}</span>
-            </button>
-          ))}
+          {NAV_ITEMS.map(item => {
+            if (item.type === 'link') {
+              return (
+                <a
+                  key={item.id}
+                  href={item.id}
+                  className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-blue-600/50 hover:text-white text-blue-100"
+                >
+                  <item.icon className="w-5 h-5 text-amber-300" />
+                  <span>{item.label}</span>
+                </a>
+              );
+            }
+            return (
+              <button 
+                key={item.id} 
+                onClick={() => { setActiveTab(item.id); setSelectedProgramId(null); }} 
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === item.id ? 'bg-[#003d99] text-white shadow-sm' : 'hover:bg-blue-600/50 hover:text-white'}`}
+              >
+                <item.icon className="w-5 h-5" />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
         </nav>
+
         <div className="p-4 border-t border-blue-600 bg-[#0042a6]">
-          <label className="text-[10px] uppercase text-blue-200 font-bold mb-2 block">Switch User Role:</label>
+          <label className="text-[10px] uppercase text-blue-200 font-bold mb-2 block">Switch User Role (RBAC Testing):</label>
           <select className="w-full bg-[#003380] border border-blue-500 rounded p-2 text-xs text-white outline-none font-medium" value={currentUser.id} onChange={(e) => setCurrentUser(profiles.find(p => p.id === e.target.value))}>
             {profiles.map(p => <option key={p.id} value={p.id}>{p.name} ({p.role})</option>)}
           </select>
