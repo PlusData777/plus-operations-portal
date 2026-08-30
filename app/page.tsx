@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic';
 import React, { useState, useMemo } from 'react';
 import {
-  LayoutDashboard, Users, Receipt, Briefcase, Scale, Building, Plus, CheckCircle, Menu, X, ArrowLeft, Calendar, Folder, UserCheck, Clock
+  LayoutDashboard, Users, Receipt, Briefcase, Scale, Building, Plus, CheckCircle, Menu, X, ArrowLeft, Calendar, Folder, UserCheck, Clock, CheckSquare, Award
 } from 'lucide-react';
 
 import DashboardView from '@/components/DashboardView';
@@ -14,6 +14,8 @@ import LeaveView from '@/components/LeaveView';
 import PolicyView from '@/components/PolicyView';
 import StaffManagementView from '@/components/StaffManagementView';
 import PendingApprovalsView from '@/components/PendingApprovalsView';
+import StaffWorkspaceView from '@/components/StaffWorkspaceView';
+import AppraisalsView from '@/components/AppraisalsView';
 import { MasterRequisitionModal, RequisitionModal, DocketModal, ActivityModal, ProgramModal, LeaveModal } from '@/components/Modals';
 
 const INITIAL_PROFILES = [
@@ -150,8 +152,6 @@ export default function PlusOpsPortal() {
   const handleCreateRequisition = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-
-    // Smart Routing: Automatically assign L1 approval to the employee's designated manager
     const manager = profiles.find(p => p.email === currentUser.reports_to) || profiles.find(p => p.role === 'PROGRAM_MGR');
     const l1ApproverEmail = manager ? manager.email : 'salma@plus.org';
 
@@ -174,7 +174,7 @@ export default function PlusOpsPortal() {
 
     setRequests([newReq, ...requests]);
     setIsReqModalOpen(false);
-    showToast(`${activeReqType.toUpperCase()} requisition routed to manager ${manager ? manager.name : 'Supervisor'} (L1).`);
+    showToast(`${activeReqType.toUpperCase()} requisition routed to manager (L1).`);
   };
 
   const handleCreateProgram = (e) => {
@@ -241,9 +241,11 @@ export default function PlusOpsPortal() {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'programs', label: 'Programs', icon: Briefcase },
     { id: 'dockets', label: 'Case Dockets', icon: Scale },
+    { id: 'staff_workspace', label: 'My Workspace', icon: CheckSquare },
     { id: 'staff_mgmt', label: 'Staff Directory', icon: UserCheck },
     { id: 'roster', label: 'Staff Roster', icon: Users },
     { id: 'pending_queue', label: 'Pending Approvals', icon: Clock },
+    { id: 'appraisals', label: 'Appraisals', icon: Award },
     { id: 'requests', label: 'Expense Claims', icon: Receipt },
     { id: 'leave', label: 'Leave Requests', icon: Calendar },
     { id: 'policy', label: 'Policy Folders', icon: Folder },
@@ -351,6 +353,7 @@ export default function PlusOpsPortal() {
             )}
             {activeTab === 'programs' && <ProgramsView programs={programs} selectedProgramId={selectedProgramId} setSelectedProgramId={setSelectedProgramId} setIsActivityModalOpen={setIsActivityModalOpen} setIsProgramModalOpen={setIsProgramModalOpen} isGlobalAdmin={canManagePrograms} />}
             {activeTab === 'dockets' && <DocketsView dockets={dockets} setIsDocketModalOpen={setIsDocketModalOpen} />}
+            {activeTab === 'staff_workspace' && <StaffWorkspaceView currentUser={currentUser} requests={requests} leaveRequests={leaveRequests} showToast={showToast} />}
             {activeTab === 'staff_mgmt' && <StaffManagementView profiles={profiles} setProfiles={setProfiles} canManageUsers={canManageUsers} showToast={showToast} />}
             {activeTab === 'roster' && <RosterView profiles={profiles} currentUser={currentUser} canManageUsers={canManageUsers} />}
             {activeTab === 'pending_queue' && (
@@ -363,6 +366,7 @@ export default function PlusOpsPortal() {
                 showToast={showToast} 
               />
             )}
+            {activeTab === 'appraisals' && <AppraisalsView currentUser={currentUser} showToast={showToast} />}
             {activeTab === 'requests' && <RequestsView visibleRequests={visibleRequests} setIsReqModalOpen={() => setIsMasterModalOpen(true)} currentUser={currentUser} canApproveFinance={canApproveFinance} requests={requests} setRequests={setRequests} showToast={showToast} />}
             {activeTab === 'leave' && <LeaveView leaveRequests={leaveRequests} setLeaveRequests={setLeaveRequests} setIsLeaveModalOpen={() => setIsMasterModalOpen(true)} currentUser={currentUser} canApprove={canApproveLeave} />}
             {activeTab === 'policy' && <PolicyView />}
