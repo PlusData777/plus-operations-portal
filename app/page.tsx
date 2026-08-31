@@ -129,18 +129,22 @@ export default function PlusOpsPortal() {
     const newLeave = {
       staff_name: currentUser.name,
       staff_email: currentUser.email,
+      department: currentUser.department || currentUser.role || 'Program',
+      hub: currentUser.posting || 'Karachi HQ',
+      project_code: currentUser.assigned_project || 'General Grant',
       leave_type: formData.get('leave_type') || 'Annual Leave',
       start_date: formData.get('start_date'),
       end_date: formData.get('end_date'),
       reason: formData.get('reason'),
-      status: 'PENDING'
+      current_approver: currentUser.reports_to || 'altafkhoso.adv@gmail.com',
+      status: 'PENDING_L1'
     };
 
     const { error } = await supabase.from('leave_requests').insert([newLeave]);
     if (error) {
       showToast('Error submitting leave application.');
     } else {
-      showToast('Leave application submitted successfully.');
+      showToast('Leave application submitted successfully and routed to Line Manager.');
       setIsLeaveModalOpen(false);
       fetchGlobalData();
     }
@@ -154,9 +158,10 @@ export default function PlusOpsPortal() {
       claim_type: activeReqType.toUpperCase(),
       requester_name: currentUser.name,
       requester_email: currentUser.email,
-      project_code: 'PRG-1',
-      expense_head: formData.get('expense_head') || 'General Requisition',
+      department: currentUser.department || currentUser.role || 'Program',
       hub: currentUser.posting || 'Karachi HQ',
+      project_code: currentUser.assigned_project || 'General Grant',
+      expense_head: formData.get('expense_head') || 'General Requisition',
       requested_amount: parseFloat(formData.get('amount') || 10000),
       approval_level: 1,
       current_approver: currentUser.reports_to || 'altafkhoso.adv@gmail.com',
@@ -168,18 +173,24 @@ export default function PlusOpsPortal() {
     if (error) {
       showToast('Error submitting requisition.');
     } else {
-      showToast(`${activeReqType.toUpperCase()} requisition submitted successfully.`);
+      showToast(`${activeReqType.toUpperCase()} requisition submitted and routed to Line Manager.`);
       setIsReqModalOpen(false);
       fetchGlobalData();
     }
   };
+
+  const isAuthorizedStaffManager = 
+    currentUser.email === 'atif@plus.org' || 
+    currentUser.email === 'altafkhoso.adv@gmail.com' ||
+    currentUser.name === 'Atif Ali' ||
+    currentUser.name === 'Altaf Khoso';
 
   const NAV_ITEMS = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'programs', label: 'Programs', icon: Briefcase },
     { id: 'dockets', label: 'Case Dockets', icon: Scale },
     { id: 'staff_workspace', label: 'My Workspace', icon: CheckSquare },
-    { id: 'staff_mgmt', label: 'Staff Directory', icon: UserCheck },
+    ...(isAuthorizedStaffManager ? [{ id: 'staff_mgmt', label: 'Staff Directory', icon: UserCheck }] : []),
     { id: 'pending_queue', label: 'Pending Approvals', icon: Clock },
     { id: 'appraisals', label: 'Appraisals', icon: Award },
     { id: 'requests', label: 'Expense Claims', icon: Receipt },
@@ -381,7 +392,7 @@ export default function PlusOpsPortal() {
             {activeTab === 'programs' && <ProgramsView programs={programs} refreshPrograms={fetchGlobalData} showToast={showToast} />}
             {activeTab === 'dockets' && <DocketsView dockets={dockets} refreshDockets={fetchGlobalData} showToast={showToast} />}
             {activeTab === 'staff_workspace' && <StaffWorkspaceView currentUser={currentUser} requests={requests} showToast={showToast} />}
-            {activeTab === 'staff_mgmt' && <StaffManagementView currentUser={currentUser} showToast={showToast} profiles={profiles} refreshProfiles={fetchGlobalData} />}
+            {activeTab === 'staff_mgmt' && isAuthorizedStaffManager && <StaffManagementView currentUser={currentUser} showToast={showToast} profiles={profiles} refreshProfiles={fetchGlobalData} />}
             {activeTab === 'pending_queue' && <PendingApprovalsView requests={requests} setRequests={setRequests} currentUser={currentUser} showToast={showToast} />}
             {activeTab === 'appraisals' && <AppraisalsView currentUser={currentUser} showToast={showToast} />}
             {activeTab === 'requests' && <RequestsView visibleRequests={requests} currentUser={currentUser} showToast={showToast} />}
