@@ -1,18 +1,19 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserPlus, Edit2, Trash2, X, CheckCircle, Shield, Briefcase, Calendar } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 export default function StaffManagementView({ currentUser, showToast, profiles = [], refreshProfiles }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState(null);
+  const [availableProjects, setAvailableProjects] = useState([]);
 
   // Form state
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     designation: '',
-    department: 'Program', // Replaced role with Department dropdown options
+    department: 'Program',
     posting: 'Karachi HQ',
     reports_to: '',
     line_manager_2: '',
@@ -20,6 +21,15 @@ export default function StaffManagementView({ currentUser, showToast, profiles =
     contract_start: '',
     contract_end: ''
   });
+
+  // Fetch active projects for dropdown mapping
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const { data } = await supabase.from('programs').select('title, project_code');
+      if (data) setAvailableProjects(data);
+    };
+    fetchProjects();
+  }, []);
 
   const handleOpenAdd = () => {
     setEditingProfile(null);
@@ -29,7 +39,7 @@ export default function StaffManagementView({ currentUser, showToast, profiles =
       designation: '',
       department: 'Program',
       posting: 'Karachi HQ',
-      reports_to: '',
+      reports_to: profiles[0]?.email || '',
       line_manager_2: '',
       assigned_project: '',
       contract_start: '',
@@ -63,11 +73,11 @@ export default function StaffManagementView({ currentUser, showToast, profiles =
       email: formData.email,
       designation: formData.designation,
       department: formData.department,
-      role: formData.department.toUpperCase(), // Sync role fallback for legacy checks
+      role: formData.department.toUpperCase(),
       posting: formData.posting,
       reports_to: formData.reports_to,
-      line_manager_2: formData.line_manager_2,
-      assigned_project: formData.assigned_project,
+      line_manager_2: formData.line_manager_2 || null,
+      assigned_project: formData.assigned_project || null,
       contract_start: formData.contract_start || null,
       contract_end: formData.contract_end || null
     };
@@ -224,10 +234,15 @@ export default function StaffManagementView({ currentUser, showToast, profiles =
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">Assigned Project</label>
-                  <input type="text" value={formData.assigned_project} onChange={e => setFormData({...formData, assigned_project: e.target.value})} placeholder="e.g. JSSP / C2C Karachi" className="w-full rounded-xl border p-2 text-xs" />
+                  <select value={formData.assigned_project} onChange={e => setFormData({...formData, assigned_project: e.target.value})} className="w-full rounded-xl border p-2 text-xs font-semibold bg-white">
+                    <option value="">Select Project / Grant</option>
+                    {availableProjects.map((proj, idx) => (
+                      <option key={idx} value={proj.title}>{proj.title} ({proj.project_code})</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">Posting / Hub</label>
+                  <label className="block text-[11px] font-bold uppercase text-slate-600 sm:truncate mb-1">Posting / Hub</label>
                   <input type="text" value={formData.posting} onChange={e => setFormData({...formData, posting: e.target.value})} placeholder="Karachi HQ" className="w-full rounded-xl border p-2 text-xs" />
                 </div>
               </div>
@@ -235,11 +250,21 @@ export default function StaffManagementView({ currentUser, showToast, profiles =
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">Line Manager 1 (Primary)</label>
-                  <input type="text" value={formData.reports_to} onChange={e => setFormData({...formData, reports_to: e.target.value})} placeholder="Manager Name or Email" className="w-full rounded-xl border p-2 text-xs" />
+                  <select value={formData.reports_to} onChange={e => setFormData({...formData, reports_to: e.target.value})} className="w-full rounded-xl border p-2 text-xs font-semibold bg-white">
+                    <option value="">Select Primary Manager</option>
+                    {profiles.map(p => (
+                      <option key={p.id} value={p.email}>{p.name} ({p.designation || p.email})</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">Line Manager 2 (Approver Matrix)</label>
-                  <input type="text" value={formData.line_manager_2} onChange={e => setFormData({...formData, line_manager_2: e.target.value})} placeholder="Secondary Reviewer" className="w-full rounded-xl border p-2 text-xs" />
+                  <select value={formData.line_manager_2} onChange={e => setFormData({...formData, line_manager_2: e.target.value})} className="w-full rounded-xl border p-2 text-xs font-semibold bg-white">
+                    <option value="">Select Secondary Reviewer (Optional)</option>
+                    {profiles.map(p => (
+                      <option key={p.id} value={p.email}>{p.name} ({p.designation || p.email})</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
