@@ -1,12 +1,21 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Edit2, Trash2, X, CheckCircle, Shield, Briefcase, Calendar } from 'lucide-react';
+import { UserPlus, Edit2, Trash2, X, CheckCircle, Shield, Briefcase, Calendar, Building } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 export default function StaffManagementView({ currentUser, showToast, profiles = [], refreshProfiles }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState(null);
   const [availableProjects, setAvailableProjects] = useState([]);
+
+  const INSTITUTIONAL_HUBS = [
+    'Karachi HQ',
+    'Hyderabad Hub',
+    'Sukkur Hub',
+    'Larkana Camp',
+    'Mirpurkhas Hub',
+    'Islamabad Liaison Office'
+  ];
 
   // Form state
   const [formData, setFormData] = useState({
@@ -22,7 +31,6 @@ export default function StaffManagementView({ currentUser, showToast, profiles =
     contract_end: ''
   });
 
-  // Fetch active projects for dropdown mapping
   useEffect(() => {
     const fetchProjects = async () => {
       const { data } = await supabase.from('programs').select('title, project_code');
@@ -127,7 +135,7 @@ export default function StaffManagementView({ currentUser, showToast, profiles =
       <div className="flex justify-between items-center bg-white p-6 rounded-2xl border shadow-sm">
         <div>
           <h2 className="text-lg font-bold text-slate-900">Staff Directory & Management</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Manage institutional personnel, departmental matrix, contracts, and reporting lines.</p>
+          <p className="text-xs text-slate-500 mt-0.5">Manage institutional personnel, departmental matrix, posting hubs, and reporting lines.</p>
         </div>
         {currentUser.role === 'EXECUTIVE' && (
           <button onClick={handleOpenAdd} className="flex items-center space-x-1.5 bg-[#0052CC] hover:bg-[#003d99] text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
@@ -145,8 +153,7 @@ export default function StaffManagementView({ currentUser, showToast, profiles =
                 <th className="p-4">Designation & Dept</th>
                 <th className="p-4">Project</th>
                 <th className="p-4">Reporting Line</th>
-                <th className="p-4">Contract Dates</th>
-                <th className="p-4">Posting</th>
+                <th className="p-4">Posting Hub</th>
                 <th className="p-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -170,11 +177,11 @@ export default function StaffManagementView({ currentUser, showToast, profiles =
                     <p><strong className="text-slate-400">L1:</strong> {p.reports_to || 'None'}</p>
                     {p.line_manager_2 && <p><strong className="text-slate-400">L2:</strong> {p.line_manager_2}</p>}
                   </td>
-                  <td className="p-4 text-[11px] text-slate-600">
-                    <p>{p.contract_start ? `${p.contract_start} to` : 'Start: N/A'}</p>
-                    <p className="font-semibold">{p.contract_end || 'End: N/A'}</p>
+                  <td className="p-4">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border">
+                      {p.posting || 'Karachi HQ'}
+                    </span>
                   </td>
-                  <td className="p-4 text-slate-700">{p.posting || 'Karachi HQ'}</td>
                   <td className="p-4 text-right space-x-2">
                     <button onClick={() => handleOpenEdit(p)} className="p-1.5 rounded-lg bg-blue-50 text-[#0052CC] hover:bg-blue-100 transition cursor-pointer" title="Edit Profile">
                       <Edit2 className="w-3.5 h-3.5" />
@@ -242,8 +249,12 @@ export default function StaffManagementView({ currentUser, showToast, profiles =
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-slate-600 sm:truncate mb-1">Posting / Hub</label>
-                  <input type="text" value={formData.posting} onChange={e => setFormData({...formData, posting: e.target.value})} placeholder="Karachi HQ" className="w-full rounded-xl border p-2 text-xs" />
+                  <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">Posting / Hub</label>
+                  <select value={formData.posting} onChange={e => setFormData({...formData, posting: e.target.value})} className="w-full rounded-xl border p-2 text-xs font-semibold bg-white">
+                    {INSTITUTIONAL_HUBS.map((hub, idx) => (
+                      <option key={idx} value={hub}>{hub}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
