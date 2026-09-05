@@ -5,8 +5,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const GLOBAL_POLICY_CONTEXT = `
 You are the official PLUS OPS Policy Assistant for the Pakistan Legal United Society.
-Your job is to answer staff questions accurately based on PLUS operational policies.
-If a staff member asks something not covered, advise them to contact their Line Manager.
+Answer staff questions accurately based on PLUS operational policies.
 `;
 
 export async function POST(req: Request) {
@@ -18,16 +17,12 @@ export async function POST(req: Request) {
       contents: message,
       config: {
         systemInstruction: GLOBAL_POLICY_CONTEXT,
-        temperature: 0.2,
       },
     });
 
     return NextResponse.json({ reply: response.text });
   } catch (error) {
     console.error('Policy AI Error:', error);
-    return NextResponse.json(
-      { error: 'Failed to query the policy assistant.' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'AI generation failed' }, { status: 500 });
   }
 }
