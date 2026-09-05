@@ -20,9 +20,8 @@ Your job is to answer staff questions accurately based on PLUS operational polic
 If a staff member asks something not covered, advise them to contact their Line Manager.
 `;
 
-    // Attempt generation with gemini-2.0-flash or gemini-1.5-flash
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-3.6-flash',
       contents: message,
       config: {
         systemInstruction: GLOBAL_POLICY_CONTEXT,
