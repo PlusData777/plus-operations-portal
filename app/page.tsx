@@ -40,8 +40,8 @@ export default function PlusOpsPortal() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [programs, setPrograms] = useState([]);
   const [dockets, setDockets] = useState([]);
-  const [requests, setRequests] = useState([]);
-  const [leaveRequests, setLeaveRequests] = useState([]);
+  const [requests, setRequests] = useState<any[]>([]);
+  const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
   const [toastMsg, setToastMsg] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -50,6 +50,10 @@ export default function PlusOpsPortal() {
   const [isReqModalOpen, setIsReqModalOpen] = useState(false);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [activeReqType, setActiveReqType] = useState('finance');
+
+  // AI Copilot Pre-fill State
+  const [prefillLeave, setPrefillLeave] = useState<any>(null);
+  const [prefillReq, setPrefillReq] = useState<any>(null);
 
   // User Dropdown Menu
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -114,9 +118,22 @@ export default function PlusOpsPortal() {
   const handleSelectRequisitionType = (type: string) => {
     setIsMasterModalOpen(false);
     if (type === 'leave') {
+      setPrefillLeave(null);
       setIsLeaveModalOpen(true);
     } else {
+      setPrefillReq(null);
       setActiveReqType(type);
+      setIsReqModalOpen(true);
+    }
+  };
+
+  const handleTriggerAction = (action: { type: string; data: any }) => {
+    if (action.type === 'leave') {
+      setPrefillLeave(action.data);
+      setIsLeaveModalOpen(true);
+    } else {
+      setActiveReqType(action.data?.claim_type?.toLowerCase() || 'finance');
+      setPrefillReq(action.data);
       setIsReqModalOpen(true);
     }
   };
@@ -144,6 +161,7 @@ export default function PlusOpsPortal() {
     } else {
       showToast('Leave application submitted successfully.');
       setIsLeaveModalOpen(false);
+      setPrefillLeave(null);
       fetchGlobalData();
     }
   };
@@ -173,6 +191,7 @@ export default function PlusOpsPortal() {
     } else {
       showToast(`${activeReqType.toUpperCase()} requisition submitted.`);
       setIsReqModalOpen(false);
+      setPrefillReq(null);
       fetchGlobalData();
     }
   };
@@ -251,23 +270,43 @@ export default function PlusOpsPortal() {
           <div className="w-full max-w-md bg-slate-900/70 border border-white/20 backdrop-blur-2xl rounded-3xl p-6 shadow-2xl space-y-4">
             <div className="flex justify-between border-b border-white/10 pb-3">
               <h3 className="font-bold text-base text-white uppercase">New {activeReqType} Requisition</h3>
-              <button onClick={() => setIsReqModalOpen(false)}><X className="w-5 h-5 text-slate-400 hover:text-white" /></button>
+              <button onClick={() => { setIsReqModalOpen(false); setPrefillReq(null); }}><X className="w-5 h-5 text-slate-400 hover:text-white" /></button>
             </div>
             <form onSubmit={handleCreateRequisition} className="space-y-3">
               <div>
                 <label className="block text-[11px] font-bold uppercase text-slate-300 mb-1">Purpose / Head</label>
-                <input type="text" required name="expense_head" placeholder="e.g. Field camp logistics" className="w-full rounded-xl bg-white/5 border border-white/15 p-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400" />
+                <input 
+                  type="text" 
+                  required 
+                  name="expense_head" 
+                  defaultValue={prefillReq?.expense_head || ''}
+                  placeholder="e.g. Field camp logistics" 
+                  className="w-full rounded-xl bg-white/5 border border-white/15 p-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400" 
+                />
               </div>
               <div>
                 <label className="block text-[11px] font-bold uppercase text-slate-300 mb-1">Amount Requested (PKR)</label>
-                <input type="number" required name="amount" placeholder="25000" className="w-full rounded-xl bg-white/5 border border-white/15 p-2 text-xs font-bold text-cyan-300 placeholder-slate-500 focus:outline-none focus:border-cyan-400" />
+                <input 
+                  type="number" 
+                  required 
+                  name="amount" 
+                  defaultValue={prefillReq?.amount ?? 25000}
+                  placeholder="25000" 
+                  className="w-full rounded-xl bg-white/5 border border-white/15 p-2 text-xs font-bold text-cyan-300 placeholder-slate-500 focus:outline-none focus:border-cyan-400" 
+                />
               </div>
               <div>
                 <label className="block text-[11px] font-bold uppercase text-slate-300 mb-1">Justification Notes</label>
-                <textarea rows={3} name="notes" placeholder="Provide details..." className="w-full rounded-xl bg-white/5 border border-white/15 p-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 resize-none" />
+                <textarea 
+                  rows={3} 
+                  name="notes" 
+                  defaultValue={prefillReq?.notes || ''}
+                  placeholder="Provide details..." 
+                  className="w-full rounded-xl bg-white/5 border border-white/15 p-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 resize-none" 
+                />
               </div>
               <div className="flex justify-end space-x-2 pt-2">
-                <button type="button" onClick={() => setIsReqModalOpen(false)} className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Cancel</button>
+                <button type="button" onClick={() => { setIsReqModalOpen(false); setPrefillReq(null); }} className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Cancel</button>
                 <button type="submit" className="px-5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:opacity-90 text-white text-xs font-bold shadow-lg cursor-pointer">Submit</button>
               </div>
             </form>
@@ -281,12 +320,16 @@ export default function PlusOpsPortal() {
           <div className="w-full max-w-md bg-slate-900/70 border border-white/20 backdrop-blur-2xl rounded-3xl p-6 shadow-2xl space-y-4">
             <div className="flex justify-between border-b border-white/10 pb-3">
               <h3 className="font-bold text-base text-white">Apply for Leave</h3>
-              <button onClick={() => setIsLeaveModalOpen(false)}><X className="w-5 h-5 text-slate-400 hover:text-white" /></button>
+              <button onClick={() => { setIsLeaveModalOpen(false); setPrefillLeave(null); }}><X className="w-5 h-5 text-slate-400 hover:text-white" /></button>
             </div>
             <form onSubmit={handleCreateLeave} className="space-y-3">
               <div>
                 <label className="block text-[11px] font-bold uppercase text-slate-300 mb-1">Leave Type</label>
-                <select name="leave_type" className="w-full rounded-xl bg-slate-800 border border-white/15 p-2 text-xs text-white">
+                <select 
+                  name="leave_type" 
+                  defaultValue={prefillLeave?.leave_type || 'Annual Leave'}
+                  className="w-full rounded-xl bg-slate-800 border border-white/15 p-2 text-xs text-white"
+                >
                   <option value="Annual Leave">Annual Leave</option>
                   <option value="Sick Leave">Sick Leave</option>
                   <option value="Casual Leave">Casual Leave</option>
@@ -295,19 +338,38 @@ export default function PlusOpsPortal() {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-[11px] font-bold uppercase text-slate-300 mb-1">Start Date</label>
-                  <input type="date" required name="start_date" className="w-full rounded-xl bg-slate-800 border border-white/15 p-2 text-xs text-white" />
+                  <input 
+                    type="date" 
+                    required 
+                    name="start_date" 
+                    defaultValue={prefillLeave?.start_date || ''}
+                    className="w-full rounded-xl bg-slate-800 border border-white/15 p-2 text-xs text-white" 
+                  />
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold uppercase text-slate-300 mb-1">End Date</label>
-                  <input type="date" required name="end_date" className="w-full rounded-xl bg-slate-800 border border-white/15 p-2 text-xs text-white" />
+                  <input 
+                    type="date" 
+                    required 
+                    name="end_date" 
+                    defaultValue={prefillLeave?.end_date || ''}
+                    className="w-full rounded-xl bg-slate-800 border border-white/15 p-2 text-xs text-white" 
+                  />
                 </div>
               </div>
               <div>
                 <label className="block text-[11px] font-bold uppercase text-slate-300 mb-1">Reason</label>
-                <textarea rows={3} required name="reason" placeholder="Reason for leave..." className="w-full rounded-xl bg-white/5 border border-white/15 p-2 text-xs text-white placeholder-slate-500 resize-none" />
+                <textarea 
+                  rows={3} 
+                  required 
+                  name="reason" 
+                  defaultValue={prefillLeave?.reason || ''}
+                  placeholder="Reason for leave..." 
+                  className="w-full rounded-xl bg-white/5 border border-white/15 p-2 text-xs text-white placeholder-slate-500 resize-none" 
+                />
               </div>
               <div className="flex justify-end space-x-2 pt-2">
-                <button type="button" onClick={() => setIsLeaveModalOpen(false)} className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Cancel</button>
+                <button type="button" onClick={() => { setIsLeaveModalOpen(false); setPrefillLeave(null); }} className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Cancel</button>
                 <button type="submit" className="px-5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:opacity-90 text-white text-xs font-bold shadow-lg cursor-pointer">Submit Leave</button>
               </div>
             </form>
@@ -420,8 +482,13 @@ export default function PlusOpsPortal() {
           </div>
         </div>
 
-        {/* ALWAYS-PRESENT APNA OPS FLOATING AGENT */}
-        <PolicyAssistant />
+        {/* ALWAYS-PRESENT APNA OPS COPILOT (WITH CONTEXT & PRE-FILL ACTIONS) */}
+        <PolicyAssistant 
+          currentUser={currentUser}
+          userRequests={requests.filter((r: any) => r.requester_email === currentUser?.email)}
+          userLeaves={leaveRequests.filter((l: any) => l.staff_email === currentUser?.email)}
+          onTriggerAction={handleTriggerAction}
+        />
       </main>
     </div>
   );
