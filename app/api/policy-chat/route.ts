@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { NextResponse } from 'next/server';
+import { PLUS_ORGANIZATIONAL_POLICIES } from '@/lib/policyContent';
 
 export async function POST(req: Request) {
   try {
@@ -12,19 +13,33 @@ export async function POST(req: Request) {
     }
 
     const { message } = await req.json();
+    if (!message || typeof message !== 'string') {
+      return NextResponse.json(
+        { error: 'A valid message string is required.' },
+        { status: 400 }
+      );
+    }
+
     const ai = new GoogleGenAI({ apiKey });
 
-    const GLOBAL_POLICY_CONTEXT = `
+    const SYSTEM_INSTRUCTION = `
 You are the official PLUS OPS Policy Assistant for the Pakistan Legal United Society.
-Your job is to answer staff questions accurately based on PLUS operational policies.
-If a staff member asks something not covered, advise them to contact their Line Manager.
+Your job is to assist organizational staff members with questions regarding operational, HR, and program compliance policies.
+
+GUIDELINES:
+1. Always base your answers directly on the official policies provided below.
+2. Clearly cite the relevant policy section (e.g., "Under the Anti-Harassment Policy..." or "According to the Child Protection Policy...").
+3. Be professional, supportive, objective, and precise.
+4. If a user asks about an operational matter not covered in these texts (such as specific travel per diems or hardware budgets), clearly advise them to refer to their Line Manager or the Operations/HR department.
+
+${PLUS_ORGANIZATIONAL_POLICIES}
 `;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3.6-flash',
       contents: message,
       config: {
-        systemInstruction: GLOBAL_POLICY_CONTEXT,
+        systemInstruction: SYSTEM_INSTRUCTION,
         temperature: 0.2,
       },
     });
