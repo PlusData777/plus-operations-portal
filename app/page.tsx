@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic';
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  LayoutDashboard, Receipt, Briefcase, Scale, Building, Plus, CheckCircle, Menu, X, Calendar, Folder, UserCheck, Clock, CheckSquare, Award, BarChart3, HeartHandshake, LogOut, ChevronDown, User
+  LayoutDashboard, Receipt, Briefcase, Scale, Building, Plus, CheckCircle, Menu, X, Calendar, Folder, UserCheck, Clock, CheckSquare, Award, BarChart3, HeartHandshake, LogOut, ChevronDown, User, Bot
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -21,6 +21,7 @@ import HRView from '@/components/HRView';
 import PartnersView from '@/components/PartnersView';
 import TimesheetsView from '@/components/TimesheetsView';
 import AnalyticsView from '@/components/AnalyticsView';
+import PolicyAssistant from '@/components/PolicyAssistant';
 
 export default function PlusOpsPortal() {
   const [currentUser, setCurrentUser] = useState({
@@ -187,6 +188,7 @@ export default function PlusOpsPortal() {
 
   const NAV_ITEMS = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'policy_assistant', label: 'AI Policy Assistant', icon: Bot },
     { id: 'programs', label: 'Programs', icon: Briefcase },
     { id: 'dockets', label: 'Case Dockets', icon: Scale },
     { id: 'staff_workspace', label: 'My Workspace', icon: CheckSquare },
@@ -306,7 +308,7 @@ export default function PlusOpsPortal() {
         />
       )}
 
-      {/* SIDEBAR DRAWER (Sliding Overlay on Mobile, Static on Desktop) */}
+      {/* SIDEBAR DRAWER */}
       <aside className={`fixed md:static inset-y-0 left-0 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 bg-[#0052CC] text-blue-100 flex flex-col shadow-xl transition-transform duration-300 z-40 w-64 shrink-0`}>
         <div className="p-5 border-b border-blue-600 flex justify-between items-center">
           <div className="flex items-center space-x-3 text-white">
@@ -389,6 +391,7 @@ export default function PlusOpsPortal() {
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
           <div className="max-w-6xl mx-auto">
             {activeTab === 'dashboard' && <DashboardView visibleRequests={requests} programs={programs} dockets={dockets} currentUser={currentUser} setActiveTab={setActiveTab} />}
+            {activeTab === 'policy_assistant' && <PolicyAssistant />}
             {activeTab === 'programs' && <ProgramsView programs={programs} refreshPrograms={fetchGlobalData} showToast={showToast} />}
             {activeTab === 'dockets' && <DocketsView dockets={dockets} refreshDockets={fetchGlobalData} showToast={showToast} />}
             {activeTab === 'staff_workspace' && <StaffWorkspaceView currentUser={currentUser} requests={requests} showToast={showToast} />}
